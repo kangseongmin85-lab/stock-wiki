@@ -8,6 +8,8 @@ on:
     - cron: '0 7 * * 1-5'
     # 장전 일일 요약 (UTC 23:50 = KST 08:50)
     - cron: '50 23 * * 0-4'
+    # 장 마감 브리핑 (UTC 07:30 = KST 16:30, 평일)
+    - cron: '30 7 * * 1-5'
   workflow_dispatch:  # 수동 실행 버튼
 
 jobs:
@@ -49,6 +51,18 @@ jobs:
             python fetch_news.py --digest
           else
             python fetch_news.py
+          fi
+
+      - name: 장 마감 브리핑 (KST 16:30)
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID:   ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          HOUR=$(date -u +%H)
+          MIN=$(date -u +%M)
+          # UTC 07:30 = KST 16:30 에만 실행
+          if [ "$HOUR" = "7" ] && [ "$MIN" = "30" ]; then
+            python fetch_briefing.py
           fi
 
       - name: seen_ids 캐시 갱신 저장
