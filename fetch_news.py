@@ -39,13 +39,15 @@ HDR = {
 
 # ── RSS 소스 정의 ──────────────────────────────────────────────────────────────
 RSS_SOURCES = {
+    # ── 기존 소스 ────────────────────────────────
     "한국경제": [
         "https://www.hankyung.com/feed/economy",
         "https://www.hankyung.com/feed/finance",
+        "https://www.hankyung.com/feed/stock",
     ],
     "매일경제": [
-        "https://rss.mk.co.kr/rss/30000001.xml",   # 증권
-        "https://rss.mk.co.kr/rss/30100041.xml",   # 증시
+        "https://rss.mk.co.kr/rss/30000001.xml",
+        "https://rss.mk.co.kr/rss/30100041.xml",
     ],
     "머니투데이": [
         "https://rss.mt.co.kr/news/rss.xml",
@@ -54,8 +56,59 @@ RSS_SOURCES = {
         "https://rss.edaily.co.kr/edaily_allnews.xml",
     ],
     "인베스팅닷컴": [
-        "https://kr.investing.com/rss/news_25.rss",   # 한국 주식
-        "https://kr.investing.com/rss/news_14.rss",   # 시장
+        "https://kr.investing.com/rss/news_25.rss",
+        "https://kr.investing.com/rss/news_14.rss",
+    ],
+    # ── 추가 소스 ────────────────────────────────
+    "연합뉴스": [
+        "https://www.yna.co.kr/rss/economy.xml",
+        "https://www.yna.co.kr/rss/stock.xml",
+    ],
+    "아시아경제": [
+        "https://www.asiae.co.kr/rss/stockmarketall.htm",
+        "https://www.asiae.co.kr/rss/economy.htm",
+    ],
+    "헤럴드경제": [
+        "https://biz.heraldcorp.com/rss/0000000315.xml",
+        "https://biz.heraldcorp.com/rss/0000000316.xml",
+    ],
+    "조선비즈": [
+        "https://biz.chosun.com/rss/rss.xml",
+    ],
+    "서울경제": [
+        "https://www.sedaily.com/RSS/S1",
+        "https://www.sedaily.com/RSS/S0601",
+    ],
+    "파이낸셜뉴스": [
+        "https://www.fnnews.com/rss/fn_finance_top.xml",
+        "https://www.fnnews.com/rss/fn_stock_top.xml",
+    ],
+    "이투데이": [
+        "https://www.etoday.co.kr/rss/S1N1.xml",
+        "https://www.etoday.co.kr/rss/all.xml",
+    ],
+    "뉴스토마토": [
+        "https://www.newstomato.com/rss.aspx",
+        "https://www.newstomato.com/rss/rss_stock.aspx",
+    ],
+    "인포스탁": [
+        "https://www.infostock.co.kr/rss/S1N1.xml",
+    ],
+    "뉴스팜": [
+        "https://www.newsfarm.co.kr/rss/allArticle.xml",
+    ],
+    "조세일보": [
+        "https://www.joseilbo.com/rss.xml",
+    ],
+    # ── 텔레그램 채널 (RSShub 경유) ─────────────────
+    "FastStockNews(TG)": [
+        "https://rsshub.app/telegram/channel/FastStockNews",
+    ],
+    "FastStockNewsUSA(TG)": [
+        "https://rsshub.app/telegram/channel/FastStockNewsUSA",
+    ],
+    "bornlupin(TG)": [
+        "https://rsshub.app/telegram/channel/bornlupin",
     ],
 }
 
@@ -81,6 +134,7 @@ def load_keywords():
         "이차전지", "방산", "바이오", "AI", "로봇", "자율주행",
         "급등", "상한가", "하한가", "서킷브레이커", "사이드카",
         "실적", "수주", "계약", "인수", "합병", "FDA", "임상",
+        "특징주",
     ])
     return keywords
 
@@ -111,7 +165,6 @@ def tg_send(text, dry_run=False):
         "chat_id":    CHAT_ID,
         "text":       text[:4000],
         "parse_mode": "HTML",
-        "disable_web_page_preview": "true",
     }).encode()
     try:
         with urllib.request.urlopen(url, data=data, timeout=10) as r:
@@ -122,12 +175,23 @@ def tg_send(text, dry_run=False):
         print(f"[텔레그램 오류] {e}")
 
 # ── 긴급도 계산 ───────────────────────────────────────────────────────────────
+# ── 차단 키워드 (제목에 포함 시 수집/전송/저장 모두 제외) ─────────────────────
+BLOCK_KEYWORDS = [
+    "폭증", "불꽃", "랠리", "슈퍼개미", "수퍼개미",
+    "부고", "부음", "폭탄", "무료", "인포스탁",
+    "증시요약", "테마", "종목이슈", "오후장", "오전장", "라씨로",
+]
+
 URGENT_KEYWORDS = ["유상증자", "무상증자", "CB", "BW", "상장폐지", "감사의견",
                    "횡령", "배임", "대규모", "공급계약", "수주", "FDA", "임상",
                    "상한가", "하한가", "서킷브레이커", "사이드카"]
 HIGH_KEYWORDS   = ["실적", "영업이익", "매출", "수출", "수주", "협약", "MOU",
                    "인수", "합병", "지분", "공시", "특허", "급등", "급락",
                    "계약", "선정", "승인", "허가"]
+
+def is_blocked(title):
+    """차단 키워드가 제목에 포함되면 True"""
+    return any(kw in title for kw in BLOCK_KEYWORDS)
 
 def urgency(title, is_dart=False):
     if is_dart:
@@ -164,6 +228,8 @@ def fetch_naver_news(keywords):
                 if not title or not aid:
                     continue
                 link    = f"https://n.news.naver.com/mnews/article/{oid}/{aid}"
+                if is_blocked(title):
+                    continue
                 matched = [kw for kw in keywords if kw in title]
                 if not matched:
                     continue
@@ -171,6 +237,7 @@ def fetch_naver_news(keywords):
                     "id":      f"naver_{oid}_{aid}",
                     "title":   title,
                     "link":    link,
+                    "desc":    "",
                     "matched": matched[:3],
                     "source":  f"네이버({item.get('ohnm','금융')})",
                     "dart":    False,
@@ -224,6 +291,17 @@ def fetch_rss(source_name, feed_url, keywords, cutoff_hours=2):
             if not item_id:
                 item_id = f"{source_name}_{hash(title)}"
 
+            # 요약 (description)
+            desc_el = item.find("description") or item.find("summary") or item.find("atom:summary", ns)
+            desc = ""
+            if desc_el is not None and desc_el.text:
+                desc = re.sub(r"<[^>]+>", "", desc_el.text).strip()
+                desc = re.sub(r"\s+", " ", desc)[:200]
+
+            # 차단 키워드 필터
+            if is_blocked(title):
+                continue
+
             # 키워드 매칭
             matched = [kw for kw in keywords if kw in title]
             if not matched:
@@ -233,6 +311,7 @@ def fetch_rss(source_name, feed_url, keywords, cutoff_hours=2):
                 "id":      f"rss_{source_name}_{abs(hash(item_id))}",
                 "title":   title,
                 "link":    link,
+                "desc":    desc,
                 "matched": matched[:3],
                 "source":  source_name,
                 "dart":    False,
@@ -283,6 +362,7 @@ def fetch_youtube_rss(keywords):
                     "id":      f"yt_{channel_id}_{vid_id}",
                     "title":   f"▶ {title}",
                     "link":    link,
+                    "desc":    "",
                     "matched": matched[:3] if matched else [channel_name],
                     "source":  f"YouTube({channel_name})",
                     "dart":    False,
@@ -309,6 +389,8 @@ def fetch_dart(keywords):
             rcept  = item.get("rcept_no", "")
             link   = f"https://dart.fss.or.kr/dsaf001/main.do?rcpNo={rcept}"
             full   = f"[{corp}] {title}"
+            if is_blocked(full):
+                continue
             matched = [kw for kw in keywords if kw in corp or kw in title]
             urg = urgency(title, is_dart=True)
             if not matched and urg == "📄 일반":
@@ -317,6 +399,7 @@ def fetch_dart(keywords):
                 "id":      f"dart_{rcept}",
                 "title":   full,
                 "link":    link,
+                "desc":    "",
                 "matched": matched[:3] if matched else [corp],
                 "source":  "DART공시",
                 "dart":    True,
@@ -346,8 +429,9 @@ def format_msg(article):
     link  = article["link"]
     title = article["title"]
     now   = datetime.now().strftime("%H:%M")
+    # URL을 일반 텍스트로 보내면 텔레그램이 자동으로 이미지+제목+설명 미리보기 생성
     if link:
-        return f'{urg} [{src}] {now}\n<a href="{link}">{title}</a>\n{tags}'
+        return f"{urg} [{src}] {now}\n{title}\n{link}\n{tags}"
     return f"{urg} [{src}] {now}\n{title}\n{tags}"
 
 # ── 메인 ─────────────────────────────────────────────────────────────────────

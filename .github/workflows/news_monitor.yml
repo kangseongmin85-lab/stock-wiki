@@ -25,16 +25,17 @@ jobs:
       - name: 패키지 설치
         run: pip install python-dotenv
 
-      - name: seen_ids 캐시 복원
+      - name: seen_ids 디렉토리 생성
+        run: mkdir -p wiki/news
+
+      - name: seen_ids 캐시 복원/저장 (자동)
         uses: actions/cache@v4
         with:
           path: wiki/news/seen_ids.json
-          key: seen-ids-${{ github.run_id }}
+          key: seen-ids-${{ runner.os }}-${{ hashFiles('wiki/news/seen_ids.json') }}
           restore-keys: |
+            seen-ids-${{ runner.os }}-
             seen-ids-
-
-      - name: seen_ids 디렉토리 생성
-        run: mkdir -p wiki/news
 
       - name: 뉴스 수집 및 텔레그램 전송
         env:
@@ -42,7 +43,6 @@ jobs:
           TELEGRAM_CHAT_ID:   ${{ secrets.TELEGRAM_CHAT_ID }}
           DART_API_KEY:       ${{ secrets.DART_API_KEY }}
         run: |
-          # 장전 시간대(UTC 23:50)면 일일 요약 모드
           HOUR=$(date -u +%H)
           MIN=$(date -u +%M)
           if [ "$HOUR" = "23" ] && [ "$MIN" = "50" ]; then
@@ -51,9 +51,9 @@ jobs:
             python fetch_news.py
           fi
 
-      - name: seen_ids 저장 (캐시 갱신)
+      - name: seen_ids 캐시 갱신 저장
         if: always()
         uses: actions/cache/save@v4
         with:
           path: wiki/news/seen_ids.json
-          key: seen-ids-${{ github.run_id }}
+          key: seen-ids-${{ runner.os }}-${{ github.run_id }}
