@@ -1,0 +1,59 @@
+name: 📰 주식 뉴스 모니터링
+
+on:
+  schedule:
+    # 장중 15분마다 (UTC 00:00~07:00 = KST 09:00~16:00, 평일)
+    - cron: '0,15,30,45 0-6 * * 1-5'
+    # 장 마감 막차 (UTC 07:00 = KST 16:00)
+    - cron: '0 7 * * 1-5'
+    # 장전 일일 요약 (UTC 23:50 = KST 08:50)
+    - cron: '50 23 * * 0-4'
+  workflow_dispatch:  # 수동 실행 버튼
+
+jobs:
+  fetch-news:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 코드 체크아웃
+        uses: actions/checkout@v4
+
+      - name: Python 설정
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: 패키지 설치
+        run: pip install python-dotenv
+
+      - name: seen_ids 캐시 복원
+        uses: actions/cache@v4
+        with:
+          path: wiki/news/seen_ids.json
+          key: seen-ids-${{ github.run_id }}
+          restore-keys: |
+            seen-ids-
+
+      - name: seen_ids 디렉토리 생성
+        run: mkdir -p wiki/news
+
+      - name: 뉴스 수집 및 텔레그램 전송
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID:   ${{ secrets.TELEGRAM_CHAT_ID }}
+          DART_API_KEY:       ${{ secrets.DART_API_KEY }}
+        run: |
+          # 장전 시간대(UTC 23:50)면 일일 요약 모드
+          HOUR=$(date -u +%H)
+          MIN=$(date -u +%M)
+          if [ "$HOUR" = "23" ] && [ "$MIN" = "50" ]; then
+            python fetch_news.py --digest
+          else
+            python fetch_news.py
+          fi
+
+      - name: seen_ids 저장 (캐시 갱신)
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: wiki/news/seen_ids.json
+          key: seen-ids-${{ github.run_id }}

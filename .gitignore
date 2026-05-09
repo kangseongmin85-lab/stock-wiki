@@ -1,0 +1,32 @@
+# 환경 변수 (API 키 포함) — 절대 커밋 금지
+.env
+*.env
+
+# Python 캐시
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+
+# 로컬 가상환경
+venv/
+.venv/
+env/
+
+# 임시 파일
+*.log
+*.tmp
+.DS_Store
+Thumbs.db
+
+# 뉴스 seen_ids (로컬 캐시 — GitHub Actions에서 별도 관리)
+wiki/news/seen_ids.json
+
+# Obsidian 로컬 설정
+.obsidian/workspace.json
+.obsidian/workspace-mobile.json
+.obsidian/cache

@@ -1,0 +1,4 @@
+dart-fss
+finance-datareader
+python-dotenv
+pykrx
