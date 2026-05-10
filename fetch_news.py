@@ -228,6 +228,11 @@ def stable_id(s):
     """결정론적 hash: 같은 입력 → 항상 같은 출력 (Python 재시작 무관)"""
     return hashlib.md5((s or "").encode("utf-8")).hexdigest()[:16]
 
+def title_key(t):
+    """제목 정규화 후 hash — 같은 기사가 다른 source/URL 로 들어와도 dedup"""
+    norm = re.sub(r"\s+", "", (t or "").strip().lower())
+    return f"title_{stable_id(norm)}"
+
 
 # ── 키워드 로드 ───────────────────────────────────────────────────────────────
 # 노이즈 키워드 제외 리스트 — 너무 광범위하게 매칭되어 false positive 유발
@@ -605,14 +610,18 @@ def main():
     )
 
     # 신규 필터 & 정렬 (이전 run 중복 + 같은 run 내 중복 제거)
+    # ID 기반 + 제목 기반 이중 dedup — 같은 기사가 RSS/네이버검색/네이버금융에서
+    # 다른 URL/ID 로 들어와도 제목으로 한 번 더 걸러냄
     seen_in_run = set()
     new_articles = []
     for a in articles:
-        if a["id"] in seen:
-            continue  # 이전 run에서 본 것
-        if a["id"] in seen_in_run:
-            continue  # 같은 run 내 중복 (RSS+네이버검색에서 같은 기사 발견 시)
+        tkey = title_key(a["title"])
+        if a["id"] in seen or tkey in seen:
+            continue  # 이전 run 에서 본 것
+        if a["id"] in seen_in_run or tkey in seen_in_run:
+            continue  # 같은 run 내 중복
         seen_in_run.add(a["id"])
+        seen_in_run.add(tkey)
         new_articles.append(a)
     new_articles.sort(key=lambda x: -urgency_score(urgency(x["title"], x["dart"])))
 
@@ -628,6 +637,7 @@ def main():
             saved_notion += 1
         time.sleep(0.3)
         seen.add(a["id"])
+        seen.add(title_key(a["title"]))
         new_count += 1
         sent += 1
 

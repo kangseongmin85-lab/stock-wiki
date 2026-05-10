@@ -22,14 +22,15 @@ jobs:
       - name: seen_ids 디렉토리 생성
         run: mkdir -p wiki/news
 
-      - name: seen_ids 캐시 복원/저장 (자동)
+      # 캐시 키에 run_id 포함 → 매 run 마다 새 키로 저장 (immutable cache 회피)
+      # restore-keys 의 prefix fallback 으로 이전 run 의 가장 최근 캐시 자동 복원
+      - name: seen_ids 캐시 복원/저장
         uses: actions/cache@v4
         with:
           path: wiki/news/seen_ids.json
-          key: seen-ids-${{ runner.os }}-${{ hashFiles('wiki/news/seen_ids.json') }}
+          key: seen-ids-${{ runner.os }}-${{ github.run_id }}
           restore-keys: |
             seen-ids-${{ runner.os }}-
-            seen-ids-
 
       - name: 뉴스 수집 및 텔레그램 전송
         env:
@@ -60,9 +61,3 @@ jobs:
           if [ "$HOUR" = "7" ] && [ "$MIN" = "30" ]; then
             python fetch_briefing.py
           fi
-
-      - name: seen_ids 캐시 갱신 저장
-        if: always()
-        uses: actions/cache/save@v4
-        with:
-          path: wiki/news/see
