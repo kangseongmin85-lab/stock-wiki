@@ -271,6 +271,54 @@ def load_keywords():
 
 # ── seen_ids 관리 ─────────────────────────────────────────────────────────────
 def load_seen():
+    """Notion DB 의 최근 2시간 내 항목에서 URL+제목 을 seen set 으로 로드.
+    GitHub Actions cache 의존성 제거 (캐시가 신뢰 불가). Notion 자체가 ground truth.
+    실패 시 로컬 seen_ids.json 으로 fallback (로컬 dry-run 등 토큰 없는 경우 포함)."""
+    # 1순위: Notion query
+    if NOTION_TOKEN and NOTION_DB_ID:
+        try:
+            # 2시간 윈도우 — RSS cutoff 와 일치. cron 12회분 (10분 간격) 커버.
+            # timeout=30s × 10 페이지 = 최대 5분, 실제는 보통 20~40초.
+            cutoff_dt = datetime.now() - timedelta(hours=2)
+            cutoff = cutoff_dt.strftime("%Y-%m-%dT%H:%M:%S.000Z")
+            seen = set()
+            cursor = None
+            for _ in range(10):  # 최대 1000건 (stocknews 정지 시 충분)
+                body = {
+                    "page_size": 100,
+                    "filter": {"timestamp": "created_time", "created_time": {"after": cutoff}},
+                }
+                if cursor:
+                    body["start_cursor"] = cursor
+                req = urllib.request.Request(
+                    f"https://api.notion.com/v1/databases/{NOTION_DB_ID}/query",
+                    data=json.dumps(body).encode("utf-8"),
+                    headers={
+                        "Authorization":  f"Bearer {NOTION_TOKEN}",
+                        "Notion-Version": "2022-06-28",
+                        "Content-Type":   "application/json",
+                    },
+                    method="POST",
+                )
+                with urllib.request.urlopen(req, timeout=30) as r:
+                    data = json.loads(r.read())
+                for pg in data.get("results", []):
+                    pp = pg["properties"]
+                    url = (pp.get("원문링크") or {}).get("url") or ""
+                    if url:
+                        seen.add(f"link_{stable_id(url)}")
+                    title_blocks = (pp.get("제목") or {}).get("title", [])
+                    title = "".join(t.get("plain_text", "") for t in title_blocks)
+                    if title:
+                        seen.add(title_key(title))
+                if not data.get("has_more"):
+                    break
+                cursor = data.get("next_cursor")
+            print(f"  [seen] Notion 최근 2h: {len(seen)} entry 로드", flush=True)
+            return seen
+        except Exception as e:
+            print(f"  [seen] Notion 로드 실패 ({e}) — 로컬 파일 fallback", flush=True)
+    # 2순위: 로컬 파일 (로컬 dry-run 또는 Notion 다운 시)
     SEEN_FILE.parent.mkdir(parents=True, exist_ok=True)
     if SEEN_FILE.exists():
         try:
