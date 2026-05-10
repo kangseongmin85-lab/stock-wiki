@@ -604,8 +604,16 @@ def main():
         fetch_dart(keywords)
     )
 
-    # 신규 필터 & 정렬
-    new_articles = [a for a in articles if a["id"] not in seen]
+    # 신규 필터 & 정렬 (이전 run 중복 + 같은 run 내 중복 제거)
+    seen_in_run = set()
+    new_articles = []
+    for a in articles:
+        if a["id"] in seen:
+            continue  # 이전 run에서 본 것
+        if a["id"] in seen_in_run:
+            continue  # 같은 run 내 중복 (RSS+네이버검색에서 같은 기사 발견 시)
+        seen_in_run.add(a["id"])
+        new_articles.append(a)
     new_articles.sort(key=lambda x: -urgency_score(urgency(x["title"], x["dart"])))
 
     print(f"  수집: {len(articles)}건 / 신규: {len(new_articles)}건")
