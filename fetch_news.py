@@ -224,6 +224,12 @@ def save_to_notion(article):
         print(f"[Notion 저장 오류] {title[:40]}: {e}")
 
 # ── 키워드 로드 ───────────────────────────────────────────────────────────────
+# 노이즈 키워드 제외 리스트 — 너무 광범위하게 매칭되어 false positive 유발
+# 위키 파일은 보존하되 매칭 키워드에서만 제외
+EXCLUDE_KEYWORDS = {
+    "금", "은",  # 1글자 테마 — 일반 기사에 빈번히 등장
+}
+
 def load_keywords():
     keywords = set()
     if STOCKS_DIR.exists():
@@ -246,6 +252,8 @@ def load_keywords():
         "실적", "수주", "계약", "인수", "합병", "FDA", "임상",
         "특징주",
     ])
+    # 노이즈 키워드 제거
+    keywords -= EXCLUDE_KEYWORDS
     return keywords
 
 # ── seen_ids 관리 ─────────────────────────────────────────────────────────────
