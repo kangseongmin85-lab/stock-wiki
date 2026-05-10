@@ -229,6 +229,7 @@ def save_to_notion(article):
 EXCLUDE_KEYWORDS = {
     "금", "은",   # 1글자 테마 — 일반 기사에 빈번히 등장
     "남성",       # 종목명이지만 일반 기사("30대 남성", "남성복" 등)에 빈번히 등장
+    "DSR",        # 종목명이지만 일반 기사(부동산 DSR 규제 등)에 빈번히 등장 — DSR제강은 보존
 }
 
 def load_keywords():
