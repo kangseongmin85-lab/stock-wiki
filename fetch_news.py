@@ -3,10 +3,16 @@
 fetch_news.py — 주식 뉴스 모니터링 + 텔레그램 알림
 
 소스:
-  1. 네이버 금융 뉴스 (주요 언론 통합)
-  2. DART 공시 (당일 발행분)
-  3. RSS: 한국경제, 매일경제, 머니투데이, 이데일리, 인베스팅닷컴
-  4. YouTube RSS (채널별 신규 영상 알림)
+  1. 네이버 금융 뉴스 (m.stock.naver.com, 비공식 API)
+  2. 네이버 검색 API (공식, 활성 테마 검색어 기반)
+  3. DART 공시 (당일 발행분)
+  4. RSS: 한경/매경/이데일리/인베스팅/연합/아경/서경/파이낸셜/이투데이/뉴스토마토/뉴스팜 (11개 매체 30개 URL)
+  5. YouTube RSS (채널별 신규 영상 알림)
+
+출력:
+  - 텔레그램 알림
+  - Notion DB (35bffbf4617381d2a19bf264d5616563) 저장
+  - wiki/news/뉴스_YYYY-MM-DD.md 누적 저장
 
 실행:
   python fetch_news.py              # 일반 실행
@@ -31,86 +37,64 @@ BASE_DIR   = Path(__file__).parent
 SEEN_FILE  = BASE_DIR / "wiki" / "news" / "seen_ids.json"
 NEWS_DIR   = BASE_DIR / "wiki" / "news"
 STOCKS_DIR = BASE_DIR / "wiki" / "stocks"
+THEMES_DIR = BASE_DIR / "wiki" / "themes"
 
 HDR = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
     "Referer":    "https://m.stock.naver.com/",
 }
 
-# ── RSS 소스 정의 ──────────────────────────────────────────────────────────────
+# ── RSS 소스 정의 (2026-05-10 검증, 11개 매체 / 30개 URL) ────────────────────
 RSS_SOURCES = {
-    # ── 기존 소스 ────────────────────────────────
     "한국경제": [
+        "https://www.hankyung.com/feed/all-news",
         "https://www.hankyung.com/feed/economy",
         "https://www.hankyung.com/feed/finance",
-        "https://www.hankyung.com/feed/stock",
+        "https://www.hankyung.com/feed/it",
     ],
     "매일경제": [
-        "https://rss.mk.co.kr/rss/30000001.xml",
-        "https://rss.mk.co.kr/rss/30100041.xml",
-    ],
-    "머니투데이": [
-        "https://rss.mt.co.kr/news/rss.xml",
+        "https://www.mk.co.kr/rss/30000001/",
+        "https://www.mk.co.kr/rss/30100041/",
+        "https://www.mk.co.kr/rss/40300001/",
     ],
     "이데일리": [
-        "https://rss.edaily.co.kr/edaily_allnews.xml",
+        "http://rss.edaily.co.kr/edaily_news.xml",
     ],
     "인베스팅닷컴": [
         "https://kr.investing.com/rss/news_25.rss",
         "https://kr.investing.com/rss/news_14.rss",
     ],
-    # ── 추가 소스 ────────────────────────────────
     "연합뉴스": [
         "https://www.yna.co.kr/rss/economy.xml",
-        "https://www.yna.co.kr/rss/stock.xml",
     ],
     "아시아경제": [
-        "https://www.asiae.co.kr/rss/stockmarketall.htm",
         "https://www.asiae.co.kr/rss/economy.htm",
     ],
-    "헤럴드경제": [
-        "https://biz.heraldcorp.com/rss/0000000315.xml",
-        "https://biz.heraldcorp.com/rss/0000000316.xml",
-    ],
-    "조선비즈": [
-        "https://biz.chosun.com/rss/rss.xml",
-    ],
     "서울경제": [
-        "https://www.sedaily.com/RSS/S1",
-        "https://www.sedaily.com/RSS/S0601",
+        "https://www.sedaily.com/rss/economy",
+        "https://www.sedaily.com/rss/finance",
+        "https://www.sedaily.com/rss/newsall",
     ],
     "파이낸셜뉴스": [
-        "https://www.fnnews.com/rss/fn_finance_top.xml",
-        "https://www.fnnews.com/rss/fn_stock_top.xml",
+        "https://www.fnnews.com/rss/r20/fn_realnews_stock.xml",
+        "https://www.fnnews.com/rss/r20/fn_realnews_finance.xml",
+        "https://www.fnnews.com/rss/r20/fn_realnews_economy.xml",
     ],
     "이투데이": [
-        "https://www.etoday.co.kr/rss/S1N1.xml",
-        "https://www.etoday.co.kr/rss/all.xml",
+        "https://rss.etoday.co.kr/eto/etoday_news_all.xml",
+        "https://rss.etoday.co.kr/eto/market_news.xml",
+        "https://rss.etoday.co.kr/eto/finance_news.xml",
+        "https://rss.etoday.co.kr/eto/economy_news.xml",
     ],
     "뉴스토마토": [
-        "https://www.newstomato.com/rss.aspx",
-        "https://www.newstomato.com/rss/rss_stock.aspx",
-    ],
-    "인포스탁": [
-        "https://www.infostock.co.kr/rss/S1N1.xml",
+        "https://www.newstomato.com/rss",
     ],
     "뉴스팜": [
         "https://www.newsfarm.co.kr/rss/allArticle.xml",
     ],
-    "조세일보": [
-        "https://www.joseilbo.com/rss.xml",
-    ],
-    # ── 텔레그램 채널 (RSShub 경유) ─────────────────
-    "FastStockNews(TG)": [
-        "https://rsshub.app/telegram/channel/FastStockNews",
-    ],
-    "FastStockNewsUSA(TG)": [
-        "https://rsshub.app/telegram/channel/FastStockNewsUSA",
-    ],
-    "bornlupin(TG)": [
-        "https://rsshub.app/telegram/channel/bornlupin",
-    ],
 }
+# 제거됨 (2026-05-10): 머니투데이(403 정책차단), 헤럴드경제(홈리다이렉트),
+# 조선비즈(SPA), 인포스탁(SPA), 조세일보(없음), RSShub 텔레그램(403)
 
 # ── YouTube RSS 채널 (채널 ID 기반) ──────────────────────────────────────────
 # 추가하려면: {"채널명": "채널ID"} 형식으로 입력
@@ -121,6 +105,124 @@ YOUTUBE_CHANNELS = {
     # "한국경제TV": "UCCwZqKgkfSDYnAZvLM4cGDg",
 }
 
+
+# ─── Notion / 네이버 검색 API 설정 (2026-05-10 추가) ─────────────────────────
+def _load_config():
+    """config.json에서 키 로드 (.env 미지정시 fallback)"""
+    cfg_path = BASE_DIR / "config.json"
+    if cfg_path.exists():
+        try:
+            return json.loads(cfg_path.read_text(encoding="utf-8"))
+        except Exception:
+            pass
+    return {}
+
+_CFG = _load_config()
+# config.json을 진실의 원천(SoT)으로 사용 — .env에 잘못된/오래된 토큰이 있어도 config.json이 우선
+NOTION_TOKEN     = _CFG.get("NOTION_TOKEN", "")     or os.getenv("NOTION_TOKEN", "")
+NOTION_DB_ID     = _CFG.get("NOTION_DB_ID", "")     or os.getenv("NOTION_DB_ID", "")
+NAVER_CLIENT_ID  = _CFG.get("NAVER_CLIENT_ID", "")  or os.getenv("NAVER_CLIENT_ID", "")
+NAVER_CLIENT_SEC = _CFG.get("NAVER_CLIENT_SECRET", "") or os.getenv("NAVER_CLIENT_SECRET", "")
+
+# 활성 테마 (wiki/index.md "활성 🔥" 기준 — 네이버 검색 API 검색어로 사용)
+NAVER_SEARCH_QUERIES = [
+    "HBM", "AI데이터센터", "방산", "로봇", "원자력", "이차전지",
+    "자율주행", "휴머노이드", "조선", "원전",
+]
+
+def fetch_naver_search(keywords):
+    """네이버 검색 API: 활성 테마별 최신 뉴스 (옵션 1)"""
+    if not (NAVER_CLIENT_ID and NAVER_CLIENT_SEC):
+        return []
+    articles = []
+    for q in NAVER_SEARCH_QUERIES:
+        try:
+            qenc = urllib.parse.quote(q)
+            url  = f"https://openapi.naver.com/v1/search/news.json?query={qenc}&display=10&sort=date"
+            req  = urllib.request.Request(url, headers={
+                "X-Naver-Client-Id":     NAVER_CLIENT_ID,
+                "X-Naver-Client-Secret": NAVER_CLIENT_SEC,
+            })
+            with urllib.request.urlopen(req, timeout=10) as r:
+                data = json.loads(r.read())
+            for item in data.get("items", []):
+                title = re.sub(r"<[^>]+>", "", item.get("title", "")).replace("&quot;", '"').replace("&amp;", "&").replace("&lt;", "<").replace("&gt;", ">").replace("&apos;", "'").strip()
+                link  = item.get("originallink") or item.get("link", "")
+                desc  = re.sub(r"<[^>]+>", "", item.get("description", ""))[:200]
+                if not title or is_blocked(title):
+                    continue
+                matched = [kw for kw in keywords if kw in title]
+                if not matched:
+                    matched = [q]  # 검색어 자체가 매칭 키워드
+                articles.append({
+                    "id":      f"naverapi_{q}_{abs(hash(link or title))}",
+                    "title":   title,
+                    "link":    link,
+                    "desc":    desc,
+                    "matched": matched[:3],
+                    "source":  f"네이버검색({q})",
+                    "dart":    False,
+                })
+        except Exception as e:
+            print(f"[네이버검색 오류] {q}: {e}")
+    return articles
+
+def save_to_notion(article):
+    """기사 1건을 Notion DB에 저장 (bot.py와 동일 스키마)"""
+    if not (NOTION_TOKEN and NOTION_DB_ID):
+        return
+    title    = article["title"][:100] or "(제목 없음)"
+    link     = article["link"]
+    source   = article["source"]
+    matched  = article["matched"]
+    is_dart  = article["dart"]
+    desc     = article.get("desc", "")
+    now_iso  = datetime.now().isoformat()
+    importance = {
+        "🚨 긴급": "높음", "🔥 중요": "높음", "📋 공시": "높음",
+        "📰 주목": "보통", "📄 일반": "낮음",
+    }.get(urgency(article["title"], is_dart), "보통")
+    if "DART" in source:
+        category = "공시"
+    elif "네이버" in source:
+        category = "네이버"
+    elif source in ("한국경제", "매일경제", "이데일리", "인베스팅닷컴", "연합뉴스",
+                    "아시아경제", "서울경제", "파이낸셜뉴스", "이투데이",
+                    "뉴스토마토", "뉴스팜"):
+        category = "RSS"
+    else:
+        category = "기타"
+    properties = {
+        "제목":     {"title": [{"text": {"content": title}}]},
+        "채널":     {"select": {"name": source[:100]}},
+        "카테고리": {"select": {"name": category}},
+        "테마태그": {"multi_select": [{"name": m[:100]} for m in matched[:5]]},
+        "중요도":   {"select": {"name": importance}},
+        "날짜":     {"date": {"start": now_iso}},
+        "원문내용": {"rich_text": [{"text": {"content": (desc or title)[:2000]}}]},
+    }
+    if link:
+        properties["원문링크"] = {"url": link}
+    payload = json.dumps({
+        "parent":     {"database_id": NOTION_DB_ID},
+        "properties": properties,
+    }).encode("utf-8")
+    req = urllib.request.Request(
+        "https://api.notion.com/v1/pages",
+        data=payload,
+        headers={
+            "Authorization":   f"Bearer {NOTION_TOKEN}",
+            "Content-Type":    "application/json",
+            "Notion-Version":  "2022-06-28",
+        },
+        method="POST",
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=10) as r:
+            r.read()
+    except Exception as e:
+        print(f"[Notion 저장 오류] {title[:40]}: {e}")
+
 # ── 키워드 로드 ───────────────────────────────────────────────────────────────
 def load_keywords():
     keywords = set()
@@ -128,6 +230,14 @@ def load_keywords():
         for f in STOCKS_DIR.glob("*.md"):
             if f.name != "_TEMPLATE.md":
                 keywords.add(f.stem)
+    if THEMES_DIR.exists():
+        for f in THEMES_DIR.glob("*.md"):
+            if f.name == "_TEMPLATE.md":
+                continue
+            # 신규상장 분기별 노이즈 테마 제외
+            if "신규상장" in f.stem:
+                continue
+            keywords.add(f.stem)
     keywords.update([
         "코스피", "코스닥", "나스닥", "S&P", "반도체", "금리", "환율",
         "외국인", "기관", "공매도", "수급", "FOMC", "엔비디아", "HBM",
@@ -270,7 +380,9 @@ def fetch_rss(source_name, feed_url, keywords, cutoff_hours=2):
 
         for item in items[:30]:
             # 제목
-            title_el = item.find("title") or item.find("atom:title", ns)
+            title_el = item.find("title")
+            if title_el is None:
+                title_el = item.find("atom:title", ns)
             title = ""
             if title_el is not None:
                 title = title_el.text or ""
@@ -279,20 +391,30 @@ def fetch_rss(source_name, feed_url, keywords, cutoff_hours=2):
                 continue
 
             # 링크
-            link_el = item.find("link") or item.find("atom:link", ns)
+            link_el = item.find("link")
+            if link_el is None:
+                link_el = item.find("atom:link", ns)
             link = ""
             if link_el is not None:
                 link = link_el.text or link_el.get("href", "")
             link = link.strip()
 
             # 고유 ID
-            guid_el = item.find("guid") or item.find("id") or item.find("atom:id", ns)
+            guid_el = item.find("guid")
+            if guid_el is None:
+                guid_el = item.find("id")
+            if guid_el is None:
+                guid_el = item.find("atom:id", ns)
             item_id = guid_el.text if guid_el is not None else link
             if not item_id:
                 item_id = f"{source_name}_{hash(title)}"
 
             # 요약 (description)
-            desc_el = item.find("description") or item.find("summary") or item.find("atom:summary", ns)
+            desc_el = item.find("description")
+            if desc_el is None:
+                desc_el = item.find("summary")
+            if desc_el is None:
+                desc_el = item.find("atom:summary", ns)
             desc = ""
             if desc_el is not None and desc_el.text:
                 desc = re.sub(r"<[^>]+>", "", desc_el.text).strip()
@@ -458,6 +580,7 @@ def main():
     # 수집
     articles = (
         fetch_naver_news(keywords) +
+        fetch_naver_search(keywords) +
         fetch_all_rss(keywords) +
         fetch_youtube_rss(keywords) +
         fetch_dart(keywords)
@@ -471,14 +594,18 @@ def main():
 
     # 전송 (키워드 매칭된 모든 기사 전송 — 긴급도 필터 없음)
     sent = 0
+    saved_notion = 0
     for a in new_articles:
         tg_send(format_msg(a), dry_run=args.dry_run)
+        if not args.dry_run:
+            save_to_notion(a)
+            saved_notion += 1
         time.sleep(0.3)
         seen.add(a["id"])
         new_count += 1
         sent += 1
 
-    print(f"  텔레그램 전송: {sent}건")
+    print(f"  텔레그램 전송: {sent}건 / Notion 저장: {saved_notion}건")
 
     if new_articles:
         save_news_md(new_articles, date_str)

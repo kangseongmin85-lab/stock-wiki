@@ -2,10 +2,8 @@ name: 📰 주식 뉴스 모니터링
 
 on:
   schedule:
-    # 장중 15분마다 (UTC 00:00~07:00 = KST 09:00~16:00, 평일)
-    - cron: '0,15,30,45 0-6 * * 1-5'
-    # 장 마감 막차 (UTC 07:00 = KST 16:00)
-    - cron: '0 7 * * 1-5'
+    # 장중 5분마다 (UTC 00:00~07:55 = KST 09:00~16:55, 평일)
+    - cron: '*/5 0-7 * * 1-5'
     # 장전 일일 요약 (UTC 23:50 = KST 08:50)
     - cron: '50 23 * * 0-4'
     # 장 마감 브리핑 (UTC 07:30 = KST 16:30, 평일)
@@ -41,9 +39,13 @@ jobs:
 
       - name: 뉴스 수집 및 텔레그램 전송
         env:
-          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          TELEGRAM_CHAT_ID:   ${{ secrets.TELEGRAM_CHAT_ID }}
-          DART_API_KEY:       ${{ secrets.DART_API_KEY }}
+          TELEGRAM_BOT_TOKEN:    ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID:      ${{ secrets.TELEGRAM_CHAT_ID }}
+          DART_API_KEY:          ${{ secrets.DART_API_KEY }}
+          NOTION_TOKEN:          ${{ secrets.NOTION_TOKEN }}
+          NOTION_DB_ID:          ${{ secrets.NOTION_DB_ID }}
+          NAVER_CLIENT_ID:       ${{ secrets.NAVER_CLIENT_ID }}
+          NAVER_CLIENT_SECRET:   ${{ secrets.NAVER_CLIENT_SECRET }}
         run: |
           HOUR=$(date -u +%H)
           MIN=$(date -u +%M)
