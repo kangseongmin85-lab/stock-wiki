@@ -21,7 +21,7 @@ fetch_news.py — 주식 뉴스 모니터링 + 텔레그램 알림
   python fetch_news.py --test       # 텔레그램 연결 테스트 (무조건 1건 전송)
 """
 
-import os, json, re, time, argparse, urllib.request, urllib.parse
+import os, json, re, time, argparse, urllib.request, urllib.parse, hashlib
 import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -155,7 +155,7 @@ def fetch_naver_search(keywords):
                 if not matched:
                     matched = [q]  # 검색어 자체가 매칭 키워드
                 articles.append({
-                    "id":      f"naverapi_{q}_{abs(hash(link or title))}",
+                    "id":      f"link_{stable_id(link or title)}",
                     "title":   title,
                     "link":    link,
                     "desc":    desc,
@@ -222,6 +222,12 @@ def save_to_notion(article):
             r.read()
     except Exception as e:
         print(f"[Notion 저장 오류] {title[:40]}: {e}")
+
+# ─── 안정적 ID 생성 (Python hash() 랜덤 시드 회피) ──────────────────────────
+def stable_id(s):
+    """결정론적 hash: 같은 입력 → 항상 같은 출력 (Python 재시작 무관)"""
+    return hashlib.md5((s or "").encode("utf-8")).hexdigest()[:16]
+
 
 # ── 키워드 로드 ───────────────────────────────────────────────────────────────
 # 노이즈 키워드 제외 리스트 — 너무 광범위하게 매칭되어 false positive 유발
@@ -356,7 +362,7 @@ def fetch_naver_news(keywords):
                 if not matched:
                     continue
                 articles.append({
-                    "id":      f"naver_{oid}_{aid}",
+                    "id":      f"link_{stable_id(link)}",
                     "title":   title,
                     "link":    link,
                     "desc":    "",
@@ -442,7 +448,7 @@ def fetch_rss(source_name, feed_url, keywords, cutoff_hours=2):
                 continue
 
             articles.append({
-                "id":      f"rss_{source_name}_{abs(hash(item_id))}",
+                "id":      f"link_{stable_id(item_id or link)}",
                 "title":   title,
                 "link":    link,
                 "desc":    desc,
