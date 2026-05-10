@@ -1,14 +1,14 @@
 name: 📰 주식 뉴스 모니터링
 
-   on:
-     schedule:
-       # 24시간 매일 5분 간격
-       - cron: '*/5 * * * *'
-       # 일일 요약 (UTC 23:50 = KST 08:50, 매일)
-       - cron: '50 23 * * *'
-       # 장 마감 브리핑 (UTC 07:30 = KST 16:30, 매일)
-       - cron: '30 7 * * *'
-     workflow_dispatch:  # 수동 실행 버튼
+on:
+  schedule:
+    # 24시간 매일 5분 간격
+    - cron: '*/5 * * * *'
+    # 일일 요약 (UTC 23:50 = KST 08:50, 매일)
+    - cron: '50 23 * * *'
+    # 장 마감 브리핑 (UTC 07:30 = KST 16:30, 매일)
+    - cron: '30 7 * * *'
+  workflow_dispatch:  # 수동 실행 버튼
 
 jobs:
   fetch-news:
