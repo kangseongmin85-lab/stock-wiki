@@ -3,6 +3,8 @@
 *.env
 # config.json (API 키 포함) — 절대 커밋 금지
 config.json
+# KIS 토큰 캐시 (있으면 안 되지만 만일 대비)
+kis_token.json
 
 # Python 캐시
 __pycache__/

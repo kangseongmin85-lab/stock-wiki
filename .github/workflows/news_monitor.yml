@@ -2,8 +2,8 @@ name: 📰 주식 뉴스 모니터링
 
 on:
   schedule:
-    # 24시간 매일 5분 간격
-    - cron: '*/5 * * * *'
+    # 24시간 매일 5분 간격 (정시 회피 — 2,7,12,17... 분에 트리거)
+    - cron: '2-59/5 * * * *'
     # 일일 요약 (UTC 23:50 = KST 08:50, 매일)
     - cron: '50 23 * * *'
     # 장 마감 브리핑 (UTC 07:30 = KST 16:30, 매일)
@@ -71,5 +71,4 @@ jobs:
         if: always()
         uses: actions/cache/save@v4
         with:
-          path: wiki/news/seen_ids.json
-          key: seen-ids-${{ runner.os }}-${{ github.run_id }}
+          path: wiki/news/see

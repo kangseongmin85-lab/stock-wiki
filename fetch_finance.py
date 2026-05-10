@@ -15,7 +15,7 @@ fetch_finance.py  —  종목 재무 데이터 → wiki 자동 업데이트
   python fetch_finance.py --all                 # wiki/stocks/ 전체 종목 일괄 업데이트
 
 환경변수 (.env 파일 또는 직접 설정)
-  DART_API_KEY=0c427a2ab7993504425917100251964bdae972dd
+  DART_API_KEY=<발급받은_API_키>
 
 DART 공시 시차
   - 연간보고서(사업보고서): 회계연도 종료 후 3개월 이내 제출 (예: 2025 회계연도 → 2026년 3월)

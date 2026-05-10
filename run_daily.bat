@@ -24,12 +24,7 @@ echo [3/5] 전체 종목 등락률 업데이트...
 if errorlevel 1 echo [경고] 등락률 업데이트 오류.
 
 echo.
-echo [4/5] 업종별 수급 분석...
-%PYTHON% fetch_sector.py
-if errorlevel 1 echo [경고] 수급 분석 오류.
-
-echo.
-echo [5/5] 스크리닝 (F/C/D/E 조건)...
+echo [4/4] 스크리닝 (F/C/D/E 조건)...
 %PYTHON% fetch_screener.py --wiki-dir wiki
 if errorlevel 1 echo [경고] 스크리닝 오류.
 
@@ -37,5 +32,4 @@ echo.
 echo ============================================================
 echo  완료: %date% %time%
 echo  Lint 결과: wiki\analysis\lint_최신.md 확인
-echo ============================================================
-pause
+echo ===========================================================
