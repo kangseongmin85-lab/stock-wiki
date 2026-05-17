@@ -248,8 +248,14 @@ def stable_id(s):
     return hashlib.md5((s or "").encode("utf-8")).hexdigest()[:16]
 
 def title_key(t):
-    """제목 정규화 후 hash — 같은 기사가 다른 source/URL 로 들어와도 dedup"""
-    norm = re.sub(r"\s+", "", (t or "").strip().lower())
+    """제목 정규화 후 hash — 같은 기사가 다른 source/URL/말머리 로 들어와도 dedup
+    2026-05-17 강화: [속보]/[단독]/(긴급) 등 접두사 제거 + 구두점/특수문자 제거
+    """
+    norm = (t or "").strip().lower()
+    # 말머리: [속보], [단독], (긴급), <기획> 등 — 시작 위치 또는 본문 중간
+    norm = re.sub(r"[\[\(<\u3008\uff3b\uff08][^\]\)>\u3009\uff3d\uff09]{1,15}[\]\)>\u3009\uff3d\uff09]", "", norm)
+    norm = re.sub(r"\s+", "", norm)               # 공백 제거
+    norm = re.sub(r"[\"'\.,?!…·•\-_~/\\]", "", norm)  # 구두점/기호 제거
     return f"title_{stable_id(norm)}"
 
 
@@ -460,8 +466,10 @@ def fetch_naver_news(keywords):
     return articles
 
 # ── RSS 수집 (공통) ───────────────────────────────────────────────────────────
-def fetch_rss(source_name, feed_url, keywords, cutoff_hours=2):
-    """RSS 피드에서 최근 cutoff_hours 시간 내 기사 수집"""
+def fetch_rss(source_name, feed_url, keywords, cutoff_hours=0.25):
+    """RSS 피드에서 최근 cutoff_hours 시간 내 기사 수집
+    2026-05-17 변경: 기본값 2h → 0.25h(15분) — cron 10분 간격 + 안전 마진 5분
+    """
     articles = []
     try:
         req = urllib.request.Request(feed_url, headers={
@@ -511,6 +519,28 @@ def fetch_rss(source_name, feed_url, keywords, cutoff_hours=2):
             item_id = guid_el.text if guid_el is not None else link
             if not item_id:
                 item_id = f"{source_name}_{hash(title)}"
+
+            # 2026-05-17 추가: pubDate 파싱 + cutoff 비교 (진짜 시간 필터)
+            # RSS 2.0: <pubDate>Sat, 17 May 2026 01:13:00 +0900</pubDate>
+            # Atom: <published>2026-05-17T01:13:00+09:00</published>
+            date_el = item.find("pubDate") or item.find("published")
+            if date_el is None:
+                date_el = item.find("atom:published", ns) or item.find("atom:updated", ns)
+            if date_el is not None and date_el.text:
+                pub_dt = None
+                try:
+                    from email.utils import parsedate_to_datetime
+                    pub_dt = parsedate_to_datetime(date_el.text.strip())
+                except Exception:
+                    try:
+                        pub_dt = datetime.fromisoformat(date_el.text.strip().replace("Z", "+00:00"))
+                    except Exception:
+                        pass
+                if pub_dt is not None:
+                    if pub_dt.tzinfo is not None:
+                        pub_dt = pub_dt.replace(tzinfo=None)  # naive 비교
+                    if pub_dt < cutoff:
+                        continue  # cutoff 이전 기사 skip
 
             # 요약 (description)
             desc_el = item.find("description")
@@ -634,7 +664,7 @@ def fetch_dart(keywords):
     return articles
 
 # ── 텔레그램 채널 수집 (Telethon) ────────────────────────────────────────────
-async def _tg_fetch_async(keywords, cutoff_hours=2):
+async def _tg_fetch_async(keywords, cutoff_hours=0.25):  # 2026-05-17: 15분 윈도우
     from telethon import TelegramClient
     from telethon.sessions import StringSession
 
@@ -775,8 +805,9 @@ def main():
         print(f"  ⚠️ {len(new_articles)}건 > {MAX_PER_RUN} cap. 상위 {MAX_PER_RUN}건만 전송, 나머지는 다음 run에서 처리")
         new_articles = new_articles[:MAX_PER_RUN]
 
-    # 전송 — 5건씩 묶어서 1개 메시지로 전송 (429 Rate Limit 방지)
-    TG_BATCH = 5
+    # 전송 — 1건씩 별도 메시지로 전송 (URL 미리보기 카드 각각 표시)
+    # 2026-05-17 변경: 5건 묶음 → 1건씩 (사용자 요청)
+    TG_BATCH = 1
     sent = 0
     saved_notion = 0
     for i in range(0, len(new_articles), TG_BATCH):
@@ -792,30 +823,8 @@ def main():
             new_count += 1
         tg_send("\n\n".join(parts), dry_run=args.dry_run)
         sent += len(batch)
-        time.sleep(1.0)
+        time.sleep(1.5)  # 2026-05-17: 1건씩 전송 변경에 맞춰 안전 간격 확보
 
     print(f"  텔레그램 전송: {sent}건 ({(sent + TG_BATCH - 1) // TG_BATCH}개 메시지) / Notion 저장: {saved_notion}건")
 
-    if new_articles:
-        save_news_md(new_articles, date_str)
-
-    save_seen(seen)
-
-    # 일일 요약
-    now_h, now_m = datetime.now().hour, datetime.now().minute
-    if args.digest or (now_h == 8 and 50 <= now_m <= 59):
-        path = NEWS_DIR / f"뉴스_{date_str}.md"
-        if path.exists():
-            lines = path.read_text(encoding="utf-8").splitlines()
-            count = sum(1 for l in lines if l.startswith("- "))
-            tg_send(
-                f"📋 <b>오늘의 뉴스 요약</b> ({date_str})\n"
-                f"총 {count}건 수집\n"
-                f"소스: 네이버·한경·매경·머니투데이·이데일리·DART",
-                dry_run=args.dry_run
-            )
-
-    print(f"  완료: 신규 {new_count}건 처리")
-
-if __name__ == "__main__":
-    main()
+    i
