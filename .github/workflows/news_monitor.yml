@@ -4,6 +4,11 @@ on:
   workflow_dispatch:  # 수동 실행 + cron-job.org에서 외부 트리거
   # schedule 트리거는 cron-job.org로 이전 (GitHub schedule은 부정확하고 동시 실행 위험)
 
+# 2026-05-17 추가: 동시 실행 차단 — 같은 group 이미 진행 중이면 새 trigger는 큐 1개만 대기 (그 외는 자동 취소)
+concurrency:
+  group: news-monitor
+  cancel-in-progress: false
+
 permissions:
   contents: write  # wiki 변경분 git push 권한
 

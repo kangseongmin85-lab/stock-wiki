@@ -141,9 +141,10 @@ NAVER_CLIENT_ID  = _CFG.get("NAVER_CLIENT_ID", "")  or os.getenv("NAVER_CLIENT_I
 NAVER_CLIENT_SEC = _CFG.get("NAVER_CLIENT_SECRET", "") or os.getenv("NAVER_CLIENT_SECRET", "")
 
 # 활성 테마 (wiki/index.md "활성 🔥" 기준 — 네이버 검색 API 검색어로 사용)
+# 2026-05-17 수정: "원전" 제거(원자력과 중복), "조선"→"조선업"(북한/드라마 노이즈 차단)
 NAVER_SEARCH_QUERIES = [
     "HBM", "AI데이터센터", "방산", "로봇", "원자력", "이차전지",
-    "자율주행", "휴머노이드", "조선", "원전",
+    "자율주행", "휴머노이드", "조선업",
 ]
 
 def fetch_naver_search(keywords):
@@ -168,8 +169,10 @@ def fetch_naver_search(keywords):
                 if not title or is_blocked(title):
                     continue
                 matched = [kw for kw in keywords if kw in title]
+                # 2026-05-17 수정: fallback 제거. 제목에 키워드 없으면 skip
+                # (이전 동작: 검색어 자체를 matched로 넣어 통과시킴 → 북한/드라마 노이즈 폭주 원인)
                 if not matched:
-                    matched = [q]  # 검색어 자체가 매칭 키워드
+                    continue
                 articles.append({
                     "id":      f"link_{stable_id(link or title)}",
                     "title":   title,
@@ -764,6 +767,13 @@ def main():
     new_articles.sort(key=lambda x: -urgency_score(urgency(x["title"], x["dart"])))
 
     print(f"  수집: {len(articles)}건 / 신규: {len(new_articles)}건")
+
+    # 2026-05-17 추가: per-run 메시지 cap — Telegram flood wait 방지
+    # 평일 5분 cron 기준 정상 패턴은 1run당 5~30건. 50건 초과 시 spam wave로 간주.
+    MAX_PER_RUN = 50
+    if len(new_articles) > MAX_PER_RUN:
+        print(f"  ⚠️ {len(new_articles)}건 > {MAX_PER_RUN} cap. 상위 {MAX_PER_RUN}건만 전송, 나머지는 다음 run에서 처리")
+        new_articles = new_articles[:MAX_PER_RUN]
 
     # 전송 — 5건씩 묶어서 1개 메시지로 전송 (429 Rate Limit 방지)
     TG_BATCH = 5
