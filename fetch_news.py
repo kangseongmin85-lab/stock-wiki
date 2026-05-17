@@ -828,4 +828,26 @@ def main():
 
     print(f"  텔레그램 전송: {sent}건 ({(sent + TG_BATCH - 1) // TG_BATCH}개 메시지) / Notion 저장: {saved_notion}건")
 
-    i
+    if new_articles:
+        save_news_md(new_articles, date_str)
+
+    save_seen(seen)
+
+    # 일일 요약
+    now_h, now_m = datetime.now().hour, datetime.now().minute
+    if args.digest or (now_h == 8 and 50 <= now_m <= 59):
+        path = NEWS_DIR / f"뉴스_{date_str}.md"
+        if path.exists():
+            lines = path.read_text(encoding="utf-8").splitlines()
+            count = sum(1 for l in lines if l.startswith("- "))
+            tg_send(
+                f"📋 <b>오늘의 뉴스 요약</b> ({date_str})\n"
+                f"총 {count}건 수집\n"
+                f"소스: 네이버·한경·매경·머니투데이·이데일리·DART",
+                dry_run=args.dry_run
+            )
+
+    print(f"  완료: 신규 {new_count}건 처리")
+
+if __name__ == "__main__":
+    main()
