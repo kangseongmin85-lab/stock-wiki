@@ -138,6 +138,18 @@ _CFG = _load_config()
 # config.json을 진실의 원천(SoT)으로 사용 — .env에 잘못된/오래된 토큰이 있어도 config.json이 우선
 NOTION_TOKEN     = _CFG.get("NOTION_TOKEN", "")     or os.getenv("NOTION_TOKEN", "")
 NOTION_DB_ID     = _CFG.get("NOTION_DB_ID", "")     or os.getenv("NOTION_DB_ID", "")
+# 2026-05-17 추가 ── 주간 DB 로테이션 (옵트인) ─────────────────────────────
+# config.json/.env 에 WEEKLY_ROTATION=true 면 활성화. 현재 주차 DB 자동 생성/전환.
+WEEKLY_ROTATION  = str(_CFG.get("WEEKLY_ROTATION", "") or os.getenv("WEEKLY_ROTATION", "")).lower() in ("1", "true", "yes")
+if WEEKLY_ROTATION and NOTION_TOKEN and NOTION_DB_ID:
+    try:
+        from weekly_db import resolve_active_db_id
+        _resolved = resolve_active_db_id(NOTION_TOKEN, NOTION_DB_ID)
+        if _resolved and _resolved != NOTION_DB_ID:
+            print(f"[weekly_db] 활성 DB 전환: {NOTION_DB_ID[:8]}.. -> {_resolved[:8]}..")
+            NOTION_DB_ID = _resolved
+    except Exception as _e:
+        print(f"[weekly_db] 로테이션 실패 — 기존 DB 유지: {_e}")
 NAVER_CLIENT_ID  = _CFG.get("NAVER_CLIENT_ID", "")  or os.getenv("NAVER_CLIENT_ID", "")
 NAVER_CLIENT_SEC = _CFG.get("NAVER_CLIENT_SECRET", "") or os.getenv("NAVER_CLIENT_SECRET", "")
 

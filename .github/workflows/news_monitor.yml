@@ -54,6 +54,7 @@ jobs:
           NOTION_DB_ID:          ${{ secrets.NOTION_DB_ID }}
           NAVER_CLIENT_ID:       ${{ secrets.NAVER_CLIENT_ID }}
           NAVER_CLIENT_SECRET:   ${{ secrets.NAVER_CLIENT_SECRET }}
+          WEEKLY_ROTATION:       "true"
         run: |
           HOUR=$(date -u +%H)
           MIN=$(date -u +%M)
@@ -75,24 +76,27 @@ jobs:
             python fetch_briefing.py
           fi
 
-      - name: 다음날 시황 브리핑 (KST 04:30)
-        env:
-          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          TELEGRAM_CHAT_ID:   ${{ secrets.TELEGRAM_CHAT_ID }}
-          NOTION_TOKEN:       ${{ secrets.NOTION_TOKEN }}
-          NOTION_DB_ID:       ${{ secrets.NOTION_DB_ID }}
-          GOOGLE_API_KEY:     ${{ secrets.GOOGLE_API_KEY }}
-        run: |
-          HOUR=$(date -u +%H)
-          MIN=$(date -u +%M)
-          # UTC 19:30 = KST 04:30 에만 실행
-          # 윈도우: 전일 15:30 KST → 당일 04:00 KST (Gemini 시황분석)
-          if [ "$HOUR" = "19" ] && [ "$MIN" = "30" ]; then
-            python fetch_morning_briefing.py
-          fi
+# === DISABLED_BY_USER (매일 아침 클로드로 직접 분석하기로 결정 — 2026-05-17) ===
+#       - name: 다음날 시황 브리핑 (KST 04:30)
+#         env:
+#           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+#           TELEGRAM_CHAT_ID:   ${{ secrets.TELEGRAM_CHAT_ID }}
+#           NOTION_TOKEN:       ${{ secrets.NOTION_TOKEN }}
+#           NOTION_DB_ID:       ${{ secrets.NOTION_DB_ID }}
+#           GOOGLE_API_KEY:     ${{ secrets.GOOGLE_API_KEY }}
+#         run: |
+#           HOUR=$(date -u +%H)
+#           MIN=$(date -u +%M)
+#           # UTC 19:30 = KST 04:30 에만 실행
+#           # 윈도우: 전일 15:30 KST → 당일 04:00 KST (Gemini 시황분석)
+#           if [ "$HOUR" = "19" ] && [ "$MIN" = "30" ]; then
+#             python fetch_morning_briefing.py
+#           fi
 
-      # wiki/analysis/*.md, wiki/news/*.md 변경분을 origin/main 으로 commit/push
-      # (fetch_news.py · fetch_briefing.py · fetch_morning_briefing.py 산출물 동기화)
+#       # wiki/analysis/*.md, wiki/news/*.md 변경분을 origin/main 으로 commit/push
+#       # (fetch_news.py · fetch_briefing.py · fetch_morning_briefing.py 산출물 동기화)
+# === END DISABLED ===
+
       - name: wiki 변경분 commit & push
         run: |
           git config user.name  "github-actions[bot]"
