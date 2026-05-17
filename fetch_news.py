@@ -21,7 +21,7 @@ fetch_news.py — 주식 뉴스 모니터링 + 텔레그램 알림
   python fetch_news.py --test       # 텔레그램 연결 테스트 (무조건 1건 전송)
 """
 
-import os, json, re, time, argparse, urllib.request, urllib.parse, hashlib
+import os, json, re, time, argparse, urllib.request, urllib.parse, urllib.error, hashlib
 import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -361,13 +361,25 @@ def tg_send(text, dry_run=False):
         "text":       text[:4000],
         "parse_mode": "HTML",
     }).encode()
-    try:
-        with urllib.request.urlopen(url, data=data, timeout=10) as r:
-            resp = json.loads(r.read())
-            if not resp.get("ok"):
+    for attempt in range(3):
+        try:
+            with urllib.request.urlopen(url, data=data, timeout=10) as r:
+                resp = json.loads(r.read())
+                if resp.get("ok"):
+                    return
                 print(f"[텔레그램 실패] {resp}")
-    except Exception as e:
-        print(f"[텔레그램 오류] {e}")
+                return
+        except urllib.error.HTTPError as e:
+            if e.code == 429:
+                retry_after = int(e.headers.get("Retry-After", 30))
+                print(f"[텔레그램 429] {retry_after}초 대기 후 재시도 (attempt {attempt+1}/3)")
+                time.sleep(retry_after)
+            else:
+                print(f"[텔레그램 오류] HTTP {e.code}: {e}")
+                return
+        except Exception as e:
+            print(f"[텔레그램 오류] {e}")
+            return
 
 # ── 긴급도 계산 ───────────────────────────────────────────────────────────────
 # ── 차단 키워드 (제목에 포함 시 수집/전송/저장 모두 제외) ─────────────────────
@@ -753,21 +765,26 @@ def main():
 
     print(f"  수집: {len(articles)}건 / 신규: {len(new_articles)}건")
 
-    # 전송 (키워드 매칭된 모든 기사 전송 — 긴급도 필터 없음)
+    # 전송 — 5건씩 묶어서 1개 메시지로 전송 (429 Rate Limit 방지)
+    TG_BATCH = 5
     sent = 0
     saved_notion = 0
-    for a in new_articles:
-        tg_send(format_msg(a), dry_run=args.dry_run)
-        if not args.dry_run:
-            save_to_notion(a)
-            saved_notion += 1
-        time.sleep(0.3)
-        seen.add(a["id"])
-        seen.add(title_key(a["title"]))
-        new_count += 1
-        sent += 1
+    for i in range(0, len(new_articles), TG_BATCH):
+        batch = new_articles[i:i + TG_BATCH]
+        parts = []
+        for a in batch:
+            parts.append(format_msg(a))
+            if not args.dry_run:
+                save_to_notion(a)
+                saved_notion += 1
+            seen.add(a["id"])
+            seen.add(title_key(a["title"]))
+            new_count += 1
+        tg_send("\n\n".join(parts), dry_run=args.dry_run)
+        sent += len(batch)
+        time.sleep(1.0)
 
-    print(f"  텔레그램 전송: {sent}건 / Notion 저장: {saved_notion}건")
+    print(f"  텔레그램 전송: {sent}건 ({(sent + TG_BATCH - 1) // TG_BATCH}개 메시지) / Notion 저장: {saved_notion}건")
 
     if new_articles:
         save_news_md(new_articles, date_str)
