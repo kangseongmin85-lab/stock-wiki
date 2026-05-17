@@ -141,9 +141,10 @@ NAVER_CLIENT_ID  = _CFG.get("NAVER_CLIENT_ID", "")  or os.getenv("NAVER_CLIENT_I
 NAVER_CLIENT_SEC = _CFG.get("NAVER_CLIENT_SECRET", "") or os.getenv("NAVER_CLIENT_SECRET", "")
 
 # 활성 테마 (wiki/index.md "활성 🔥" 기준 — 네이버 검색 API 검색어로 사용)
-# 2026-05-17 수정: "원전" 제거(원자력과 중복), "조선"→"조선업"(북한/드라마 노이즈 차단)
+# 2026-05-17 수정: "조선"→"조선업"(북한/드라마 노이즈 차단), "원전" 사용자 요청으로 복원
+# 참고: "원전"·"원자력" 중복 매칭은 dedup이 잡음 (fallback 제거로 제목 매칭 필수)
 NAVER_SEARCH_QUERIES = [
-    "HBM", "AI데이터센터", "방산", "로봇", "원자력", "이차전지",
+    "HBM", "AI데이터센터", "방산", "로봇", "원자력", "원전", "이차전지",
     "자율주행", "휴머노이드", "조선업",
 ]
 
@@ -247,6 +248,23 @@ def stable_id(s):
     """결정론적 hash: 같은 입력 → 항상 같은 출력 (Python 재시작 무관)"""
     return hashlib.md5((s or "").encode("utf-8")).hexdigest()[:16]
 
+def url_key(url):
+    """URL 정규화 후 hash - 같은 기사가 다른 도메인/모바일/https 로 들어와도 dedup
+    2026-05-17 추가: 네이버 미러, 모바일 URL, http/https 차이 흡수
+    """
+    if not url:
+        return ""
+    try:
+        from urllib.parse import urlparse
+        parsed = urlparse(url.strip().lower())
+        path = parsed.path.rstrip("/")
+        for ext in (".html", ".htm", ".do", ".jsp", ".aspx"):
+            if path.endswith(ext):
+                path = path[:-len(ext)]
+        return f"urlpath_{stable_id(path)}"
+    except Exception:
+        return f"urlpath_{stable_id(url)}"
+
 def title_key(t):
     """제목 정규화 후 hash — 같은 기사가 다른 source/URL/말머리 로 들어와도 dedup
     2026-05-17 강화: [속보]/[단독]/(긴급) 등 접두사 제거 + 구두점/특수문자 제거
@@ -304,7 +322,7 @@ def load_seen():
         try:
             # 2시간 윈도우 — RSS cutoff 와 일치. cron 12회분 (10분 간격) 커버.
             # timeout=30s × 10 페이지 = 최대 5분, 실제는 보통 20~40초.
-            cutoff_dt = datetime.now() - timedelta(hours=2)
+            cutoff_dt = datetime.now() - timedelta(hours=6)  # 2026-05-17: 2h->6h dedup 강화
             cutoff = cutoff_dt.strftime("%Y-%m-%dT%H:%M:%S.000Z")
             seen = set()
             cursor = None
@@ -332,6 +350,9 @@ def load_seen():
                     url = (pp.get("원문링크") or {}).get("url") or ""
                     if url:
                         seen.add(f"link_{stable_id(url)}")
+                        uk = url_key(url)
+                        if uk:
+                            seen.add(uk)
                     title_blocks = (pp.get("제목") or {}).get("title", [])
                     title = "".join(t.get("plain_text", "") for t in title_blocks)
                     if title:
@@ -399,6 +420,10 @@ BLOCK_KEYWORDS = [
     # 농수산/공공기관 노이즈 (제목에 등장 시 차단)
     "산림청", "산림교육원", "산림", "농산물", "가락시장",
     "농협", "축협",
+    # 2026-05-17 추가: 라이프스타일/연예/기상 노이즈 차단
+    "사주", "운세", "MBTI",
+    "드라마", "예능", "KPOP",
+    "날씨", "장마", "폭염",
 ]
 
 URGENT_KEYWORDS = ["유상증자", "무상증자", "CB", "BW", "상장폐지", "감사의견",
@@ -788,12 +813,15 @@ def main():
     new_articles = []
     for a in articles:
         tkey = title_key(a["title"])
-        if a["id"] in seen or tkey in seen:
+        ukey = url_key(a.get("link", ""))  # 2026-05-17: URL 정규화 key
+        if a["id"] in seen or tkey in seen or (ukey and ukey in seen):
             continue  # 이전 run 에서 본 것
-        if a["id"] in seen_in_run or tkey in seen_in_run:
+        if a["id"] in seen_in_run or tkey in seen_in_run or (ukey and ukey in seen_in_run):
             continue  # 같은 run 내 중복
         seen_in_run.add(a["id"])
         seen_in_run.add(tkey)
+        if ukey:
+            seen_in_run.add(ukey)
         new_articles.append(a)
     new_articles.sort(key=lambda x: -urgency_score(urgency(x["title"], x["dart"])))
 
@@ -821,6 +849,9 @@ def main():
                 saved_notion += 1
             seen.add(a["id"])
             seen.add(title_key(a["title"]))
+            uk = url_key(a.get("link", ""))
+            if uk:
+                seen.add(uk)
             new_count += 1
         tg_send("\n\n".join(parts), dry_run=args.dry_run)
         sent += len(batch)
