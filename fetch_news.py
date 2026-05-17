@@ -148,11 +148,14 @@ NAVER_SEARCH_QUERIES = [
     "자율주행", "휴머노이드", "조선업",
 ]
 
-def fetch_naver_search(keywords):
-    """네이버 검색 API: 활성 테마별 최신 뉴스 (옵션 1)"""
+def fetch_naver_search(keywords, cutoff_hours=0.25):
+    """네이버 검색 API: 활성 테마별 최신 뉴스 (15분 윈도우)
+    2026-05-17 강화: pubDate 시간 필터 추가 (실시간만)
+    """
     if not (NAVER_CLIENT_ID and NAVER_CLIENT_SEC):
         return []
     articles = []
+    cutoff = datetime.now(timezone.utc) - timedelta(hours=cutoff_hours)
     for q in NAVER_SEARCH_QUERIES:
         try:
             qenc = urllib.parse.quote(q)
@@ -164,14 +167,29 @@ def fetch_naver_search(keywords):
             with urllib.request.urlopen(req, timeout=10) as r:
                 data = json.loads(r.read())
             for item in data.get("items", []):
+                # 2026-05-17 추가: pubDate cutoff
+                pub_raw = item.get("pubDate", "").strip()
+                if not pub_raw:
+                    continue
+                pub_dt = None
+                try:
+                    from email.utils import parsedate_to_datetime
+                    pub_dt = parsedate_to_datetime(pub_raw)
+                except Exception:
+                    pass
+                if pub_dt is None:
+                    continue
+                if pub_dt.tzinfo is None:
+                    pub_dt = pub_dt.replace(tzinfo=timezone.utc)
+                if pub_dt < cutoff:
+                    continue
                 title = re.sub(r"<[^>]+>", "", item.get("title", "")).replace("&quot;", '"').replace("&amp;", "&").replace("&lt;", "<").replace("&gt;", ">").replace("&apos;", "'").strip()
                 link  = item.get("originallink") or item.get("link", "")
                 desc  = re.sub(r"<[^>]+>", "", item.get("description", ""))[:200]
                 if not title or is_blocked(title):
                     continue
                 matched = [kw for kw in keywords if kw in title]
-                # 2026-05-17 수정: fallback 제거. 제목에 키워드 없으면 skip
-                # (이전 동작: 검색어 자체를 matched로 넣어 통과시킴 → 북한/드라마 노이즈 폭주 원인)
+                # 2026-05-17: fallback 제거. 제목에 키워드 없으면 skip
                 if not matched:
                     continue
                 articles.append({
@@ -364,14 +382,36 @@ def load_seen():
             return seen
         except Exception as e:
             print(f"  [seen] Notion 로드 실패 ({e}) — 로컬 파일 fallback", flush=True)
-    # 2순위: 로컬 파일 (로컬 dry-run 또는 Notion 다운 시)
+    # 2순위: wiki/news/뉴스_*.md 파일 파싱 (2026-05-17 추가)
+    # Notion 실패 + 로컬 비어있어도 매 run wiki 파일에서 URL/제목 재구성
+    seen = set()
+    today = datetime.now().strftime("%Y-%m-%d")
+    yesterday = (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d")
+    for date_str in (today, yesterday):
+        wiki_path = NEWS_DIR / f"뉴스_{date_str}.md"
+        if wiki_path.exists():
+            try:
+                content = wiki_path.read_text(encoding="utf-8")
+                for url in re.findall(r'href="([^"]+)"', content):
+                    seen.add(f"link_{stable_id(url)}")
+                    uk = url_key(url)
+                    if uk:
+                        seen.add(uk)
+                for title in re.findall(r'<a [^>]+>([^<]+)</a>', content):
+                    seen.add(title_key(title))
+            except Exception:
+                pass
+    if seen:
+        print(f"  [seen] wiki fallback: {len(seen)} entry 로드", flush=True)
+
+    # 3순위: 로컬 seen_ids.json (로컬 dry-run 또는 Notion 다운 시)
     SEEN_FILE.parent.mkdir(parents=True, exist_ok=True)
     if SEEN_FILE.exists():
         try:
-            return set(json.loads(SEEN_FILE.read_text(encoding="utf-8")))
+            seen.update(json.loads(SEEN_FILE.read_text(encoding="utf-8")))
         except Exception:
             pass
-    return set()
+    return seen
 
 def save_seen(seen):
     lst = list(seen)[-5000:]
@@ -455,8 +495,13 @@ def urgency_score(level):
     return {"🚨 긴급": 4, "🔥 중요": 3, "📋 공시": 3, "📰 주목": 2, "📄 일반": 1}.get(level, 1)
 
 # ── 네이버 금융 뉴스 ──────────────────────────────────────────────────────────
-def fetch_naver_news(keywords):
+def fetch_naver_news(keywords, cutoff_hours=0.25):
+    """네이버 금융 뉴스 API (15분 윈도우)
+    2026-05-17 강화: dt 필드 (KST YYYYMMDDHHMMSS) cutoff 적용 — 실시간만
+    """
     articles = []
+    KST = timezone(timedelta(hours=9))
+    cutoff = datetime.now(timezone.utc) - timedelta(hours=cutoff_hours)
     try:
         for page in range(1, 4):
             url = f"https://m.stock.naver.com/api/news/list?page={page}&pageSize=20"
@@ -465,6 +510,16 @@ def fetch_naver_news(keywords):
                 data = json.loads(r.read())
             for item in data:
                 if item.get("type") != 1:
+                    continue
+                # 2026-05-17 추가: dt cutoff
+                dt_str = item.get("dt", "")
+                if not dt_str or len(dt_str) < 14:
+                    continue
+                try:
+                    pub_dt = datetime.strptime(dt_str[:14], "%Y%m%d%H%M%S").replace(tzinfo=KST)
+                except Exception:
+                    continue
+                if pub_dt < cutoff:
                     continue
                 title = item.get("tit", "")
                 oid   = item.get("oid", "")
@@ -552,21 +607,25 @@ def fetch_rss(source_name, feed_url, keywords, cutoff_hours=0.25):
             date_el = item.find("pubDate") or item.find("published")
             if date_el is None:
                 date_el = item.find("atom:published", ns) or item.find("atom:updated", ns)
-            if date_el is not None and date_el.text:
-                pub_dt = None
+            # 2026-05-17 강화: pubDate 없거나 파싱 실패 시 안전하게 skip
+            # (실시간만 받기 위해 pubDate가 분명한 기사만 통과)
+            if date_el is None or not date_el.text:
+                continue
+            pub_dt = None
+            try:
+                from email.utils import parsedate_to_datetime
+                pub_dt = parsedate_to_datetime(date_el.text.strip())
+            except Exception:
                 try:
-                    from email.utils import parsedate_to_datetime
-                    pub_dt = parsedate_to_datetime(date_el.text.strip())
+                    pub_dt = datetime.fromisoformat(date_el.text.strip().replace("Z", "+00:00"))
                 except Exception:
-                    try:
-                        pub_dt = datetime.fromisoformat(date_el.text.strip().replace("Z", "+00:00"))
-                    except Exception:
-                        pass
-                if pub_dt is not None:
-                    if pub_dt.tzinfo is None:
-                        pub_dt = pub_dt.replace(tzinfo=timezone.utc)  # naive면 UTC 가정
-                    if pub_dt < cutoff:
-                        continue  # cutoff 이전 기사 skip
+                    pass
+            if pub_dt is None:
+                continue  # 파싱 실패 시도 skip
+            if pub_dt.tzinfo is None:
+                pub_dt = pub_dt.replace(tzinfo=timezone.utc)  # naive면 UTC 가정
+            if pub_dt < cutoff:
+                continue  # cutoff 이전 기사 skip
 
             # 요약 (description)
             desc_el = item.find("description")
