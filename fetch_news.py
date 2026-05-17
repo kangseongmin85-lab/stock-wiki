@@ -487,7 +487,8 @@ def fetch_rss(source_name, feed_url, keywords, cutoff_hours=0.25):
         if not items:
             items = root.findall(".//atom:entry", ns) or root.findall(".//entry")
 
-        cutoff = datetime.now() - timedelta(hours=cutoff_hours)
+        # 2026-05-17 버그 수정: tz-aware UTC 비교 (이전: naive datetime.now() → KST/UTC 9시간 오차)
+        cutoff = datetime.now(timezone.utc) - timedelta(hours=cutoff_hours)
 
         for item in items[:30]:
             # 제목
@@ -537,8 +538,8 @@ def fetch_rss(source_name, feed_url, keywords, cutoff_hours=0.25):
                     except Exception:
                         pass
                 if pub_dt is not None:
-                    if pub_dt.tzinfo is not None:
-                        pub_dt = pub_dt.replace(tzinfo=None)  # naive 비교
+                    if pub_dt.tzinfo is None:
+                        pub_dt = pub_dt.replace(tzinfo=timezone.utc)  # naive면 UTC 가정
                     if pub_dt < cutoff:
                         continue  # cutoff 이전 기사 skip
 
