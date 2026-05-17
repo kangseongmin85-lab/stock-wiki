@@ -4,12 +4,17 @@ on:
   workflow_dispatch:  # 수동 실행 + cron-job.org에서 외부 트리거
   # schedule 트리거는 cron-job.org로 이전 (GitHub schedule은 부정확하고 동시 실행 위험)
 
+permissions:
+  contents: write  # wiki 변경분 git push 권한
+
 jobs:
   fetch-news:
     runs-on: ubuntu-latest
     steps:
       - name: 코드 체크아웃
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # commit 위해 full history 필요
 
       - name: Python 설정
         uses: actions/setup-python@v5
@@ -17,7 +22,7 @@ jobs:
           python-version: '3.11'
 
       - name: 패키지 설치
-        run: pip install python-dotenv
+        run: pip install python-dotenv telethon
 
       - name: seen_ids 디렉토리 생성
         run: mkdir -p wiki/news
@@ -36,6 +41,9 @@ jobs:
         env:
           TELEGRAM_BOT_TOKEN:    ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID:      ${{ secrets.TELEGRAM_CHAT_ID }}
+          TELEGRAM_API_ID:       ${{ secrets.TELEGRAM_API_ID }}
+          TELEGRAM_API_HASH:     ${{ secrets.TELEGRAM_API_HASH }}
+          SESSION_STRING:        ${{ secrets.SESSION_STRING }}
           DART_API_KEY:          ${{ secrets.DART_API_KEY }}
           NOTION_TOKEN:          ${{ secrets.NOTION_TOKEN }}
           NOTION_DB_ID:          ${{ secrets.NOTION_DB_ID }}
@@ -60,4 +68,36 @@ jobs:
           # UTC 07:30 = KST 16:30 에만 실행
           if [ "$HOUR" = "7" ] && [ "$MIN" = "30" ]; then
             python fetch_briefing.py
+          fi
+
+      - name: 다음날 시황 브리핑 (KST 04:30)
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID:   ${{ secrets.TELEGRAM_CHAT_ID }}
+          NOTION_TOKEN:       ${{ secrets.NOTION_TOKEN }}
+          NOTION_DB_ID:       ${{ secrets.NOTION_DB_ID }}
+          GOOGLE_API_KEY:     ${{ secrets.GOOGLE_API_KEY }}
+        run: |
+          HOUR=$(date -u +%H)
+          MIN=$(date -u +%M)
+          # UTC 19:30 = KST 04:30 에만 실행
+          # 윈도우: 전일 15:30 KST → 당일 04:00 KST (Gemini 시황분석)
+          if [ "$HOUR" = "19" ] && [ "$MIN" = "30" ]; then
+            python fetch_morning_briefing.py
+          fi
+
+      # wiki/analysis/*.md, wiki/news/*.md 변경분을 origin/main 으로 commit/push
+      # (fetch_news.py · fetch_briefing.py · fetch_morning_briefing.py 산출물 동기화)
+      - name: wiki 변경분 commit & push
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add wiki/analysis/ wiki/news/ 2>/dev/null || true
+          if git diff --cached --quiet; then
+            echo "변경 없음 — skip"
+          else
+            git commit -m "chore(bot): wiki 자동 업데이트 ($(date -u +%Y-%m-%dT%H:%M:%SZ))"
+            # rebase 충돌 방지 — 푸시 직전 origin 최신 반영
+            git pull --rebase origin main || true
+            git push origin HEAD:main
           fi

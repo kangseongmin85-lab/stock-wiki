@@ -23,7 +23,7 @@ fetch_news.py — 주식 뉴스 모니터링 + 텔레그램 알림
 
 import os, json, re, time, argparse, urllib.request, urllib.parse, hashlib
 import xml.etree.ElementTree as ET
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from dotenv import load_dotenv
 
@@ -32,6 +32,9 @@ load_dotenv()
 TOKEN    = os.getenv("TELEGRAM_BOT_TOKEN", "")
 CHAT_ID  = os.getenv("TELEGRAM_CHAT_ID", "")
 DART_KEY = os.getenv("DART_API_KEY", "")
+TG_API_ID   = int(os.getenv("TELEGRAM_API_ID", "0") or "0")
+TG_API_HASH = os.getenv("TELEGRAM_API_HASH", "")
+TG_SESSION  = os.getenv("SESSION_STRING", "")
 
 BASE_DIR   = Path(__file__).parent
 SEEN_FILE  = BASE_DIR / "wiki" / "news" / "seen_ids.json"
@@ -103,6 +106,19 @@ YOUTUBE_CHANNELS = {
     # 예시 (주석 해제 후 실제 채널 ID로 변경):
     # "삼프로TV": "UC3Bk9OVSbBhKqCvFgIWNGpg",
     # "한국경제TV": "UCCwZqKgkfSDYnAZvLM4cGDg",
+}
+
+# ── 텔레그램 공개 채널 목록 (username 기준) ───────────────────────────────────
+TELEGRAM_CHANNELS = {
+    "FastStockNewsUSA":  "미국증시",
+    "FastStockNews":     "한국증시",
+    "YeouidoStory2":     "리포트/뉴스",
+    "bornlupin":         "투자정보",
+    "itechkorea":        "미국증시",
+    "FS_public_channel": "한국증시",
+    "bdragon0808":       "바이오/제약",
+    "pharmbiohana":      "바이오/제약",
+    "huhpharm":          "바이오/제약",
 }
 
 
@@ -602,6 +618,66 @@ def fetch_dart(keywords):
         print(f"[DART 오류] {e}")
     return articles
 
+# ── 텔레그램 채널 수집 (Telethon) ────────────────────────────────────────────
+async def _tg_fetch_async(keywords, cutoff_hours=2):
+    from telethon import TelegramClient
+    from telethon.sessions import StringSession
+
+    cutoff   = datetime.now(timezone.utc) - timedelta(hours=cutoff_hours)
+    articles = []
+
+    async with TelegramClient(StringSession(TG_SESSION), TG_API_ID, TG_API_HASH) as client:
+        for ch_name in TELEGRAM_CHANNELS:
+            try:
+                ch_count = 0
+                async for msg in client.iter_messages(ch_name, limit=50):
+                    if not msg.date:
+                        continue
+                    msg_date = msg.date if msg.date.tzinfo else msg.date.replace(tzinfo=timezone.utc)
+                    if msg_date < cutoff:
+                        break
+                    text = msg.text or msg.message or ""
+                    if len(text.strip()) < 15:
+                        continue
+                    first_line = text.strip().split("\n")[0]
+                    if is_blocked(first_line):
+                        continue
+                    matched = [kw for kw in keywords if kw in text]
+                    if not matched:
+                        continue
+                    url = f"https://t.me/{ch_name}/{msg.id}"
+                    articles.append({
+                        "id":      f"link_{stable_id(url)}",
+                        "title":   first_line[:100],
+                        "link":    url,
+                        "desc":    text[:200],
+                        "matched": matched[:3],
+                        "source":  f"TG:{ch_name}",
+                        "dart":    False,
+                    })
+                    ch_count += 1
+                if ch_count:
+                    print(f"  TG:{ch_name}: {ch_count}건 매칭")
+            except Exception as e:
+                print(f"[텔레그램 채널 오류] {ch_name}: {e}")
+    return articles
+
+
+def fetch_telegram_channels(keywords):
+    """Telethon으로 텔레그램 채널 최근 2h 메시지 수집 (동기 래퍼)"""
+    if not (TG_API_ID and TG_API_HASH and TG_SESSION):
+        return []
+    try:
+        import asyncio
+        return asyncio.run(_tg_fetch_async(keywords))
+    except ImportError:
+        print("[텔레그램 채널] telethon 미설치 — 스킵")
+        return []
+    except Exception as e:
+        print(f"[텔레그램 채널 수집 오류] {e}")
+        return []
+
+
 # ── 저장 & 포맷 ──────────────────────────────────────────────────────────────
 def save_news_md(articles, date_str):
     NEWS_DIR.mkdir(parents=True, exist_ok=True)
@@ -655,7 +731,8 @@ def main():
         fetch_naver_search(keywords) +
         fetch_all_rss(keywords) +
         fetch_youtube_rss(keywords) +
-        fetch_dart(keywords)
+        fetch_dart(keywords) +
+        fetch_telegram_channels(keywords)
     )
 
     # 신규 필터 & 정렬 (이전 run 중복 + 같은 run 내 중복 제거)
