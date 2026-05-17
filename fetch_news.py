@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# Last patched: 2026-05-17 (2026-05-17T05:26:02.285753) — dedup wiki fallback + pubDate skip + 네이버 dt 필터
 """
 fetch_news.py — 주식 뉴스 모니터링 + 텔레그램 알림
 
