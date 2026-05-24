@@ -142,6 +142,37 @@ def _find_db_by_title(token, parent_page_id, target_title):
     return None
 
 
+def _find_db_by_children_listing(token, parent_page_id, target_title):
+    """Parent page 의 child_database 블록을 직접 list 하여 동일 제목 DB 찾기.
+
+    Notion search API 의 인덱스 지연(신규 DB 인덱싱이 수 분 걸리는 경우)에
+    영향 받지 않음. 페이지 구조를 직접 읽으므로 즉시 일치한다.
+
+    2026-05-22 W21 중복 사고(363 -> 369)의 재발 방지용 fallback.
+    """
+    if not (token and parent_page_id):
+        return None
+    cursor = None
+    while True:
+        url = f"https://api.notion.com/v1/blocks/{parent_page_id}/children?page_size=100"
+        if cursor:
+            url += f"&start_cursor={cursor}"
+        try:
+            data = _request("GET", url, token)
+        except Exception as e:
+            log.warning(f"[weekly_db] children listing 실패: {e}")
+            return None
+        for blk in data.get("results", []):
+            if blk.get("type") != "child_database":
+                continue
+            title = blk.get("child_database", {}).get("title", "")
+            if title == target_title:
+                return blk["id"]
+        if not data.get("has_more"):
+            return None
+        cursor = data.get("next_cursor")
+
+
 def _create_db(token, parent_page_id, target_title):
     log.info(f"[weekly_db] 신규 주차 DB 생성: {target_title}")
     data = _request("POST", "https://api.notion.com/v1/databases", token, body={
@@ -169,9 +200,27 @@ def resolve_active_db_id(token, current_db_id, dt=None):
         return current_db_id
 
     target_title = db_title_for(dt)
+
+    # 1차: search API (빠르고 워크스페이스 전체 인덱스 활용)
     existing = _find_db_by_title(token, parent_id, target_title)
     if existing:
         return existing
+
+    # 2차: parent page 의 children block 직접 listing (search 인덱싱 지연 회피)
+    # 2026-05-22 W21 중복 사고 재발 방지용 fallback
+    existing = _find_db_by_children_listing(token, parent_id, target_title)
+    if existing:
+        log.info(f"[weekly_db] search 미스 -> children listing 으로 발견: {target_title}")
+        return existing
+
+    # 3차: 5초 대기 후 search 재시도 (방금 다른 worker 가 만든 DB 가 아직 인덱싱 안 됐을 race)
+    import time
+    time.sleep(5)
+    existing = _find_db_by_title(token, parent_id, target_title)
+    if existing:
+        log.info(f"[weekly_db] race 회피용 재search 으로 발견: {target_title}")
+        return existing
+
     try:
         return _create_db(token, parent_id, target_title)
     except Exception as e:
