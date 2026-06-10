@@ -8,14 +8,15 @@ on:
         default: "scan"
         required: false
   schedule:
-    # KST 09:00~15:30 = UTC 00:00~06:30, 평일. GitHub schedule은 지연될 수 있어
-    # 백업용 — 정밀한 5분 주기는 cron-job.org 트리거 권장 (뉴스봇과 동일 방식)
-    - cron: "*/5 0-6 * * 1-5"
+    # 30분마다 깨어나 28분간 내부에서 1분 주기 스캔 (알림 지연 최대 ~70초)
+    # KST 09:00~15:30 = UTC 00:00~06:30, 평일. GitHub schedule 지연 대비
+    # 백업 — 정밀 트리거는 cron-job.org 30분 주기 권장 (뉴스봇과 동일 방식)
+    - cron: "*/30 0-6 * * 1-5"
 
-# 이전 스캔이 끝나기 전 새 트리거 → 옛 스캔 취소 (최신 시세 우선)
+# 윈도우 중복 방지: 진행 중이면 새 트리거는 대기 (취소 금지 — 스캔 루프 보호)
 concurrency:
   group: price-alert
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 permissions:
   contents: read
@@ -23,6 +24,7 @@ permissions:
 jobs:
   alert:
     runs-on: ubuntu-latest
+    timeout-minutes: 40
     steps:
       - name: 코드 체크아웃
         uses: actions/checkout@v4
@@ -73,5 +75,6 @@ jobs:
           elif [ "$MODE" = "force" ]; then
             python price_alert.py --force
           else
-            python price_alert.py
+            # 28분 루프 × 60초 간격 — 30분 트리거와 맞물려 연속 1분 스캔
+            python price_alert.py --loop 28 --interval 60
           fi

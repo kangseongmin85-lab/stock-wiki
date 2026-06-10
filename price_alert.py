@@ -32,6 +32,7 @@ import sys
 import csv
 import json
 import re
+import time
 import argparse
 import urllib.request
 import urllib.parse
@@ -313,19 +314,28 @@ def build_baseline(codes, force=False):
 # 실시간 시세
 # ──────────────────────────────────────
 
-def fetch_quote(code):
-    """네이버 폴링 API → {price, chg_pct, acc_volume}. 실패 시 None."""
-    url = f"https://polling.finance.naver.com/api/realtime/domestic/stock/{code}"
-    try:
-        data = json.loads(http_get(url))
-        d = data["datas"][0]
-        return {
-            "price": dpt._to_float(d.get("closePrice", "")),
-            "chg_pct": dpt._to_float(d.get("fluctuationsRatio", "")),
-            "acc_volume": dpt._to_float(d.get("accumulatedTradingVolume", "")),
-        }
-    except Exception:
-        return None
+def fetch_quotes(codes):
+    """네이버 폴링 API 배치 조회 (20개씩) → {code: {price, chg_pct, acc_volume}}.
+
+    종목당 개별 요청 대신 묶음 조회 — 90종목 스캔이 5회 요청·수 초에 끝나
+    1분 루프 모드에서도 네이버 부하·차단 위험이 낮다.
+    """
+    out = {}
+    for i in range(0, len(codes), 20):
+        chunk = codes[i:i + 20]
+        url = ("https://polling.finance.naver.com/api/realtime/domestic/stock/"
+               + ",".join(chunk))
+        try:
+            data = json.loads(http_get(url))
+            for d in data.get("datas") or []:
+                out[d.get("itemCode", "")] = {
+                    "price": dpt._to_float(d.get("closePrice", "")),
+                    "chg_pct": dpt._to_float(d.get("fluctuationsRatio", "")),
+                    "acc_volume": dpt._to_float(d.get("accumulatedTradingVolume", "")),
+                }
+        except Exception as e:
+            print(f"  [경고] 시세 배치 조회 실패 ({chunk[0]}~): {e}")
+    return out
 
 
 # ──────────────────────────────────────
@@ -409,8 +419,9 @@ def scan(dry_run=False, force=False):
     today = today_str()
     n_alert = 0
 
+    quotes = fetch_quotes(all_codes)
     for code in all_codes:
-        q = fetch_quote(code)
+        q = quotes.get(code)
         if not q or q["price"] <= 0:
             continue
         base = baseline.get(code)
@@ -443,6 +454,10 @@ def main():
     ap.add_argument("--force", action="store_true", help="장외 시간에도 강제 스캔")
     ap.add_argument("--test", action="store_true", help="알림봇 연결 테스트")
     ap.add_argument("--get-chat-id", action="store_true", help="새 봇 chat_id 확인")
+    ap.add_argument("--loop", type=int, default=0, metavar="분",
+                    help="N분 동안 내부 루프 스캔 (클라우드 1분 주기용. 0=1회 스캔)")
+    ap.add_argument("--interval", type=int, default=60, metavar="초",
+                    help="루프 모드 스캔 간격 (기본 60초)")
     args = ap.parse_args()
 
     if args.get_chat_id:
@@ -452,7 +467,24 @@ def main():
         ok = tg_send(f"✅ 가격알림 봇 연결 테스트 ({now():%Y-%m-%d %H:%M})")
         print("전송 성공" if ok else "전송 실패 — .env 의 ALERT_BOT_TOKEN/ALERT_CHAT_ID 확인")
         return
-    scan(dry_run=args.dry_run, force=args.force)
+
+    if args.loop > 0:
+        # 루프 모드: 서버 부팅 1회로 N분간 1분 주기 스캔 → 알림 지연 최소화
+        end = now() + timedelta(minutes=args.loop)
+        while now() < end:
+            if not args.force and not market_open():
+                print(f"[{now():%H:%M}] 장 마감 — 루프 종료")
+                break
+            t0 = time.time()
+            try:
+                scan(dry_run=args.dry_run, force=args.force)
+            except Exception as e:
+                print(f"[오류] 스캔 실패 (다음 주기 재시도): {e}")
+            wait = args.interval - (time.time() - t0)
+            if wait > 0 and now() < end:
+                time.sleep(wait)
+    else:
+        scan(dry_run=args.dry_run, force=args.force)
 
 
 if __name__ == "__main__":
