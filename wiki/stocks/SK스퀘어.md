@@ -1,13 +1,12 @@
 ---
-tags: [IP/엔터, 정부정책, 기타, 밸류업/저PBR, 음원/음반, 지주사]
+tags: [IP/엔터, 정부정책, 기타, 밸류업-저PBR, 음원-음반, 지주사]
 sector: IP/엔터
-last_updated: 2026-05-04
-rate_updated: 2026-05-04
-close_price: 991000
-change_rate: +17.84%
-notion_last_edited: 2026-05-04T09:13:00.000Z
+last_updated: 2026-05-17
+notion_last_edited: 2026-05-12T08:09:00.000Z
 theme: ["#밸류업/저PBR", "#음원/음반", "#지주사"]
 stock_code: 402340
+is_leader: 
+recent_breakout: 
 ---
 
 # SK스퀘어
@@ -35,15 +34,16 @@ stock_code: 402340
 
 > 출처: Notion `추가 중요내용` 섹션 | 등락률은 Notion DB `등락률(%)` 컬럼 기준
 
-- [2026-05-04] [SK스퀘어, 11% 급등…52주 신고가 재차 경신[특징주]](http://www.edaily.co.kr/news/newspath.asp?newsid=01666246645445640) / 등락률: +17.84% / [등급 미분류]
-- [2026-04-30] [[특징주] SK스퀘어, SK하이닉스 호조에 52주 신고가](https://www.ajunews.com/view/20260430134953679) / 등락률 미기재 / [등급 미분류]
-- [2026-04-30] [[특징주] SK스퀘어, SK하이닉스 실적 기대에 신고가…현대차 제치고 시...](https://www.tokenpost.kr/news/economy/354875) / 등락률 미기재 / [등급 미분류]
-- [2026-04-30] [[특징주] SK스퀘어, 밸류업 성과·목표가 상향에 5%대 강세…코스피 시...](https://www.widedaily.com/news/articleView.html?idxno=293306) / 등락률 미기재 / [등급 미분류]
-- [2026-04-30] [[특징주] SK스퀘어, 현대차 제치고 시총 3위 올라](https://www.newspim.com/news/view/20260430000458) / 등락률 미기재 / [등급 미분류]
-- [2026-04-30] [[특징주]SK스퀘어, 시총 3위 탈환…'황제주' 등극 기대감에 강세](https://www.namdonews.com/news/articleView.html?idxno=909166) / 등락률 미기재 / [등급 미분류]
-- [2026-04-30] [[특징주] SK스퀘어 3%대 상승세…시총 3위 등극](https://biz.chosun.com/stock/stock_general/2026/04/30/PLFYVX6K2JCN7POVA7BHVG4XHY/?utm_source=naver&utm_medium=original&utm_campaign=biz) / 등락률 미기재 / [등급 미분류]
-- [2026-04-27] [[특징주] SK스퀘어, 79만2000원으로 급등…SK하이닉스 호실적·주주환원...](https://www.tokenpost.kr/news/economy/353639) / 등락률 미기재 / [등급 미분류]
-- [2026-04-27] [[특징주] SK스퀘어, 6%대 강세…장중77만3000원 터치해 신고가 경신](https://www.etoday.co.kr/news/view/2579393) / 등락률 미기재 / [등급 미분류]
+- [2026-05-06] [[특징주] SK스퀘어, 약 10% 상승하며 황제주 등극(종합)](https://www.yna.co.kr/view/AKR20260506039851008?input=1195m) / 등락률 미기재 / [등급 미분류]
+- [2026-05-06] [[ET특징주] SK스퀘어, '황제주' 등극… 주가 9%↑](https://www.etnews.com/20260506000225) / 등락률 미기재 / [등급 미분류]
+- [2026-05-06] [[특징주] 삼성전자-SK하이닉스, 급등...SK스퀘어는 '황제주'](https://www.asiatime.co.kr/article/20260506500135) / 등락률 미기재 / [등급 미분류]
+- [2026-05-06] [[특징주] SK스퀘어, 황제주 등극··· +11.10% 상승](https://www.jeonmae.co.kr/news/articleView.html?idxno=1253839) / 등락률 미기재 / [등급 미분류]
+- [2026-05-06] [[특징주] SK스퀘어, 장중 110만원 돌파…AI 반도체 훈풍에 황제주 등극](https://www.tokenpost.kr/news/economy/356640) / 등락률 미기재 / [등급 미분류]
+- [2026-05-06] [[특징주] 하이닉스 뛰자 SK스퀘어 '날았다'…11% 급등 '황제주' 등극](https://www.newsworks.co.kr/news/articleView.html?idxno=839869) / 등락률 미기재 / [등급 미분류]
+- [2026-05-06] [[특징주]SK스퀘어, 드디어 '황제주' 등극…장중 114만원 돌파하며 시총...](https://www.namdonews.com/news/articleView.html?idxno=909571) / 등락률 미기재 / [등급 미분류]
+- [2026-05-06] [11% 상승세 SK스퀘어, 100만원 돌파하며 '황제주'로 [특징주]](https://www.dailian.co.kr/news/view/1641054/?sc=Naver) / 등락률 미기재 / [등급 미분류]
+- [2026-05-06] [SK스퀘어, 황제주 등극…'158만닉스' 앞세워 코스피 3위 안착[특징주]](https://www.newsway.co.kr/news/view?ud=2026050609552687151) / 등락률 미기재 / [등급 미분류]
+- [2026-05-06] [[특징주] SK스퀘어, 장중 110만원 돌파…하이닉스 수혜·주주환원 기대...](https://www.tokenpost.kr/news/economy/356618) / 등락률 미기재 / [등급 미분류]
 
 ---
 
@@ -51,6 +51,15 @@ stock_code: 402340
 
 > 출처: Notion `지난기사 아카이브 + 링크` 100% 전수 복사 (요약·누락 금지)
 
+- [SK스퀘어, 11% 급등…52주 신고가 재차 경신[특징주]](http://www.edaily.co.kr/news/newspath.asp?newsid=01666246645445640)
+- [[특징주] SK스퀘어, SK하이닉스 호조에 52주 신고가](https://www.ajunews.com/view/20260430134953679)
+- [[특징주] SK스퀘어, SK하이닉스 실적 기대에 신고가…현대차 제치고 시...](https://www.tokenpost.kr/news/economy/354875)
+- [[특징주] SK스퀘어, 밸류업 성과·목표가 상향에 5%대 강세…코스피 시...](https://www.widedaily.com/news/articleView.html?idxno=293306)
+- [[특징주] SK스퀘어, 현대차 제치고 시총 3위 올라](https://www.newspim.com/news/view/20260430000458)
+- [[특징주]SK스퀘어, 시총 3위 탈환…'황제주' 등극 기대감에 강세](https://www.namdonews.com/news/articleView.html?idxno=909166)
+- [[특징주] SK스퀘어 3%대 상승세…시총 3위 등극](https://biz.chosun.com/stock/stock_general/2026/04/30/PLFYVX6K2JCN7POVA7BHVG4XHY/?utm_source=naver&utm_medium=original&utm_campaign=biz)
+- [[특징주] SK스퀘어, 79만2000원으로 급등…SK하이닉스 호실적·주주환원...](https://www.tokenpost.kr/news/economy/353639)
+- [[특징주] SK스퀘어, 6%대 강세…장중77만3000원 터치해 신고가 경신](https://www.etoday.co.kr/news/view/2579393)
 - [“이제 하이닉스가 보여줄 차례”…삼전 최대 실적에 기대감↑](https://n.news.naver.com/mnews/article/024/0000104652?rc=N&ntype=RANKING&sid=101)
 - ["삼성전자, 16만원 간다…4분기 영업익 20조 돌파 전망"-다올](https://n.news.naver.com/mnews/article/015/0005231725?sid=101)
 - [SK하이닉스, 올해 영업익 100조 시대 연다…‘84만닉스’ 전망-대신](https://n.news.naver.com/mnews/article/018/0006193449?sid=101)
@@ -66,6 +75,10 @@ stock_code: 402340
 - [SK하이닉스 목표주가 200만원이 대세?… ‘깜짝 실적’ 기대에 줄상향](https://n.news.naver.com/mnews/article/029/0003021592?sid=101)
 - [미국·이란 '2주 휴전'…국제유가 최대 19% 급락(종합)](https://n.news.naver.com/mnews/article/001/0016008569?sid=104)
 - ['헬륨 대란' 마침표...삼성·하이닉스, 미국 원료 장기 계약](https://www.thelec.kr/news/articleView.html?idxno=54772)
+- [11% 급등한 SK하이닉스 '시총 1000조' 돌파...‘150만 닉스’도 정조준](https://n.news.naver.com/mnews/article/243/0000097429?sid=101)
+- [한화證 "내년 메모리 쇼티지 더 심해…삼성전자 목표가 33만원"](https://n.news.naver.com/mnews/article/421/0008924869?rc=N&ntype=RANKING&sid=101)
+- ["AI 수요가 공급 넘어섰다"…美빅3 클라우드 잔고 1500조원](https://n.news.naver.com/mnews/article/003/0013923813)
+- [[뉴욕증시] "미·이란 다시 협상" 기대에 반등...인텔, 9일 동안 60% 폭등](https://n.news.naver.com/mnews/article/014/0005507110?rc=N&ntype=RANKING&sid=101)
 
 ---
 
@@ -105,8 +118,8 @@ _직접 추가 또는 LLM이 분석 시 기록_
 
 | 날짜 | 등락률 | 재료 요약 |
 |------|--------|-----------|
-| 2026-05-04 | +17.8% | [“이제 하이닉스가 보여줄 차례”…삼전 최대 실적에 기대감↑](https://n.news.naver.com/mnews/article/024/00 |
+| 2026-05-11 | +8.1% | [SK스퀘어, 11% 급등…52주 신고가 재차 경신[특징주]](http://www.edaily.co.kr/news/newspath.asp?new |
 
 ## 마지막 업데이트
 
-2026-05-04 | Notion ingest (ingest_all.py 자동 생성)
+2026-05-17 | Notion ingest (ingest_all.py 자동 생성)

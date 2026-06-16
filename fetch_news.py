@@ -12,7 +12,7 @@ fetch_news.py — 주식 뉴스 모니터링 + 텔레그램 알림
 
 출력:
   - 텔레그램 알림
-  - Notion DB (35bffbf4617381d2a19bf264d5616563) 저장
+  - Notion DB (ID는 config.json/.env 참조) 저장
   - wiki/news/뉴스_YYYY-MM-DD.md 누적 저장
 
 실행:
@@ -120,6 +120,8 @@ TELEGRAM_CHANNELS = {
     "bdragon0808":       "바이오/제약",
     "pharmbiohana":      "바이오/제약",
     "huhpharm":          "바이오/제약",
+    "kimcharger":        "투자정보",
+    "eugene2team":       "리포트/뉴스",
 }
 
 

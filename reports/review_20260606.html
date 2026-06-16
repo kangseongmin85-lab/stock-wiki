@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>기사 검수 - 20260606</title>
+<style>
+* { box-sizing: border-box; }
+body { font-family: -apple-system, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; max-width: 1100px; margin: 0 auto; padding: 20px; background: #f5f5f7; color: #222; }
+.topbar { position: sticky; top: 10px; background: white; padding: 14px 18px; border-radius: 12px; display: flex; align-items: center; gap: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 16px; z-index: 10; }
+.topbar h2 { margin: 0; font-size: 17px; }
+.progress { flex: 1; height: 8px; background: #eee; border-radius: 4px; overflow: hidden; }
+.progress-bar { height: 100%; background: #4CAF50; transition: width 0.2s; }
+.stock-card { background: white; padding: 18px; border-radius: 10px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); border-left: 4px solid transparent; }
+.stock-card.approved { border-left-color: #4CAF50; background: #f1f8f3; }
+.stock-card.rejected { border-left-color: #f44336; background: #fdecea; }
+.stock-card.skipped  { border-left-color: #999; background: #f5f5f5; }
+.stock-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
+.stock-name { font-size: 17px; font-weight: 700; }
+.stock-meta { color: #666; font-size: 13px; }
+.ctrt-up   { color: #d32f2f; font-weight: 600; }
+.ctrt-down { color: #1976d2; font-weight: 600; }
+.theme-tag { background: #e3f2fd; color: #1976d2; padding: 2px 8px; border-radius: 4px; font-size: 12px; }
+.memo { color: #888; font-size: 12px; margin-left: 4px; }
+.article { background: #fafafa; padding: 12px; border-radius: 8px; margin: 8px 0; }
+.article-meta { color: #666; font-size: 12px; margin-bottom: 4px; }
+.article-title { font-weight: 600; margin: 4px 0; line-height: 1.4; }
+.article-title a { color: #1565c0; text-decoration: none; }
+.article-title a:hover { text-decoration: underline; }
+.article-desc { color: #444; font-size: 13px; line-height: 1.5; }
+.nav-bar { display: flex; align-items: center; gap: 8px; margin: 8px 0 4px; }
+.actions { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+button { padding: 8px 14px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 13px; }
+button:disabled { opacity: 0.4; cursor: default; }
+.btn-approve { background: #4CAF50; color: white; }
+.btn-reject  { background: #f44336; color: white; }
+.btn-skip    { background: #9e9e9e; color: white; }
+.btn-nav     { background: #e0e0e0; color: #333; padding: 6px 10px; }
+.btn-export  { background: #1976d2; color: white; }
+.btn-reset   { background: white; color: #888; border: 1px solid #ddd; }
+.badge-today { background: #4CAF50; color: white; font-size: 11px; padding: 2px 6px; border-radius: 3px; margin-right: 4px; }
+.badge-old   { background: #ff9800; color: white; font-size: 11px; padding: 2px 6px; border-radius: 3px; margin-right: 4px; }
+.badge-source { background: #7e57c2; color: white; font-size: 11px; padding: 2px 6px; border-radius: 3px; }
+.empty { color: #aaa; font-style: italic; padding: 18px; text-align: center; background: #fafafa; border-radius: 8px; }
+.decision-tag { margin-left: auto; font-size: 13px; font-weight: 600; }
+</style>
+</head>
+<body>
+<div class="topbar">
+  <h2>기사 검수 - 20260606</h2>
+  <div class="progress"><div class="progress-bar" id="progressBar"></div></div>
+  <span id="progressText" style="font-size:13px;color:#666;"></span>
+  <button class="btn-export" onclick="pushToNotion()" id="btnPush">📤 노션에 푸시</button>
+  <button class="btn-reset" onclick="resetAll()">초기화</button>
+</div>
+
+<div id="pushResult" style="margin:12px 0;padding:10px;border-radius:6px;display:none;font-size:14px;"></div>
+
+<div id="cards"></div>
+
+<script>
+const REVIEW_DATE     = "20260606";
+const STORAGE_KEY     = "review_" + REVIEW_DATE;
+const PUSH_ENDPOINT   = "http://127.0.0.1:8765";  // 비어있으면 푸시 비활성, 다운로드만
+const DATA            = [{"name": "한켐", "code": "457370", "ctrt": 29.94, "vol_eok": 1124, "theme": "개별주", "memo": "112,414", "candidates": [{"title": "[특징주] 한켐·코칩·키스트론, 삼성전기 FC-BGA 5조 투자 전망에 ↑......", "url": "https://www.cstimes.com/news/articleView.html?idxno=708625", "desc": "컨슈머타임스=전은정 기자 | 한켐과 코칩, 키스트론 등 MLCC(적층 세라믹 커패시터) 관련 종목들이 상승중이다. 한켐은 5일 주식시장에서 상한가를 기록했다. 한켐은 이날 2시 15분 기준 전일보다 29.94% 오른...", "date": "2026.06.05", "score": 20, "is_today": false, "source": "naver"}, {"title": "[특징주] 한켐, 삼성전기 역대 최고가에 MLCC 소재 공급사 부각…수요 5...", "url": "https://www.cstimes.com/news/articleView.html?idxno=707748", "desc": "컨슈머타임스=전은정 기자 | 한켐 주가가 강세다. 한켐은 29일 오전 10시 25분 기준 전일보다 6.13% 오른 1만2140원에 거래중이다. 삼성전기가 인공지능(AI) 서버와 전장용 적층세라믹커패시터(MLCC) 가격 인상 효과에...", "date": "2026.05.29", "score": 20, "is_today": false, "source": "naver"}, {"title": "상장사 한켐, MLCC 소재 증산 기대감 부각…옥천 공장 가동으로 성장판...", "url": "https://www.pinpointnews.co.kr/news/articleView.html?idxno=457597", "desc": "한켐은 옥천 생산시설 증설을 통해 신규 반응설비 13기를 추가하고, 기존 40기였던 반응설비를 총 53기 체제로 확대했다. 사진=한켐 첨단화학소재 전문기업 한켐이 충북 옥천 생산시설 증설을 기반으로 MLCC와 OLED 등...", "date": "2026.06.04", "score": 5, "is_today": false, "source": "naver"}, {"title": "한켐, 충북 옥천 신공장 가동…생산설비 확대·공급 대응력 강화", "url": "https://www.gokorea.kr/news/articleView.html?idxno=868331", "desc": "첨단화학소재 기업 한켐이 충북 옥천에 구축한 신규 생산시설의 가동을 시작했다. 한켐은 6월 1일부터 옥천 신공장을 본격 운영한다고 밝혔다. 이번 설비 확충을 통해 기존 생산체계를 확대하고 다양한 제품 생산이 가능한...", "date": "2026.06.04", "score": 5, "is_today": false, "source": "naver"}, {"title": "[단독] 한켐, 옥천 신공장 가동... 'MLCC 소재' 증산 시동 건다", "url": "https://www.startuptoday.co.kr/news/articleView.html?idxno=802747", "desc": "첨단화학소재 기업 한켐이 지난 1일 충북 옥천 신공장 증설을 마무리하고 가동을 시작하면서 MLCC와 OLED... 한켐 역시 올해 1월 신규 생산라인 가동 시점을 앞당기겠다고 예고하면서 국내 대형 고객사들과 체결한 공급...", "date": "2026.06.04", "score": 5, "is_today": false, "source": "naver"}, {"title": "[5일 특징주] 반도체주 약세에 순환매…은행株 '방긋'", "url": "https://www.newsworks.co.kr/news/articleView.html?idxno=843043", "desc": "코스닥에서는 ▲아이로보틱스 ▲한켐 ▲알트 ▲핀텔 등이 상한가를 찍었다. 대원제약은 4중 작용 비만 치료제의 전임상 연구 결과를 발표한다는 소식에 매수세가 몰린 것으로 보인다. 아이로보틱스는 질화규소...", "date": "2026.06.05", "score": 0, "is_today": false, "source": "naver"}, {"title": "[26일 특징주] 삼성전기, MLCC 수요 기대에 '신고가'…관련株 동반 강세", "url": "https://www.newsworks.co.kr/news/articleView.html?idxno=841901", "desc": "코스닥에서는 ▲네이처셀 ▲엑스게이트 ▲드림시큐리티 ▲케이씨에스 ▲한국첨단소재 ▲한켐 ▲크리스탈신소재 ▲메이슨캐피탈 ▲포톤 ▲한주라이트메탈 ▲디지아이 ▲상보 등이 상한가를 찍었다. 네이처셀은...", "date": "2026.05.26", "score": 0, "is_today": false, "source": "naver"}, {"title": "[특징주] LG이노텍, 기판 수익성 개선 기대에 '황제주' 등극(종합)", "url": "https://www.yna.co.kr/view/AKR20260526056951008?input=1195m", "desc": "그러면서 목표주가를 기존 70만원에서 130만원으로 상향했다. 이 같은 기판 수익성 개선 기대감에 삼화콘덴서(30.00%)와 한켐(29.99%), 아모텍(29.82%) 등 다른 관련 종목의 주가도 가격 제한선까지 올랐다.", "date": "2026.05.26", "score": 0, "is_today": false, "source": "naver"}], "best_url": "https://www.cstimes.com/news/articleView.html?idxno=708625"}, {"name": "라이콤", "code": "388790", "ctrt": 20.37, "vol_eok": 1040, "theme": "개별주", "memo": "104,078", "candidates": [{"title": "[특징주] 라이콤, AI데이터센터 수주 확대에 방산까지 \"광통신 수혜주로...", "url": "https://www.widedaily.com/news/articleView.html?idxno=295152", "desc": "라이콤(388790)의 주가가 급등하며 시장의 주목을 받고 있다. 5일 한국거래소에 따르면 라이콤의 주가는 오전 9시 49분 기준 전일 대비 13.85% 상승한 5590원에 거래되고 있다. 이는 라이콤이 AI데이터센터용 광증폭기 수주...", "date": "2026.06.05", "score": 20, "is_today": false, "source": "naver"}, {"title": "라이콤, AI 데이터센터·방산 수혜 기대감에 19%↑[특징주]", "url": "https://www.edaily.co.kr/news/newspath.asp?newsid=03270166645478768", "desc": "라이콤(388790)이 장 초반 19%대 강세다. 5일 엠피닥터에 따르면 이날 오전 9시19분 현재 라이콤 주가는 전거래일 대비 19.14% 오른 5850원에 거래 중이다. AI 데이터센터용 광증폭기 수주 확대와 방산·우주항공 사업...", "date": "2026.06.05", "score": 20, "is_today": false, "source": "naver"}, {"title": "[특징주] 젠슨 황, AI 수혜 '통신장비' 언급…'라이콤·이노인스트루먼...", "url": "https://www.newspim.com/news/view/20260604000515", "desc": "한국거래소에 따르면 이날 오전 10시 32분 기준, 라이콤은 전일대비 21.16% 오른 4580원에 거래 중이다. 같은시각, 이노인스트루먼트는 전일대비 17.63% 오른 1688원에 거래 중이다. 이외 RFHIC(13.47%), 오이솔루션(11.16...", "date": "2026.06.04", "score": 20, "is_today": false, "source": "naver"}, {"title": "AI 시대 구리 가고 광(光) 온다…라이콤, 글로벌 빅테크 네트워크 확장...", "url": "https://www.pinpointnews.co.kr/news/articleView.html?idxno=457841", "desc": "상승 종목 가운데서는 라이콤이 가장 강한 흐름을 보인다. 한국거래소에 따르면 이날 오후 1시26분 현재 라이콤은 22.00% 상승한 5990원에 거래 중이다. 광통신 부품과 네트워크 관련 사업 성장 기대감이 부각되면서...", "date": "2026.06.05", "score": 5, "is_today": false, "source": "naver"}, {"title": "[N2 증시 풍향계] 은행주 일제히 ‘상승’…신영증권·라이콤 호재소식...", "url": "https://www.news2day.co.kr/article/20260605500069", "desc": "■ 라이콤, AI 데이터센터·방산 성장 기대에 강세 라이콤(388790)이 인공지능(AI) 데이터센터용 광증폭기 수주 확대와 방산·우주항공 사업 성장 기대감에 장 초반 강세를 보이고 있다. 같은 시각 라이콤은 코스닥...", "date": "2026.06.05", "score": 5, "is_today": false, "source": "naver"}, {"title": "SK증권 \"라이콤, 숨겨진 광통신 수혜주에 '천광'덕 방산 매출 상승까지...", "url": "https://www.financialpost.co.kr/news/articleView.html?idxno=261525", "desc": "허선재 SK증권 연구원은 5일 라이콤이 인공지능(AI)시대에 수혜를 볼 숨겨진 광통신 종목이라고 평가했다.... 그는 \"라이콤은 국내 레이저 대공무기 국산화 프로젝트에 참여하고 있는 핵심 레이저 광원 업체로, 향후...", "date": "2026.06.05", "score": 5, "is_today": false, "source": "naver"}, {"title": "[애널픽] \"라이콤, AI데이터센터에 방산·우주까지...실적 레버리지 온다...", "url": "https://theviewers.co.kr/View.aspx?No=4101679", "desc": "제조업체인 라이콤에 대한 투자 시장의 관심이 쏠리고 있다. AI 데이터센터 구축에 따른 수주잔고 급증과 방산·우주 관련 신사업의 실적 기여가 본격화될 것이라는 전망에 따른 것이다.라이콤은 지난 2023년...", "date": "2026.06.05", "score": 5, "is_today": false, "source": "naver"}, {"title": "[모닝 리포트] \"라이콤, 광통신·방산 수주 원년…내년 매출 두 배 성장...", "url": "https://www.newspim.com/news/view/20260605000070", "desc": "SK증권은 5일 라이콤에 대해 북미 AI 데이터센터향 광증폭기 수주 증가와 방산용 광섬유레이저 사업의... 있어 라이콤의 중장기 실적 성장 방향성은 명확하다고 판단된다\"고 밝혔다. 라이콤은 1999년 설립돼 2023년...", "date": "2026.06.05", "score": 5, "is_today": false, "source": "naver"}], "best_url": "https://www.widedaily.com/news/articleView.html?idxno=295152"}, {"name": "비보존 제약", "code": "082800", "ctrt": 15.28, "vol_eok": 316, "theme": "개별주", "memo": "31,648", "candidates": [{"title": "[특징주]비보존제약, 자체 개발 비마약성 진통제 '어나프라주' 추가 생...", "url": "https://www.widedaily.com/news/articleView.html?idxno=295158", "desc": "비보존제약(082800)은 22일 오전 9시 10분 상한가를 기록하며 강세를 나타냈다. 자체 개발한 비마약성 진통제 '어나프라주'의 병원 채택 확대와 추가 생산 결정 소식이 투자심리를 자극한 영향으로 풀이된다. 시장에서는...", "date": "2026.06.05", "score": 0, "is_today": false, "source": "naver"}, {"title": "[특징주] 비보존제약, 비마약성 진통제 추가 발주에 상한가", "url": "https://www.biotimes.co.kr/news/articleView.html?idxno=32169", "desc": "비보존제약(082800)이 2일 코스닥시장에서 가격제한폭까지 상승하며 상한가로 거래를 마감했다. 직전 거래일 대비 29.82%(650원) 급등한 2,830원에 장을 마쳤다. 비마약성 진통제 '어나프라주'의 추가 발주 소식이 전해지면서...", "date": "2026.06.02", "score": 0, "is_today": false, "source": "naver"}, {"title": "[주식마감] 美 당뇨학회서 '4중 작용 비만약' 발표 소식에 대원제약 상...", "url": "https://www.ggilbo.com/news/articleView.html?idxno=1162038", "desc": "코스닥 시장 거래 상위종목 30위는 대신밸런스제20호스팩, 팸텍, 라이콤, 이노인스트루먼트, 대한광통신, 코스모로보틱스, 나무기술, 비보존 제약, HPSP, 한켐, 알트, M83, 에이치엠넥스, 성호전자, 빛과전자...", "date": "2026.06.05", "score": 0, "is_today": false, "source": "naver"}, {"title": "[주식] 대원제약, 비만약 동물실험서 체중 50%↓...주가는 30%↑", "url": "https://www.hitnews.co.kr/news/articleView.html?idxno=76659", "desc": "오늘의 증시 시장 지수 KOSPI: 8,160.59 (▼5.54%) KOSDAQ: 1,002.44 (▼4.50%) 상승 종목 대원제약(+29.94%), 파로스아이바이오(+24.13%), 비보존제약(+15.28%), 넥스트바이오메디컬(+13.74%), 에스바이오메딕스(+7.56...", "date": "2026.06.05", "score": 0, "is_today": false, "source": "naver"}, {"title": "[주가] 6월 5일 주요 제약바이오 5% 변동 현황 - 대원제약 상한가", "url": "https://www.medipana.com/news/articleView.html?idxno=412431", "desc": "비보존 제약 주가가 2585원에서 2980원으로 15.28% 늘었다. 휴온스 주가가 2만8350원에서 2만6900원으로 -5.11% 줄었다. 헬릭스미스 주가가 5350원에서 5070원으로 -5.23% 줄었다. 조아제약 주가가 692원에서...", "date": "2026.06.05", "score": 0, "is_today": false, "source": "naver"}, {"title": "[업앤다운]제약주 하락…대원제약↑· 에이프릴바이오↓", "url": "https://www.nspna.com/news/?mode=view&newsid=815578", "desc": "비보존 제약과 바스칸바이오제약은 각각 15.28%(395원), 6.53%(245원) 올려 2980원과 3995원에 거래를 마쳤다. 같은 날 하락세 중 등락 폭이 컸던 종목은 에이프릴바이오다. 에이프릴바이오는 전거래일 대비 8.23...", "date": "2026.06.05", "score": 0, "is_today": false, "source": "naver"}, {"title": "[EBN 데이터센터] 5일 상승 종목 30選…금융·헬스케어주 강세", "url": "https://www.ebn.co.kr/news/articleView.html?idxno=1711433", "desc": "이 밖에 에이치와이티씨가 18.90%, 캔버스엔이 18.67%, 디에스케이가 16.67%, 비보존 제약이 15.28%, 모비릭스가 15.08% 올랐다. 엠젠솔루션과 케이엠제약, 코어라인소프트도 13%대 상승률을 나타냈다. ◆ 환율 부담 속...", "date": "2026.06.05", "score": 0, "is_today": false, "source": "naver"}, {"title": "품절급 인기에 상한가 직행…비보존제약, 신약 상업화 모멘텀 타고 실적...", "url": "https://www.pinpointnews.co.kr/news/articleView.html?idxno=457798", "desc": "비보존제약 역시 28.82% 상승한 3330원에 거래 중이다. 투자자들은 신약 개발 및 사업 확대 가능성에 주목하고 있으며, 그동안 부진했던 바이오 종목들에 대한 저가 매수세도 유입되고 있다. 비보존제약이 자체 개발한 혁신...", "date": "2026.06.05", "score": 0, "is_today": false, "source": "naver"}], "best_url": "https://www.medipana.com/news/articleView.html?idxno=412431"}, {"name": "피에스케이", "code": "319660", "ctrt": 15.12, "vol_eok": 2579, "theme": "개별주", "memo": "257,911", "candidates": [{"title": "[헬로스톡] 6/5 주목할 종목 : 피에스케이·제닉·한온시스템·현대백화...", "url": "https://www.hellot.net/news/article.html?no=113028", "desc": "종목 분석 피에스케이 — 전공정 장비 최선호주, 2026년 영업이익 2배 도약 삼성전자·SK하이닉스·Micron... 반도체 전공정 장비 업체 피에스케이는 이 흐름의 중심에 있다. 하나증권은 5일 피에스케이에 대해...", "date": "2026.06.05", "score": 5, "is_today": false, "source": "naver"}, {"title": "코스닥도 '털썩'...로보스타 · 원익IPS · 피에스케이는 '껑충'", "url": "http://www.choicenews.co.kr/news/articleView.html?idxno=166197", "desc": "한국거래소에 따르면 반도체 소부장주 가운데 원익IPS(4.32%), HPSP(5.89%), 피에스케이(10.58%), 테스(2.43%), 피에스케이홀딩스(1.69%) 등이 올랐다. 반면 주성엔지니어링(-16.17%), 리노공업(-5.52%), 이오테크닉스(-3.63...", "date": "2026.06.05", "score": 5, "is_today": false, "source": "naver"}, {"title": "하나證 \"피에스케이, 실적 기반 높은 수익 기대…목표가 ↑\"", "url": "https://www.ajunews.com/view/20260605085344152", "desc": "아주경제=송윤서 기자 sys0303@ajunews.com 하나증권은 5일 피에스케이에 대해 반도체 투자 확대와 수익성... 준 피에스케이를 테스, 브이엠과 함께 전공정 장비 업체 최선호주로 유지한다\"고 덧붙였다. 또 \"중화권 업체들의...", "date": "2026.06.05", "score": 5, "is_today": false, "source": "naver"}, {"title": "\"피에스케이, 2분기 영업이익 144% 증가 전망… 목표가↑\"-하나", "url": "https://www.mt.co.kr/stock/2026/06/05/2026060507560675932", "desc": "하나증권은 피에스케이가 고객사들의 설비투자(CAPEX) 확대에 힘입어 2분기 실적이 성장할 것이라고 5일 전망했다. 목표주가를 12만8000원에서 16만원으로 상향하고 투자의견 '매수'를 유지했다. 피에스케이의 2분기...", "date": "2026.06.05", "score": 5, "is_today": false, "source": "naver"}, {"title": "피에스케이, 반도체 전공정 최선호주…목표가 16만원으로 뛰었다 [애널...", "url": "https://www.newsway.co.kr/news/view?ud=2026060508302176621", "desc": "하나증권이 피에스케이에 대해 국내외 메모리 반도체 업체들의 투자 확대와 중화권 고객사 증설 효과를... 5일 김록호 하나증권 연구원은 피에스케이의 목표주가를 16만원으로 상향 조정했다. 현재 주가(4일 종가...", "date": "2026.06.05", "score": 5, "is_today": false, "source": "naver"}, {"title": "하나證 “피에스케이, 삼성·마이크론·인텔 투자 확대 기대감…목표가...", "url": "https://biz.chosun.com/stock/stock_general/2026/06/05/J2Z37FC6ABF5PODE64C3QBS5SQ/?utm_source=naver&utm_medium=original&utm_campaign=biz", "desc": "하나증권은 피에스케이에 대해 삼성전자, 마이크론, 인텔 등 국내외 메모리 업체들의 투자 확대로 실적... 전 거래일 피에스케이의 종가는 11만4400원이다. 김록호 하나증권 연구원은 “국내 메모리 업체들의 신규...", "date": "2026.06.05", "score": 5, "is_today": false, "source": "naver"}, {"title": "\"조정이 기회다\"...'삼전닉스' 급락에 개미 4조원 '줍줍'", "url": "https://www.ntoday.co.kr/news/articleView.html?idxno=127475", "desc": "특징주로는 반도체 소부장 종목군에 수급이 집중되며 원익IPS(+4.32%), 유진테크(+0.77%), 피에스케이(+1.69%) 등 반도체 장비·소재 주요 종목들이 일제히 강세를 나타냈다. 한편 서울 외환시장에서 달러·원 환율은 전...", "date": "2026.06.05", "score": 0, "is_today": false, "source": "naver"}, {"title": "[특징주] 반도체 장비株, '삼전·닉스 숨고르기' 속 급등(종합)", "url": "https://www.yna.co.kr/view/AKR20260604083751008?input=1195m", "desc": "또 원익IPS(29.93%), 피에스케이(26.27%), 피에스케이홀딩스(23.56%) 등이 상승했다. 이는 그간 급등해온 삼성전자(-2.50%)와 SK하이닉스(-2.63%) 주가가 주춤하자 순환매가 나오면서 그간 소외됐던 반도체 소부장, 특히...", "date": "2026.06.04", "score": 0, "is_today": false, "source": "naver"}], "best_url": "https://www.hellot.net/news/article.html?no=113028"}, {"name": "아바텍", "code": "149950", "ctrt": 9.86, "vol_eok": 244, "theme": "개별주", "memo": "24,494", "candidates": [{"title": "[특징주] 아바텍, 삼성전기 AI MLCC 호황 본격화…AI 데이터센터 MLCC 수...", "url": "https://www.financialpost.co.kr/news/articleView.html?idxno=260867", "desc": "아바텍이 장 초반 강세를 시현하고 있다. 삼성전기가 AI 데이터센터 및 전장용 MLCC(적층세라믹커패시터)... 29일 오전 코스닥 시장에서 아바텍은 전 거래일 대비 12%이상 상승세를 기록하고 있다. 장중 한때 19%이상...", "date": "2026.05.29", "score": 20, "is_today": false, "source": "naver"}, {"title": "[특징주] 아바텍, 삼성전기發 AI 부품 슈퍼사이클 수혜 기대감에 상승…...", "url": "https://www.cstimes.com/news/articleView.html?idxno=707140", "desc": "컨슈머타임스=전은정 기자 | 아바텍 주가가 상승중이다. 아바텍은 26일 오전 9시47분 기준 전일보다 13.69% 오른 1만7850원에 거래중이다. 아바텍은 인공지능(AI) 데이터센터 확산에 따른 MLCC(적층세라믹커패시터) 수요...", "date": "2026.05.26", "score": 20, "is_today": false, "source": "naver"}, {"title": "'전자산업의 쌀' 예고된 풍년...삼성전기, 200만원 눈앞 '신고가'", "url": "https://www.mt.co.kr/stock/2026/05/29/2026052909120779218", "desc": "코칩(11.2%), 아바텍(8.16%), 원준(1.79%) 등도 상승 중이다. 금융투자업계 전문가들은 AI 산업 발달로 MLCC 가격이 상승할 것이라고 보고 있다. MLCC는 전자제품의 회로에 전류가 일정하게 흐르도록 제어하는 부품으로...", "date": "2026.05.29", "score": 0, "is_today": false, "source": "naver"}, {"title": "[특징주] 삼성전기 강세…서버용 MLCC 공급 부족에 업종 전반 13%↑", "url": "https://www.newspim.com/news/view/20260526000374", "desc": "아바텍은 1370원(8.73%) 오른 1만7070원, 코칩은 2450원(11.04%) 오른 2만4650원을 기록했다. 지아이에스는 590원(17.25%) 오른 4010원, 원준은 570원(6.58%) 오른 9230원에 거래 중이다. 한울반도체는 1120원(9.91%) 오른...", "date": "2026.05.26", "score": 0, "is_today": false, "source": "naver"}, {"title": "\"AI향 부품 초호황\"…MLCC 관련주 동반 상승", "url": "https://www.mt.co.kr/stock/2026/05/26/2026052609291832798", "desc": "삼화콘덴서(20%), 지아이에스(12.87%), 아바텍(11.34%), 삼성전기(10.07%), 코칩(9.46%) 등도 동반 상승 중이다. 아모텍은 지난 22일 350억5230만원 규모의 유상증자를 결정했다고 공시했다. 조달한 자금은 시설자금(300억원)과...", "date": "2026.05.26", "score": 0, "is_today": false, "source": "naver"}, {"title": "[특징주] 삼화콘덴서, MLCC 업황 개선 기대에 상한가…52주 최고가 경신", "url": "https://www.newsworks.co.kr/news/articleView.html?idxno=841648", "desc": "같은 시간 MLCC 관련주로 분류되는 아바텍은 20.66%, 아모텍은 17.83%, 대주전자재료는 17.55% 오르고 있다. 시장에서는 AI 인프라 투자와 전장화 흐름이 MLCC 수요를 끌어올릴 것이란 기대가 커지고 있다. 다만 단기 급등에...", "date": "2026.05.22", "score": 0, "is_today": false, "source": "naver"}, {"title": "MLCC부터 센서까지 다 갖췄다… 아모텍, 전기차·자율주행 바람 타고 질...", "url": "https://www.pinpointnews.co.kr/news/articleView.html?idxno=457491", "desc": "원준과 아바텍, 한켐은 단기 상승 이후 숨고르기 양상을 보인다. 한울반도체 역시 일부 투자자들의 차익실현 영향으로 약세를 나타내고 있다. 대형주 가운데 삼성전기는 부진한 흐름을 보인다. 삼성전기는 5.02% 내려...", "date": "2026.06.04", "score": 0, "is_today": false, "source": "naver"}, {"title": "서울반도체 1위 탈환…HB테크놀러지·에이치엠넥스 추격전 치열", "url": "https://www.pinpointnews.co.kr/news/articleView.html?idxno=456629", "desc": "이 밖에도 아바텍, 에프엔에스테크, 디바이스이엔지, 코이즈, 힘스, 한국컴퓨터, 파인디앤씨, 영우디에스피, 와이엠씨, 포인트엔지니어링, 엘엠에스, 인베니아, 핌스, 제이엠티, 이엘피, 신화인터텍, 아이컴포넌트...", "date": "2026.06.01", "score": 0, "is_today": false, "source": "naver"}], "best_url": "https://www.financialpost.co.kr/news/articleView.html?idxno=260867"}, {"name": "로보스타", "code": "090360", "ctrt": 1.94, "vol_eok": 17382, "theme": "개별주", "memo": "1,738,273", "candidates": [{"title": "[특징주] 로보스타, 젠슨 황 방한 및 반도체 자동화 수요 기대감에 '상한...", "url": "https://www.widedaily.com/news/articleView.html?idxno=294976", "desc": "로보스타가 엔비디아 최고경영자(CEO) 젠슨 황의 방한 소식과 반도체 공정 자동화 수요 확대에 대한 기대감이 맞물리며 장중 상한가를 기록했다. 1일 한국거래소에 따르면 로보스타는 이날 오전 11시 35분 현재 전...", "date": "2026.06.01", "score": 20, "is_today": false, "source": "naver"}, {"title": "[특징주] 로보스타 등 로봇주, 젠슨 황 방한 기대에 일제히 '급등'", "url": "https://www.g-enews.com/view.php?ud=20260601094419116044093b5d4e_1", "desc": "1일 한국거래소에 따르면 로보스타는 오전 9시45분 전장대비 30.00% 오른 12만2200원에 거래되고 있다. 두산로보틱스(27.61%) 로보티즈(22.43%), 해성에어로보틱스(16.88%), 엔젤로보틱스(14.09%) 레인보우로보틱스(13.11%) 등도...", "date": "2026.06.01", "score": 20, "is_today": false, "source": "naver"}, {"title": "[특징주] 젠슨 황 방한 기대감...로봇株 '두산로보틱스·로보스타' 급등", "url": "https://www.newspim.com/news/view/20260601000278", "desc": "같은 시각 로보스타는 30.00%까지 오른 12만2200원을 기록 중이다. 이 밖에 팸텍(29.95%), 로보티즈(21.97%), 해성에어로보틱스(15.47%), 포스코DX(14.48%), 엔젤로보틱스(14.48%), 레인보우로보틱스(13.53%), 에스피지(11.58...", "date": "2026.06.01", "score": 20, "is_today": false, "source": "naver"}, {"title": "[특징주] 로보스타 반도체 공정 자동화 수요 확대 기대감에 강세", "url": "https://www.bizwork.co.kr/news/articleView.html?idxno=416080", "desc": "로보스타가 반도체 공정 자동화 수요 확대 기대감과 로봇 산업 성장 전망에 힘입어 강세를 보이고 있다. 1일 한국거래소에서 로보스타의 주가는 이날 오전 9시 5분 현재 전 거래일 대비 30.00%(2만8200원) 상승한...", "date": "2026.06.01", "score": 20, "is_today": false, "source": "naver"}, {"title": "코스닥도 '털썩'...로보스타 · 원익IPS · 피에스케이는 '껑충'", "url": "http://www.choicenews.co.kr/news/articleView.html?idxno=166197", "desc": "로봇주 중 로보스타가 6.39% 급등한 반면 레인보우로보틱스(-6.44%), 로보티즈(-6.70%), 현대무벡스(-5.43%), 에스피지(-7.00%), 원익홀딩스(-9.43%) 등이 급락했다. 제약바이오주 중 알테오젠(-4.04%), 코오롱티슈진(-9....", "date": "2026.06.05", "score": 5, "is_today": false, "source": "naver"}, {"title": "젠슨 황 효과에 자금 쏠림…일주일 새 LG전자 45%·로보스타 79%↑", "url": "https://www.newspim.com/news/view/20260605000693", "desc": "특히 LG전자와 LG씨엔에스를 비롯한 LG그룹주, 로보스타와 두산로보틱스 등 로봇 관련 종목에는 투자자들의 자금이 집중됐다. 다만 최근 단기 급등에 따른 차익실현 매물이 출회하면서 일부 종목의 변동성도...", "date": "2026.06.05", "score": 5, "is_today": false, "source": "naver"}, {"title": "[급등주] 로보스타, +7%대 상승", "url": "https://www.jeonmae.co.kr/news/articleView.html?idxno=1262595", "desc": "로보스타 주가가 상승세를 보이고 있다. 5일 오후 1시 52분 기준 현재 전 거래일 대비 +7.69% 오른 14마느원에 거래되고 있다. 거래량은 223만 6,886주다.", "date": "2026.06.05", "score": 5, "is_today": false, "source": "naver"}, {"title": "[속보] 로보스타 오후 VI 발동, 주가 껑충…양대지수 급락국면 속", "url": "https://www.cbci.co.kr/news/articleView.html?idxno=579824", "desc": "로보스타(090360)의 VI가 5일 오후 발동됐다. VI는 오후 12시 46분 발동됐다가 48분경 해제됐다. 발동가는 14만2900원이었다. 로보스타는 5일 오후 1시 1분 현재 14만4000원에 거래되고 있다. 전일보다 3.44% 올랐다. 장중...", "date": "2026.06.05", "score": 5, "is_today": false, "source": "naver"}], "best_url": "https://www.widedaily.com/news/articleView.html?idxno=294976"}, {"name": "코칩", "code": "126730", "ctrt": 2.62, "vol_eok": 966, "theme": "개별주", "memo": "96,603", "candidates": [{"title": "[특징주] 한켐·코칩·키스트론, 삼성전기 FC-BGA 5조 투자 전망에 ↑......", "url": "https://www.cstimes.com/news/articleView.html?idxno=708625", "desc": "한켐과 코칩, 키스트론 등 MLCC(적층 세라믹 커패시터) 관련 종목들이 상승중이다. 한켐은 5일 주식시장에서 상한가를 기록했다. 한켐은 이날 2시 15분 기준 전일보다 29.94% 오른 1만4670원을 기록중이다. 코칩(3.06...", "date": "2026.06.05", "score": 20, "is_today": false, "source": "naver"}, {"title": "[특징주] 코칩, 삼성전기 실리콘 캐패시터 1.6조 수주에 상승…MLCC 협업...", "url": "https://www.cstimes.com/news/articleView.html?idxno=706604", "desc": "컨슈머타임스=전은정 기자 | 코칩 주가가 상승중이다. 코칩은 20일 오후 2시20분 기준 전일보다 11.70% 오른 1만8120원에 거래중이다. AI 반도체 시장 확대에 따른 MLCC 공급 부족 현상이 심화되면서 삼성전기의 실리콘...", "date": "2026.05.20", "score": 20, "is_today": false, "source": "naver"}, {"title": "'전자산업의 쌀' 예고된 풍년...삼성전기, 200만원 눈앞 '신고가'", "url": "https://www.mt.co.kr/stock/2026/05/29/2026052909120779218", "desc": "코칩(11.2%), 아바텍(8.16%), 원준(1.79%) 등도 상승 중이다. 금융투자업계 전문가들은 AI 산업 발달로 MLCC 가격이 상승할 것이라고 보고 있다. MLCC는 전자제품의 회로에 전류가 일정하게 흐르도록 제어하는 부품으로...", "date": "2026.05.29", "score": 0, "is_today": false, "source": "naver"}, {"title": "[28일 특징주] 수주잔고 '1.5조' 축소 정정공시에…LS, 연일 '급락'", "url": "https://www.newsworks.co.kr/news/articleView.html?idxno=842200", "desc": "코스닥에서는 ▲노타 ▲서희건설 ▲코칩 ▲유성티엔에스 ▲이브이첨단소재 ▲알로이스 ▲멤레이비티... 코칩은 MLCC(적층세라믹콘덴서) 관련주 강세에 힘입어 급등했다. MLCC주는 AI(인공지능) 데이터센터 확대에...", "date": "2026.05.28", "score": 0, "is_today": false, "source": "naver"}, {"title": "[특징주] 삼성전기 강세…서버용 MLCC 공급 부족에 업종 전반 13%↑", "url": "https://www.newspim.com/news/view/20260526000374", "desc": "아바텍은 1370원(8.73%) 오른 1만7070원, 코칩은 2450원(11.04%) 오른 2만4650원을 기록했다. 지아이에스는 590원(17.25%) 오른 4010원, 원준은 570원(6.58%) 오른 9230원에 거래 중이다. 한울반도체는 1120원(9.91%) 오른...", "date": "2026.05.26", "score": 0, "is_today": false, "source": "naver"}, {"title": "\"AI향 부품 초호황\"…MLCC 관련주 동반 상승", "url": "https://www.mt.co.kr/stock/2026/05/26/2026052609291832798", "desc": "삼화콘덴서(20%), 지아이에스(12.87%), 아바텍(11.34%), 삼성전기(10.07%), 코칩(9.46%) 등도 동반 상승 중이다. 아모텍은 지난 22일 350억5230만원 규모의 유상증자를 결정했다고 공시했다. 조달한 자금은 시설자금(300억원)과...", "date": "2026.05.26", "score": 0, "is_today": false, "source": "naver"}, {"title": "[20일 특징주] 삼성전기, 1.5조 규모 글로벌 공급 계약에 7%↑", "url": "https://www.newsworks.co.kr/news/articleView.html?idxno=841387", "desc": "코스닥에서는 ▲마키나락스 ▲코칩 ▲한성크린텍 ▲아이진 ▲이노인스트루먼트 ▲케이엠제약 ▲코이즈 등이 상한가를 찍었다. 마키나락스는 이날 코스닥 시장에 첫 상장해 '따따블(공모가 4배)'을 달성하면서...", "date": "2026.05.20", "score": 0, "is_today": false, "source": "naver"}, {"title": "[주식마감] 美 당뇨학회서 '4중 작용 비만약' 발표 소식에 대원제약 상...", "url": "https://www.ggilbo.com/news/articleView.html?idxno=1162038", "desc": "디젠스, 코칩, 우리기술, KX하이텍, 에스아이리소스, 모헨즈, CSA 코스믹, 아이로보틱스, 보원케미칼, 원익IPS, 휴림로봇이다. 이날 코스피는 전장보다 478.82포인트(5.54%) 내린 8,160.59로 장을 마쳤다. 3.66% 내린 8,323....", "date": "2026.06.05", "score": 0, "is_today": false, "source": "naver"}], "best_url": "https://www.cstimes.com/news/articleView.html?idxno=708625"}];
+
+let state = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+
+function saveState() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+
+function ensureState(name) {
+  if (!state[name]) state[name] = { chosen_idx: 0, decision: null };
+  return state[name];
+}
+
+function decide(name, decision) {
+  const st = ensureState(name);
+  st.decision = (st.decision === decision) ? null : decision;  // 같은 버튼 다시 누르면 해제
+  saveState();
+  render();
+}
+
+function navCandidate(name, delta) {
+  const st = ensureState(name);
+  const stock = DATA.find(s => s.name === name);
+  const max = (stock.candidates || []).length - 1;
+  let idx = (st.chosen_idx || 0) + delta;
+  if (idx < 0) idx = 0;
+  if (idx > max) idx = max;
+  st.chosen_idx = idx;
+  saveState();
+  render();
+}
+
+function _buildPayload() {
+  const results = DATA.map(s => {
+    const st = state[s.name] || {};
+    const idx = st.chosen_idx || 0;
+    const cands = s.candidates || [];
+    const cand = cands[idx] || null;
+    // recent_articles: 대표 1건(chosen) + 나머지 후보들 (URL dedup)
+    const seen = new Set();
+    const recent = [];
+    const tryAdd = (a) => {
+      if (!a || !a.url || seen.has(a.url)) return;
+      seen.add(a.url);
+      recent.push(a);
+    };
+    tryAdd(cand);
+    cands.forEach(tryAdd);
+    return {
+      name: s.name, code: s.code, ctrt: s.ctrt, vol_eok: s.vol_eok, theme: s.theme,
+      decision: st.decision || null,
+      chosen_article: (st.decision === "approved" && cand) ? cand : null,
+      recent_articles: recent.slice(0, 5),
+      candidates_seen: (st.chosen_idx || 0) + 1,
+      total_candidates: cands.length
+    };
+  });
+  return {
+    date: REVIEW_DATE,
+    exported_at: new Date().toISOString(),
+    summary: {
+      total: DATA.length,
+      approved: results.filter(r => r.decision === "approved").length,
+      rejected: results.filter(r => r.decision === "rejected").length,
+      skipped:  results.filter(r => r.decision === "skipped").length,
+      pending:  results.filter(r => !r.decision).length
+    },
+    results
+  };
+}
+
+function _showPushResult(html, color) {
+  const div = document.getElementById("pushResult");
+  div.style.display = "block";
+  div.style.background = color || "#f1f8f3";
+  div.innerHTML = html;
+}
+
+async function pushToNotion() {
+  const payload = _buildPayload();
+  const approved = payload.summary.approved;
+  if (approved === 0) {
+    _showPushResult("⚠️ 승인된 종목이 없습니다. ✅ 승인 버튼을 먼저 누르세요.", "#fff3e0");
+    return;
+  }
+  if (!PUSH_ENDPOINT) {
+    _showPushResult("⚠️ 푸시 서버가 비활성화 — JSON 다운로드로 폴백합니다.", "#fff3e0");
+    _downloadJson(payload);
+    return;
+  }
+  const btn = document.getElementById("btnPush");
+  btn.disabled = true;
+  btn.textContent = "⏳ 푸시 중...";
+  _showPushResult("⏳ 노션에 " + approved + "건 푸시 중...", "#e3f2fd");
+  try {
+    const res = await fetch(PUSH_ENDPOINT + "/push", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || ("HTTP " + res.status));
+    let msg = "✅ 노션 푸시 완료 — 총 " + data.total + "건 / 신규 " + data.created + ", 업데이트 " + data.updated;
+    let color = "#e8f5e9";
+    if (data.errors && data.errors.length) {
+      msg += "<br>⚠️ 실패 " + data.errors.length + "건: ";
+      msg += data.errors.map(e => e.name + " (" + e.error + ")").join(", ");
+      color = "#fff3e0";
+    }
+    _showPushResult(msg, color);
+  } catch (e) {
+    _showPushResult("❌ 푸시 실패: " + e.message + "<br>JSON 다운로드로 폴백합니다.", "#ffebee");
+    _downloadJson(payload);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "📤 노션에 푸시";
+  }
+}
+
+function _downloadJson(payload) {
+  const blob = new Blob([JSON.stringify(payload, null, 2)], {type: "application/json"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "reviewed_" + REVIEW_DATE + ".json";
+  document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
+}
+
+function resetAll() {
+  if (!confirm("모든 검수 결과를 초기화합니다.")) return;
+  state = {}; saveState(); render();
+}
+
+function escapeHtml(s) {
+  return String(s == null ? "" : s)
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+}
+
+function decisionLabel(d) {
+  return ({ approved: "✅ 승인", rejected: "❌ 거부", skipped: "⏭️ 스킵" })[d] || "";
+}
+
+function render() {
+  const cards = document.getElementById("cards");
+  cards.innerHTML = "";
+  let done = 0;
+
+  DATA.forEach((s, sIdx) => {
+    const st = state[s.name] || { chosen_idx: 0, decision: null };
+    if (st.decision) done++;
+
+    const card = document.createElement("div");
+    card.className = "stock-card" + (st.decision ? " " + st.decision : "");
+    card.dataset.name = s.name;
+
+    const ctrtClass = s.ctrt >= 0 ? "ctrt-up" : "ctrt-down";
+    const ctrtSign  = s.ctrt >= 0 ? "+" : "";
+
+    let html = "";
+    html += '<div class="stock-header">';
+    html += '<span class="stock-name">' + escapeHtml(s.name) + '</span>';
+    html += '<span class="' + ctrtClass + '">' + ctrtSign + s.ctrt.toFixed(2) + '%</span>';
+    html += '<span class="stock-meta">' + s.vol_eok.toLocaleString() + '억</span>';
+    html += '<span class="theme-tag">' + escapeHtml(s.theme) + '</span>';
+    if (s.memo) html += '<span class="memo">' + escapeHtml(s.memo) + '</span>';
+    if (st.decision) html += '<span class="decision-tag">→ ' + decisionLabel(st.decision) + '</span>';
+    html += '</div>';
+
+    const candidates = s.candidates || [];
+    if (candidates.length === 0) {
+      html += '<div class="empty">관련 기사 없음</div>';
+    } else {
+      const idx = st.chosen_idx || 0;
+      const cand = candidates[idx];
+      html += '<div class="nav-bar">';
+      html += '<button class="btn-nav" data-act="prev" data-name="' + escapeHtml(s.name) + '"' + (idx === 0 ? ' disabled' : '') + '>⬅️ 이전</button>';
+      html += '<span style="font-size:13px;color:#666;">후보 ' + (idx+1) + ' / ' + candidates.length + '</span>';
+      html += '<button class="btn-nav" data-act="next" data-name="' + escapeHtml(s.name) + '"' + (idx >= candidates.length-1 ? ' disabled' : '') + '>다음 ➡️</button>';
+      html += '<span style="margin-left:auto;font-size:12px;color:#999;">점수 ' + cand.score + '</span>';
+      html += '</div>';
+      html += '<div class="article">';
+      html += '<div class="article-meta">';
+      if (cand.date) html += '<span>' + escapeHtml(cand.date) + '</span> ';
+      if (cand.is_today) html += '<span class="badge-today">오늘</span>';
+      else if (cand.date) html += '<span class="badge-old">이전</span>';
+      html += '<span class="badge-source">' + escapeHtml(cand.source || "naver") + '</span>';
+      html += '</div>';
+      html += '<div class="article-title"><a href="' + escapeHtml(cand.url) + '" target="_blank" rel="noopener">' + escapeHtml(cand.title) + '</a></div>';
+      if (cand.desc) html += '<div class="article-desc">' + escapeHtml(cand.desc) + '</div>';
+      html += '</div>';
+    }
+
+    html += '<div class="actions">';
+    html += '<button class="btn-approve" data-act="approved" data-name="' + escapeHtml(s.name) + '">✅ 승인</button>';
+    html += '<button class="btn-reject"  data-act="rejected" data-name="' + escapeHtml(s.name) + '">❌ 거부</button>';
+    html += '<button class="btn-skip"    data-act="skipped"  data-name="' + escapeHtml(s.name) + '">⏭️ 스킵</button>';
+    html += '</div>';
+
+    card.innerHTML = html;
+    cards.appendChild(card);
+  });
+
+  document.getElementById("progressBar").style.width = (done / DATA.length * 100) + "%";
+  document.getElementById("progressText").textContent = done + " / " + DATA.length + " 검토";
+}
+
+document.addEventListener("click", (e) => {
+  const btn = e.target.closest("button[data-act]");
+  if (!btn) return;
+  const name = btn.dataset.name;
+  const act  = btn.dataset.act;
+  if (act === "prev")      navCandidate(name, -1);
+  else if (act === "next") navCandidate(name, 1);
+  else                     decide(name, act);
+});
+
+render();
+</script>
+</body>
+</html>

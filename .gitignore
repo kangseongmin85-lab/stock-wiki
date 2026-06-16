@@ -34,4 +34,14 @@ wiki/news/seen_ids.json
 .obsidian/workspace.json
 .obsidian/workspace-mobile.json
 .obsidian/cache
-".env" 
+".env"
+
+# 아카이브/로그 — 옛 백업·로그 모음. setup_github_secrets.ps1 등 비밀키 하드코딩 파일 포함 → 절대 커밋 금지
+_archive/
+
+# 명령 오타로 생긴 0바이트 쓰레기 파일
+/git
+/main
+
+# 뉴스봇 설정 가이드 — 예제 블록에 실제 NOTION/NAVER 토큰·chat_id 등 하드코딩 → 절대 커밋 금지
+_뉴스봇_가이드/

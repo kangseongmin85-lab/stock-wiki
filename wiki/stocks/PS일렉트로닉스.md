@@ -1,13 +1,12 @@
 ---
-tags: [모바일, 빅테크, 자동차, 통신, 자율주행, 갤럭시-부품, 5G/6G, 테슬라]
+tags: [모바일, 빅테크, 자동차, 통신, 자율주행, 갤럭시-부품, 5G-6G, 테슬라]
 sector: 모바일
-last_updated: 2026-05-04
-rate_updated: 2026-05-04
-close_price: 10470
-change_rate: +29.90%
-notion_last_edited: 2026-05-04T09:48:00.000Z
+last_updated: 2026-05-17
+notion_last_edited: 2026-05-14T14:09:00.000Z
 theme: ["#자율주행", "#갤럭시-부품", "#5G/6G", "#테슬라"]
 stock_code: 332570
+is_leader: 
+recent_breakout: 
 ---
 
 # PS일렉트로닉스
@@ -53,6 +52,14 @@ stock_code: 332570
 
 > 출처: Notion `지난기사 아카이브 + 링크` 100% 전수 복사 (요약·누락 금지)
 
+- [[특징주] PS일렉트로닉스, 자기주식 취득 완료 소식에 강세](http://www.seoulwire.com/news/articleView.html?idxno=701116)
+- [[특징주] 외국인 'PS일렉트로닉스' 담고 '삼성전자' 팔았다](http://www.newstnt.com/news/articleView.html?idxno=571213)
+- [[특징주] PS일렉트로닉스, 현대차 이어 삼성까지 진출…자율주행 핵심 ...](http://www.newsprime.co.kr/news/article.html?no=717842)
+- [[특징주] PS일렉트로닉스, 자율주행·AI·로봇 "신사업 수주 릴레이"에 ...](https://www.widedaily.com/news/articleView.html?idxno=274630)
+- [[특징주] PS일렉트로닉스, 자율주행·AI·로봇까지 "글로벌 수주 릴레이...](https://www.widedaily.com/news/articleView.html?idxno=274447)
+- [[특징주]PS일렉트로닉스, 테슬라에 로보틱스·AI서버까지…역대 최대 성...](https://view.asiae.co.kr/article/2025080609420572660)
+- [[시간외 특징주] PS일렉트로닉스, "자사주 전량 소각" 선제 대응에 주가...](https://www.widedaily.com/news/articleView.html?idxno=272041)
+- [[특징주] PS일렉트로닉스, 영진하이텍과 합병 완료 소식에 강세](http://www.seoulwire.com/news/articleView.html?idxno=655411)
 - [(25.06.24)PS일렉트로닉스, 테슬라 “로보택시 출시 성공" 자율주행 핵심 모듈 부각 ↑ [특징주]](https://n.news.naver.com/mnews/article/014/0005367256?sid=101)
 - [PS일렉트로닉스 “주주가치 제고 위해 자사주 56만3174주 소각 결정”](https://www.etoday.co.kr/news/view/2547898)
 - ["라스베이거스 누빈다"…현대차 로보택시 '모셔널' 올해 상용화](https://n.news.naver.com/mnews/article/421/0008707800?sid=103)
@@ -61,6 +68,8 @@ stock_code: 332570
 - [(25.09.05)반도체·로봇까지… PS일렉트로닉스, 성장축 확장 가속화](https://www.pinpointnews.co.kr/news/articleView.html?idxno=374076) / 2025-09-05 / 등락률: +4.8%
 - [(25.08.06)[특징주]PS일렉트로닉스, 테슬라에 로보틱스·AI서버까지…역대 최대 성장세↑](https://n.news.naver.com/mnews/article/277/0005633402?sid=101)
 - [테슬라 감독형 완전자율주행, 네덜란드서 승인받아…유럽 최초](https://n.news.naver.com/mnews/article/001/0016017101?sid=104)
+- [벤츠, 내년 한국서 ‘레벨2++’ 자율주행차 출시… “알파마요 제공”](https://v.daum.net/v/20260420150132893)
+- [PS일렉트로닉스, 약 30억 규모 자사주 소각 추진…주주가치 제고 강화](https://n.news.naver.com/mnews/article/277/0005752058?sid=101)
 
 ---
 
@@ -70,7 +79,7 @@ stock_code: 332570
 - **사업 구조**: 동사는 2006년 설립되어 2020년 코스닥 상장 후, 2025년 (주)영진하이텍 지분 100% 취득 및 합병 완료하고, 베트남 현지 공장을 편입함.
 이동통신용 전력증폭기 모듈과 RF FEM 개발·제조를 주력으로, 스마트 자동화 장비 제조 사업을 영위하고 있음.
 도허티 방식 전력증폭기 설계 기술로 글로벌 6개사와 경쟁하며, 5G 및 IoT 모듈로 응용 범위...
-- **유통가능주식 비율**: 71.90%
+- **유통가능주식 비율**: 72.75%
 
 ---
 
@@ -100,8 +109,8 @@ _직접 추가 또는 LLM이 분석 시 기록_
 
 | 날짜 | 등락률 | 재료 요약 |
 |------|--------|-----------|
-| 2026-05-04 | +29.9% | • PS일렉트로닉스는 국내업체 중 유일하게 전력증폭기를 포함한 무선주파수(RF) 관련 부품을 글로벌 기업에 공급할 수 있는 기술력을 보유 • 스마트 자동화장비와 부품을 개발·제조해 |
+| 2026-05-13 | +17.0% | • PS일렉트로닉스는 국내업체 중 유일하게 전력증폭기를 포함한 무선주파수(RF) 관련 부품을 글로벌 기업에 공급할 수 있는 기술력을 보유 • 스마트 자동화장비와 부품을 개발·제조해 |
 
 ## 마지막 업데이트
 
-2026-05-04 | Notion ingest (ingest_all.py 자동 생성)
+2026-05-17 | Notion ingest (ingest_all.py 자동 생성)

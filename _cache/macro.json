@@ -1,0 +1,149 @@
+{
+  "2026-05-17": {
+    "kospi": null,
+    "kosdaq": null,
+    "supply": null
+  },
+  "2026-05-19": {
+    "kospi": {
+      "close": 7271.66,
+      "chg": -3.25
+    },
+    "kosdaq": {
+      "close": 1084.36,
+      "chg": -2.41
+    },
+    "supply": null
+  },
+  "2026-05-22": {
+    "kospi": {
+      "close": 7847.71,
+      "chg": 0.41
+    },
+    "kosdaq": {
+      "close": 1161.13,
+      "chg": 4.99
+    },
+    "supply": null
+  },
+  "2026-05-26": {
+    "kospi": {
+      "close": 8047.51,
+      "chg": 2.55
+    },
+    "kosdaq": {
+      "close": 1172.52,
+      "chg": 0.98
+    },
+    "supply": null
+  },
+  "2026-05-29": {
+    "kospi": {
+      "close": 8476.15,
+      "chg": 3.55
+    },
+    "kosdaq": {
+      "close": 1074.8,
+      "chg": -2.68
+    },
+    "supply": null
+  },
+  "2026-06-01": {
+    "kospi": {
+      "close": 8788.38,
+      "chg": 3.68
+    },
+    "kosdaq": {
+      "close": 1050.03,
+      "chg": -2.3
+    },
+    "supply": null
+  },
+  "2026-06-02": {
+    "kospi": {
+      "close": 8801.49,
+      "chg": 0.15
+    },
+    "kosdaq": {
+      "close": 1026.03,
+      "chg": -2.29
+    },
+    "supply": null
+  },
+  "2026-06-04": {
+    "kospi": {
+      "close": 8639.41,
+      "chg": -1.84
+    },
+    "kosdaq": {
+      "close": 1049.73,
+      "chg": 2.31
+    },
+    "supply": null
+  },
+  "2026-06-06": {
+    "kospi": null,
+    "kosdaq": null,
+    "supply": null
+  },
+  "2026-06-08": {
+    "kospi": {
+      "close": 7484.41,
+      "chg": -8.29
+    },
+    "kosdaq": {
+      "close": 911.39,
+      "chg": -9.08
+    },
+    "supply": null
+  },
+  "2026-06-09": {
+    "kospi": {
+      "close": 8096.93,
+      "chg": 8.18
+    },
+    "kosdaq": {
+      "close": 967.81,
+      "chg": 6.19
+    },
+    "supply": null
+  },
+  "2026-06-10": {
+    "kospi": {
+      "close": 7730.82,
+      "chg": -4.52
+    },
+    "kosdaq": {
+      "close": 951.63,
+      "chg": -1.67
+    },
+    "supply": null
+  },
+  "2026-06-11": {
+    "kospi": {
+      "close": 7763.95,
+      "chg": 0.43
+    },
+    "kosdaq": {
+      "close": 996.93,
+      "chg": 4.76
+    },
+    "supply": null
+  },
+  "2026-06-13": {
+    "kospi": null,
+    "kosdaq": null,
+    "supply": null
+  },
+  "2026-06-15": {
+    "kospi": {
+      "close": 8545.98,
+      "chg": 5.2
+    },
+    "kosdaq": {
+      "close": 1034.03,
+      "chg": 0.48
+    },
+    "supply": null
+  }
+}

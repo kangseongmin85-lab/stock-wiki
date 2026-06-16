@@ -71,16 +71,29 @@ def notion_post(url: str, body: dict) -> dict:
     raise RuntimeError(f"POST {url} 실패")
 
 
-def query_all_pages() -> list:
+def query_all_pages(since_days: int = 0) -> list:
     """
     DB 전체 페이지 조회 후 종목명별 최신 1개만 반환.
     같은 종목이 날짜별로 여러 행 존재하므로 최근업데이트 기준으로 deduplicate.
+
+    since_days > 0 이면 Notion API 단계에서 '최근업데이트' 가 N일 이내인 페이지만
+    페치한다. 매일 변경 종목만 페치해 API 호출량을 대폭 줄임.
     """
     all_pages, cursor = [], None
+    notion_filter = None
+    if since_days > 0:
+        cutoff = (datetime.now() - timedelta(days=since_days)).strftime("%Y-%m-%d")
+        notion_filter = {
+            "property": "최근업데이트",
+            "date": {"on_or_after": cutoff},
+        }
+        print(f"  [필터] 최근업데이트 >= {cutoff} ({since_days}일 이내)")
     while True:
         body = {"page_size": 100}
         if cursor:
             body["start_cursor"] = cursor
+        if notion_filter:
+            body["filter"] = notion_filter
         data = notion_post(f"https://api.notion.com/v1/databases/{DB_ID}/query", body)
         all_pages.extend(data.get("results", []))
         if not data.get("has_more"):
@@ -722,9 +735,16 @@ def process_stock(page: dict, overwrite: bool, no_finance: bool, dry_run: bool):
             if "완료" in result.stdout or "OK" in result.stdout or result.returncode == 0:
                 print(f"  [OK] 재무 데이터 완료")
             else:
-                print(f"  [WARN] 재무 수집 결과 불명확 (DART에 없는 종목일 수 있음)")
+                print(f"  [WARN] {name} 재무 수집 결과 불명확 (returncode={result.returncode})")
+                # 진단을 위해 stdout/stderr 마지막 줄들 노출
+                if result.stdout:
+                    tail = "\n".join(result.stdout.strip().split("\n")[-8:])
+                    print(f"    [stdout tail]\n      " + tail.replace("\n", "\n      "))
+                if result.stderr:
+                    tail = "\n".join(result.stderr.strip().split("\n")[-5:])
+                    print(f"    [stderr tail]\n      " + tail.replace("\n", "\n      "))
         except Exception as e:
-            print(f"  [WARN] fetch_finance.py 실패: {e}")
+            print(f"  [WARN] {name} fetch_finance.py 실행 예외: {type(e).__name__}: {e}")
 
     return name
 
@@ -874,7 +894,17 @@ def main():
     parser.add_argument("--dry-run",        action="store_true", help="파일 쓰기 없이 미리보기")
     parser.add_argument("--delete-orphans", action="store_true", help="Notion에 없는 wiki 파일 삭제")
     parser.add_argument("--enrich",         action="store_true", help="ingest 후 기사 아카이브 등락률 매핑")
+    parser.add_argument("--since-days",     type=int, default=0,
+                        help="Notion 최근업데이트 N일 이내 종목만 페치 (0=전체). 일일 자동 실행 시 2 권장")
+    parser.add_argument("--only",           type=str, default="",
+                        help="쉼표 구분 종목명 리스트만 ingest (예: '삼성전자,SK하이닉스'). signal_report 체이닝용")
     args = parser.parse_args()
+
+    only_names = [s.strip() for s in args.only.split(",") if s.strip()] if args.only else []
+
+    if only_names and args.delete_orphans:
+        print("[ERROR] --only 와 --delete-orphans 는 함께 사용할 수 없습니다 (orphan 판정이 부분 집합 기준이 되어 부정확).")
+        sys.exit(1)
 
     if not NOTION_TOKEN:
         print("[ERROR] NOTION_TOKEN이 없습니다. .env 파일을 확인하세요.")
@@ -888,10 +918,11 @@ def main():
           f"{'재무 생략' if args.no_finance else '재무 포함'}")
     print("=" * 50)
 
-    # 전체 페이지 조회
-    print("\n[DB 조회] Notion 종목재료정리 전체 로드 중...")
-    all_pages = query_all_pages()
-    print(f"  → 총 {len(all_pages)}개 종목 확인")
+    # 전체 페이지 조회 — 특정 종목/--only/--all 이면 전체 페치, 아니면 since-days 필터 적용
+    since = 0 if (args.stock or only_names or args.all) else args.since_days
+    print("\n[DB 조회] Notion 종목재료정리 로드 중...")
+    all_pages = query_all_pages(since_days=since)
+    print(f"  → 총 {len(all_pages)}개 종목 확인" + (f" (필터 적용: 최근 {since}일)" if since > 0 else ""))
 
     # 특정 종목 필터
     if args.stock:
@@ -899,6 +930,17 @@ def main():
         if not all_pages:
             print(f"[ERROR] '{args.stock}' 종목을 DB에서 찾을 수 없습니다.")
             sys.exit(1)
+    elif only_names:
+        only_set = set(only_names)
+        all_pages = [p for p in all_pages if prop_text(p["properties"].get("종목명")) in only_set]
+        found_names = {prop_text(p["properties"].get("종목명")) for p in all_pages}
+        missing = only_set - found_names
+        if missing:
+            print(f"[WARN] 다음 종목은 Notion DB에서 찾지 못해 스킵: {', '.join(sorted(missing))}")
+        if not all_pages:
+            print(f"[ERROR] --only 로 지정한 종목 중 매칭된 게 없습니다.")
+            sys.exit(1)
+        print(f"  → --only 필터 적용: {len(all_pages)}개 종목 ingest 진행")
 
     # 처리
     processed, skipped, failed = [], 0, 0
@@ -918,7 +960,10 @@ def main():
     # index / log 업데이트
     if processed and not args.dry_run:
         update_index(processed)
-        update_log(f"전체 ingest — {len(processed)}개 완료 / {skipped}개 스킵 / {failed}개 실패")
+        scope_label = f"부분 ingest (--only {len(only_names)}종목)" if only_names else (
+            f"단일 ingest ({args.stock})" if args.stock else "전체 ingest"
+        )
+        update_log(f"{scope_label} — {len(processed)}개 완료 / {skipped}개 스킵 / {failed}개 실패")
 
     # ── 기사 아카이브 등락률 매핑 (--enrich) ──
     if args.enrich and processed and not args.dry_run:
@@ -944,9 +989,16 @@ def main():
     # ── 고아 파일 삭제 (--delete-orphans) ──
     deleted = []
     if args.delete_orphans:
+        # since_days 필터가 적용됐다면 all_pages 는 부분 집합이라 orphan 판정에 못 씀.
+        # 정확한 비교를 위해 전체 종목 목록을 별도 페치한다.
+        if since > 0:
+            print("\n[고아 파일 검사] 전체 종목 목록 별도 페치...")
+            full_pages = query_all_pages(since_days=0)
+        else:
+            full_pages = all_pages
         notion_names = set(
             prop_text(p["properties"].get("종목명", {})).strip()
-            for p in all_pages
+            for p in full_pages
         ) - {""}
         wiki_files = [f for f in WIKI_ROOT.glob("*.md") if not f.name.startswith("_")]
         orphans = [f for f in wiki_files if f.stem not in notion_names]

@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>기사 검수 - 20260601</title>
+<style>
+* { box-sizing: border-box; }
+body { font-family: -apple-system, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; max-width: 1100px; margin: 0 auto; padding: 20px; background: #f5f5f7; color: #222; }
+.topbar { position: sticky; top: 10px; background: white; padding: 14px 18px; border-radius: 12px; display: flex; align-items: center; gap: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 16px; z-index: 10; }
+.topbar h2 { margin: 0; font-size: 17px; }
+.progress { flex: 1; height: 8px; background: #eee; border-radius: 4px; overflow: hidden; }
+.progress-bar { height: 100%; background: #4CAF50; transition: width 0.2s; }
+.stock-card { background: white; padding: 18px; border-radius: 10px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); border-left: 4px solid transparent; }
+.stock-card.approved { border-left-color: #4CAF50; background: #f1f8f3; }
+.stock-card.rejected { border-left-color: #f44336; background: #fdecea; }
+.stock-card.skipped  { border-left-color: #999; background: #f5f5f5; }
+.stock-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
+.stock-name { font-size: 17px; font-weight: 700; }
+.stock-meta { color: #666; font-size: 13px; }
+.ctrt-up   { color: #d32f2f; font-weight: 600; }
+.ctrt-down { color: #1976d2; font-weight: 600; }
+.theme-tag { background: #e3f2fd; color: #1976d2; padding: 2px 8px; border-radius: 4px; font-size: 12px; }
+.memo { color: #888; font-size: 12px; margin-left: 4px; }
+.article { background: #fafafa; padding: 12px; border-radius: 8px; margin: 8px 0; }
+.article-meta { color: #666; font-size: 12px; margin-bottom: 4px; }
+.article-title { font-weight: 600; margin: 4px 0; line-height: 1.4; }
+.article-title a { color: #1565c0; text-decoration: none; }
+.article-title a:hover { text-decoration: underline; }
+.article-desc { color: #444; font-size: 13px; line-height: 1.5; }
+.nav-bar { display: flex; align-items: center; gap: 8px; margin: 8px 0 4px; }
+.actions { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+button { padding: 8px 14px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 13px; }
+button:disabled { opacity: 0.4; cursor: default; }
+.btn-approve { background: #4CAF50; color: white; }
+.btn-reject  { background: #f44336; color: white; }
+.btn-skip    { background: #9e9e9e; color: white; }
+.btn-nav     { background: #e0e0e0; color: #333; padding: 6px 10px; }
+.btn-export  { background: #1976d2; color: white; }
+.btn-reset   { background: white; color: #888; border: 1px solid #ddd; }
+.badge-today { background: #4CAF50; color: white; font-size: 11px; padding: 2px 6px; border-radius: 3px; margin-right: 4px; }
+.badge-old   { background: #ff9800; color: white; font-size: 11px; padding: 2px 6px; border-radius: 3px; margin-right: 4px; }
+.badge-source { background: #7e57c2; color: white; font-size: 11px; padding: 2px 6px; border-radius: 3px; }
+.empty { color: #aaa; font-style: italic; padding: 18px; text-align: center; background: #fafafa; border-radius: 8px; }
+.decision-tag { margin-left: auto; font-size: 13px; font-weight: 600; }
+</style>
+</head>
+<body>
+<div class="topbar">
+  <h2>기사 검수 - 20260601</h2>
+  <div class="progress"><div class="progress-bar" id="progressBar"></div></div>
+  <span id="progressText" style="font-size:13px;color:#666;"></span>
+  <button class="btn-export" onclick="pushToNotion()" id="btnPush">📤 노션에 푸시</button>
+  <button class="btn-reset" onclick="resetAll()">초기화</button>
+</div>
+
+<div id="pushResult" style="margin:12px 0;padding:10px;border-radius:6px;display:none;font-size:14px;"></div>
+
+<div id="cards"></div>
+
+<script>
+const REVIEW_DATE     = "20260601";
+const STORAGE_KEY     = "review_" + REVIEW_DATE;
+const PUSH_ENDPOINT   = "http://127.0.0.1:8765";  // 비어있으면 푸시 비활성, 다운로드만
+const DATA            = [{"name": "LG헬로비전", "code": "037560", "ctrt": 30.0, "vol_eok": 372, "theme": "개별주", "memo": "37,222", "candidates": [{"title": "[1일 특징주] 젠슨 황이 파트너사 '콕' 찝었다…SKT '신고가'", "url": "https://www.newsworks.co.kr/news/articleView.html?idxno=842510", "desc": "한편 이날 코스피에서는 ▲LG전자 ▲두산로보틱스 ▲LG전자우 ▲LG헬로비전 등이 상한가를 기록했다. 코스닥에서는 ▲로보스타 ▲크레오에스지 ▲오브젠 ▲크라우드웍스 ▲한국비티비 ▲팸텍 등이 상한가를...", "date": "2026.06.01", "score": 10, "is_today": true, "source": "naver"}, {"title": "[특징주] '마법의 손'?…젠슨황 방한 기대에 LG그룹주·네이버 등 폭등(...", "url": "https://www.yna.co.kr/view/AKR20260601036051008?input=1195m", "desc": "이날 유가증권시장에서 상승률 상위권은 상한가를 기록한 LG헬로비전(30.00%)과 두산로보틱스(29.95%) 순이었으며, LG전자와 LG씨엔에스가 그 뒤를 이었다. 업계에 따르면 황 CEO는 이날부터 대만에서 열리는 'GTC...", "date": "2026.06.01", "score": 10, "is_today": true, "source": "naver"}, {"title": "[특징주] LG전자, 젠슨 황 회동 기대감에 29% 강세", "url": "https://www.kfenews.co.kr/news/articleView.html?idxno=658405", "desc": "LG전자 외에도 LG헬로비전(30.00%), LG전자우(27.27%), LG씨엔에스(25.83%), LG(17.80%), LG이노텍(7.61%), LG유플러스(4.90%) 등 타 LG 계열사도 강세다. 젠슨 황 CEO는 이날부터 오는 4일까지 대만에서 GTC 타이베이 2026과...", "date": "2026.06.01", "score": 10, "is_today": true, "source": "naver"}, {"title": "[ET특징주] LG전자, '제2 깐부회동' 기대감 계속… 상한가 이어 29% 급등", "url": "https://www.etnews.com/20260601000200", "desc": "LG AI연구원, LG이노텍, LG유플러스 등 계열사와의 협력 방안을 논의할 것으로 전망하고 있다. 이에 따라 같은 시각 LG(+18.21%), LG헬로비전(+30.00%), LG씨엔에스(+25.92%), LG이노텍(+7.34%) 등 LG그룹주가 전반적으로 강세다.", "date": "2026.06.01", "score": 10, "is_today": true, "source": "naver"}, {"title": "[특징주] LG전자, 젠슨 황 방한 기대감에 '급등'…관련 종목도 상승", "url": "https://www.cstimes.com/news/articleView.html?idxno=707984", "desc": "같은 시각 LG씨엔에스는 전 거래일 대비 2만5300원(22.23%)원 오른 13만9100원에, LG유플러스는 470(2.91%)원 오른 1만6600원에, LG디스플레이는 40원(0.25%) 오른 1만6130원에, LG헬로비전은 505원(22.95%)원 오른 2705원에...", "date": "2026.06.01", "score": 10, "is_today": true, "source": "naver"}, {"title": "[특징주] '젠슨 황' 방한 기대감에 LG그룹주 불기둥", "url": "https://www.ziksir.com/news/articleView.html?idxno=135439", "desc": "지주사 LG는 18.14% 상승했으며, LG씨엔에스(22.58%), LG헬로비전(21.36%), LG이노텍(5.49%), LG유플러스(4.40%) 등도 강세를 보이고 있다. 시장에서는 황 CEO의 방한 가능성에 주목하고 있다. 업계에 따르면 황 CEO는 이날부터...", "date": "2026.06.01", "score": 10, "is_today": true, "source": "naver"}, {"title": "[특징주] '젠슨 황 효과'에 LG그룹주 급등세 지속", "url": "https://www.yna.co.kr/view/AKR20260601036000008?input=1195m", "desc": "시스템통합(SI) 업체인 LG씨엔에스(27.59%)와 지주사인 LG(23.12%) 외에도 LG이노텍(20.51%), LG유플러스(12.83%), LG디스플레이(11.19%), LG헬로비전(11.14%) 등 다른 그룹사 종목들도 줄줄이 상승 중이다. 업계에 따르면 황 CEO는...", "date": "2026.06.01", "score": 10, "is_today": true, "source": "naver"}, {"title": "엔비디아와 피지컬 AI 협력 기대 솔솔…LG그룹주, 나란히 불기둥", "url": "https://www.mt.co.kr/stock/2026/06/01/2026060109055717053", "desc": "LG씨엔에스(26.89%), LG(16.92%), LG유플러스(14.14%), LG이노텍(13.65%), LG헬로비전(5.91%), LG디스플레이(5.84%) 등도 동반 상승하고 있다. LG그룹의 동반 상승은 오는 6월5일 방한하는 황 CEO와 구광모 LG그룹 회장 회동에...", "date": "2026.06.01", "score": 10, "is_today": true, "source": "naver"}], "best_url": "https://www.newsworks.co.kr/news/articleView.html?idxno=842510"}, {"name": "로보티즈", "code": "108490", "ctrt": 25.96, "vol_eok": 13109, "theme": "개별주", "memo": "1,310,938", "candidates": [{"title": "[특징주] 로보티즈, 휴머노이드 'AI 사피엔스' 공개에 급등…피지컬 AI ...", "url": "https://www.tokenpost.kr/news/economy/364907", "desc": "로보티즈가 자체 개발한 휴머노이드 로봇 'AI 사피엔스(AI Sapiens)'를 공개했다는 소식에 장 초반 급등하고... 1일 오전 9시 6분 현재 로보티즈는 전 거래일 대비 7만5750원(23.27%) 오른 40만1250원에 거래되고 있다. 회사 측에...", "date": "2026.06.01", "score": 30, "is_today": true, "source": "naver"}, {"title": "[특징주] 로보티즈, 자체 개발 휴머노이드 공개…피지컬 AI 사업 확장 기...", "url": "https://www.etoday.co.kr/news/view/2589427", "desc": "이투데이=김우람 기자 | 로보티즈가 자체 개발한 휴머노이드 로봇 'AI 사피엔스(AI Sapiens)'를 공개했다는 소식에 상승세다. 향후 로봇 사업 확대 기대감이 반영된 것으로 해석된다. 1일 오전 9시 2분 현재 로보티즈는...", "date": "2026.06.01", "score": 30, "is_today": true, "source": "naver"}, {"title": "로보티즈, 'AI 사피엔스' 공개… \"보행·점프·외발서기 구현\"", "url": "http://digitalchosun.dizzo.com/site/data/html_dir/2026/06/01/2026060180151.html", "desc": "성열휘 기자 | 로보티즈에서 산업통상자원부가 주관하는 'AI 로봇 M.AX 얼라이언스' 출범 1주년 행사를 개최했다고 1일 밝혔다. 이번 행사에서 로보티즈는 국내 기술로 개발된 휴머노이드 로봇 'AI 사피엔스'를 공개하며...", "date": "2026.06.01", "score": 15, "is_today": true, "source": "naver"}, {"title": "\"구천피도 목전\"...삼성전자가 이끌고 젠슨 황이 민다", "url": "https://www.ntoday.co.kr/news/articleView.html?idxno=127393", "desc": "특징주로는 젠슨 황의 방한 기대감으로 두산로보틱스와 로보스타가 상한가를 기록했고, 로보티즈(+23.66%), 해성에어로보틱스(+13.13%), 엔젤로보틱스(+22.01%), 레인보우로보틱스(+12.39%) 등 로봇주가 강세를 보였다....", "date": "2026.06.01", "score": 10, "is_today": true, "source": "naver"}, {"title": "[애프터마켓 브리핑] 5월 반도체 수출 372억 달러 '역대 최대'", "url": "https://biz.sbs.co.kr/article_hub/20000313847?division=NAVER", "desc": "이외에도 로보티즈가 지난주 휴머노이드 로봇인 AI 사피엔스를 공개하면서 정규장 초반부터 급등세를... 이렇게 애프터마켓 흐름과 특징주까지 봤습니다. 이어서 오늘 밤 열리는 뉴욕 증시도 함께 대비해 보시죠....", "date": "2026.06.01", "score": 10, "is_today": true, "source": "naver"}, {"title": "젠슨황이 온다…네이버·로봇주 급등 마감 [특징주]", "url": "https://www.dailian.co.kr/news/view/1651223/?sc=Naver", "desc": "그 밖에 로보스타(30.00%), LG전자(29.86%), 로보티즈(23.66%), 엔젤로보틱스(22.01%) 등도 급등 마감했다. 강진혁 신한투자증권 선임연구원은 \"젠슨 황 협업 기대감에 LG전자, 두산로보틱스 등 피지컬 AI 관련주가 급등했다...", "date": "2026.06.01", "score": 10, "is_today": true, "source": "naver"}, {"title": "[특징주] '마법의 손'?…젠슨황 방한 기대에 LG그룹주·네이버 등 폭등(...", "url": "https://www.yna.co.kr/view/AKR20260601036051008?input=1195m", "desc": "로보스타(30.00%), 로보티즈(23.66%), 레인보우로보틱스(12.39%) 등 관련 종목이 급등 마감했다. 황 CEO가 이번 방한을 통해 만날 것으로 전망되는 네이버도 큰 폭 뛰었다. 네이버는 16.03% 오른 27만1천500원에 거래를...", "date": "2026.06.01", "score": 10, "is_today": true, "source": "naver"}, {"title": "[특징주] 로보스타, 젠슨 황 방한 및 반도체 자동화 수요 기대감에 '상한...", "url": "https://www.widedaily.com/news/articleView.html?idxno=294976", "desc": "한편 이날 시장에서는 로보스타 외에도 두산로보틱스, 로보티즈, 해성에어로보틱스, 엔젤로보틱스, 레인보우로보틱스 등 로봇 섹터 전반의 종목들이 일제히 동반 급등세를 기록하며 시장의 주목을 받고 있다.", "date": "2026.06.01", "score": 10, "is_today": true, "source": "naver"}], "best_url": "https://www.tokenpost.kr/news/economy/364907"}, {"name": "삼성에스디에스", "code": "018260", "ctrt": 23.58, "vol_eok": 23640, "theme": "개별주", "memo": "2,364,069", "candidates": [{"title": "[특징주] 삼성에스디에스, AI 데이터센터·공공 AI 수혜 기대에 급등…...", "url": "https://www.tokenpost.kr/news/economy/364935", "desc": "삼성에스디에스가 인공지능(AI) 데이터센터 수혜 기대감에 급등하며 35만원대를 넘어섰다. 단순 IT서비스 회사를 넘어 AI 데이터센터 운영 플랫폼 기업으로 재평가받는 흐름이 주가를 밀어올리는 모습이다....", "date": "2026.06.01", "score": 30, "is_today": true, "source": "naver"}, {"title": "삼성에스디에스, 장중 24% 급등…두나무 투자·AX 기대감[특징주]", "url": "https://www.newsway.co.kr/news/view?ud=2026052913504979858", "desc": "삼성에스디에스가 두나무 지분 취득과 삼성그룹의 인공지능(AI) 전환(AX) 확대 기대감에 강세를 보이고 있다. 29일 한국거래소에 따르면 오후 1시 31분 기준 삼성에스디에스는 전 거래일 대비 6만1500원(24.75%) 오른...", "date": "2026.05.29", "score": 20, "is_today": false, "source": "naver"}, {"title": "[특징주] 삼성에스디에스, 두나무 지분 투자·그룹 AX 수혜 기대에 27%대...", "url": "https://www.tokenpost.kr/news/economy/364257", "desc": "삼성에스디에스가 두나무 지분 취득과 삼성그룹 차원의 제조 인공지능 전환(AX) 수혜 기대에 장중 27%대 급등세를 나타내고 있다. 한국거래소에 따르면 삼성에스디에스는 전 거래일 대비 27.36% 오른 31만6500원에...", "date": "2026.05.29", "score": 20, "is_today": false, "source": "naver"}, {"title": "[특징주] 삼성에스디에스, AI 인프라 재평가에 15%대 강세…52주 신고가", "url": "https://www.tokenpost.kr/news/economy/363464", "desc": "삼성에스디에스가 AI 데이터센터와 클라우드 인프라 수요 확대 기대를 타고 장 초반 급등하며 52주 신고가를 경신했다. 삼성에스디에스는 전 거래일보다 15.14% 오른 23만2000원에 거래되고 있다. 장중에는...", "date": "2026.05.27", "score": 20, "is_today": false, "source": "naver"}, {"title": "[특징주] 삼성에스디에스, 장 초반 15%대 급등…52주 신고가 경신", "url": "https://www.etoday.co.kr/news/view/2588084", "desc": "이투데이=정수천 기자 | 삼성에스디에스가 장 초반 급등하고 있다. 인공지능(AI) 데이터센터와 클라우드 인프라 수요 확대가 본격화하면서 중장기 성장성이 재평가되는 모습이다. 27일 오전 삼성에스디에스는 전...", "date": "2026.05.27", "score": 20, "is_today": false, "source": "naver"}, {"title": "삼성전자·삼성에스디에스 주가 급등... 삼성그룹주 재평가 확산", "url": "https://www.pinpointnews.co.kr/news/articleView.html?idxno=456883", "desc": "가장 두드러진 종목은 삼성에스디에스였다. 한국거래소에 따르면 삼성에스디에스는 이날 21.07% 상승하며 삼성 계열주 가운데 가장 강한 주가 흐름을 보였다. AI와 클라우드 사업 성장 기대가 집중되면서 투자자들의...", "date": "2026.06.01", "score": 15, "is_today": true, "source": "naver"}, {"title": "삼성에스디에스, 전날 이어 18% 급등…35만원선 재돌파", "url": "http://www.econonews.co.kr/news/articleView.html?idxno=439116", "desc": "삼성에스디에스가 급등 중이다. 젠슨 황 엔비디아 최고경영자(CEO)의 방한을 앞두고 국내 인공지능(AI) 인프라 구축 기대감이 커지면서 시스템통합(SI) 기업 전반에 대한 투자심리가 확대되는 모습이다....", "date": "2026.06.01", "score": 15, "is_today": true, "source": "naver"}, {"title": "[특징주] 삼성SDS, AI 데이터센터 기대감에 35만원 돌파…18%↑", "url": "https://www.newspim.com/news/view/20260601000319", "desc": "1일 삼성에스디에스(SDS)가 인공지능(AI) 데이터센터 수혜 기대감에 35만원선을 돌파하며 강세를 보이고 있다. 한국거래소에 따르면 오전 10시21분 기준 삼성SDS는 전 거래일 대비 18.06% 오른 35만3000원에 거래되고...", "date": "2026.06.01", "score": 10, "is_today": true, "source": "naver"}], "best_url": "https://www.tokenpost.kr/news/economy/364935"}, {"name": "미래에셋 레버리지 삼성전자 단일종목 ETN", "code": "520100", "ctrt": 20.07, "vol_eok": 160, "theme": "개별주", "memo": "16,094", "candidates": [{"title": "삼전·하닉 레버리지 인기 폭발… ‘음의 복리’ 모르면 낭패", "url": "https://www.busan.com/view/busan/view.php?code=2026060118041907640", "desc": "지난달 27일 국내 증시 사상 처음으로 단일종목 레버리지 상장 상품이 출시됐다. 삼성전자와 SK하이닉스를... 삼성·미래에셋·한국투자·KB·신한·한화·키움·하나 등 8개 운용사가 ETF 16종을, 1개 증권사가 ETN 2종을...", "date": "2026.06.01", "score": 10, "is_today": true, "source": "naver"}, {"title": "[마켓Q] 삼전닉스 레버리지 LP 논란…'갑질'인가, '돈질'인가", "url": "https://www.asiatime.co.kr/article/20260601500342", "desc": "미래에셋증권도 삼성전자와 SK하이닉스 단일종목 레버리지 상장지수증권(ETN) 2종을 같은 날 상장했다. 삼성전자 단일종목 레버리지 ETF 증권사 앱 화면/사진=연합뉴스 레버리지 ETP는 기초자산의 하루 수익률을 2배로...", "date": "2026.06.01", "score": 10, "is_today": true, "source": "naver"}, {"title": "삼성전자 시총 첫 2000조 돌파...코스피 장중 8800선 넘어", "url": "http://www.newsfc.co.kr/news/articleView.html?idxno=79011", "desc": "이밖에 미래에셋 레버리지 삼성전자 단일종목 ETN(20.07%), PLUS 삼성전자단일종목레버리지(18.96%) 등도 큰 폭으로 상승했다. 삼성전자 시총 2040조3512억원...2위인 SK하이닉스보다 356조원 앞서 이날 종가 기준...", "date": "2026.06.01", "score": 10, "is_today": true, "source": "naver"}, {"title": "삼성전자, 10% 급등에 시총 2000조 돌파 마감…2배 ETF도 불기둥[핫스탁...", "url": "https://www.newsis.com/view/NISX20260601_0003652071", "desc": "이밖에 미래에셋 레버리지 삼성전자 단일종목 ETN(20.07%), PLUS 삼성전자단일종목레버리지(18.96%) 등도 큰 폭으로 상승했다. 삼성전자의 시가총액도 2000조원을 돌파했다. 국내 상장 기업 가운데 시총이...", "date": "2026.06.01", "score": 10, "is_today": true, "source": "naver"}, {"title": "삼전닉스 레버리지에 'ETF 1위' 광고하는 삼성운용…금투협 \"규제 사각지...", "url": "https://www.asiatoday.co.kr/kn/view.php?key=20260531010009167", "desc": "31일 금융투자업계에 따르면 삼성자산운용은 지난 19일부터 삼성전자·SK하이닉스를 단일종목 레버리지... 현재 삼전닉스 단일종목 레버리지·인버스 상품을 내놓은 곳은 삼성자산운용·미래에셋자산운용·KB자산운용...", "date": "2026.05.31", "score": 0, "is_today": false, "source": "naver"}, {"title": "‘삼전닉스’ 단일종목 레버리지 거래대금만 28조…사전교육 33만명 몰...", "url": "https://www.segye.com/newsView/20260531503212?OutUrl=naver", "desc": "지난 27일 상장한 삼성전자·SK하이닉스 단일종목 레버리지 상장지수펀드(ETF)에 3일 동안 28조원의... 48% △ 키움투자자산운용의 ‘KIWOOM SK하이닉스선물단일종목레버리지’ 27.20% △미래에셋자산운용의 ‘TIGER...", "date": "2026.05.31", "score": 0, "is_today": false, "source": "naver"}, {"title": "\"삼성전자ㆍSK하이닉스\" 단일종목 레버리지 투자 상품 등장, 투자 시 주...", "url": "https://it.donga.com/108963/", "desc": "27일 단일종목 레버리지 상품을 일괄 상장했다. 출시 종목은 삼성전자와 SK하이닉스, 두 종목이다.... ETN 형태로는 미래에셋증권이 삼성전자와 SK하이닉스 각 1개씩, 총 2개의 상승추종(2배) 상품을 출시한다....", "date": "2026.05.29", "score": 0, "is_today": false, "source": "naver"}, {"title": "단일종목 레버리지 ETF·ETN 편차 크네···신한·삼성·미래에셋이 '정...", "url": "https://www.sisajournal-e.com/news/articleView.html?idxno=421385", "desc": "◇ 단일종목 레버리지 편차 컸다···신한·삼성·미래에셋 '우수' 29일 한국거래소에 따르면 전날 종가 기준 삼성전자와 SK하이닉스 단일종목 레버리지 ETF·ETN 18종 간 추종 오차 차이는 최대 1.93%p에 달한 것으로...", "date": "2026.05.29", "score": 0, "is_today": false, "source": "naver"}], "best_url": "https://www.newsis.com/view/NISX20260601_0003652071"}, {"name": "포스코DX", "code": "022100", "ctrt": 23.57, "vol_eok": 7622, "theme": "개별주", "memo": "762,279", "candidates": [{"title": "NC AI, 포스코DX와 로봇 파운데이션 모델 공동 개발 업무협약 체결", "url": "https://www.apnews.kr/news/articleView.html?idxno=3048782", "desc": "▲김민재 NC AI CTO(좌), 윤석준 포스코DX 로봇자동화센터장(우). NC AI는 포스코DX와 로봇 파운데이션 모델(RFM)의 공동 개발 및 기술 협력을 위한 전략적 업무협약을 체결했다고 1일 밝혔다. 이번 협약은 다양한 로봇에...", "date": "2026.06.01", "score": 15, "is_today": true, "source": "naver"}, {"title": "포스코DX-NC AI \"현장 지시 이해하고 판단하는 로봇 개발한다\"", "url": "https://www.newsquest.co.kr/news/articleView.html?idxno=267155", "desc": "포스코DX가 NC AI와 손잡고 산업용 로봇에 적용할 피지컬 인공지능(AI) 기술 개발에 나선다. 철강·제조 등 고위험·고강도 현장에서 로봇이 사람의 지시와 현장 상황을 스스로 이해하고 판단하는 자율작업 체계를...", "date": "2026.06.01", "score": 15, "is_today": true, "source": "naver"}, {"title": "NC AI, 포스코DX와 로봇 파운데이션 모델 공동 개발 나선다", "url": "https://www.aitimes.com/news/articleView.html?idxno=211186", "desc": "NC AI(대표 이연수)는 포스코DX와 로봇 파운데이션 모델(RFM) 공동 개발 및 기술 협력을 위한 전략적 업무협약을 체결했다고 밝혔다. 이번 협력을 통해 ▲RFM 공동 연구 ▲시각·언어·행동(VLA) 모델 최적화 ▲디지털 트윈...", "date": "2026.06.01", "score": 15, "is_today": true, "source": "naver"}, {"title": "포스코DX, 전날 이어 23% 급등…NC AI와 로봇 AI 개발 협력", "url": "http://www.econonews.co.kr/news/articleView.html?idxno=439135", "desc": "포스코DX가 급등 중이다. 인공지능(AI)과 로봇 기술 융합 기대감이 커지는 가운데, NC AI와의 협력 소식이 투자심리를 자극한 것으로 풀이된다. 포스코DX는 1일 코스닥 시장에서 오후 2시11분 현재 전 거래일보다...", "date": "2026.06.01", "score": 15, "is_today": true, "source": "naver"}, {"title": "포스코DX+NC, 네이버+엔비디아… ‘피지컬AI 연합전선’", "url": "https://www.munhwa.com/article/11592628?ref=naver", "desc": "포스코DX는 AI 전문기업 NC AI와 업무협약(MOU)을 맺고 고위험·고강도 업무수행을 위한 피지컬 AI 기반 로봇 지능화 기술 공동개발에 착수했다고 1일 밝혔다. 포스코DX의 로봇 시뮬레이션 및 제어기술과 NC AI의 AI 모델을...", "date": "2026.06.01", "score": 15, "is_today": true, "source": "naver"}, {"title": "포스코DX, NC AI와 손잡고 산업현장용 피지컬AI 개발", "url": "http://www.snmnews.com/news/articleView.html?idxno=570095", "desc": "포스코DX가 AI 전문기업 NC AI와 손잡고 산업현장용 피지컬AI(Physical AI) 기술 개발에 나선다. 양사는 로봇 운영 기술과 인공지능 모델을 결합한 로봇 파운데이션 모델을 공동 개발해 고위험·고강도 작업의 자동화...", "date": "2026.06.01", "score": 15, "is_today": true, "source": "naver"}, {"title": "‘포스코DX-NC AI’ 피지컬 AI 두뇌 개발 맞손", "url": "https://biz.heraldcorp.com/article/10760780?ref=naver", "desc": "산업용 로봇 파운데이션 모델 개발 현장 데이터 수집, 로봇 AI에 적용 윤석준(오른쪽) 포스코DX 로봇자동화센터장과 김민재 NC AI CTO가 ‘로봇 피지컬 AI 기술 공동 개발’을 위한 업무협약을 체결했다. [포스코DX 제공]...", "date": "2026.06.01", "score": 15, "is_today": true, "source": "naver"}, {"title": "포스코DX, NC AI와 '로봇 파운데이션 모델' 공동 개발… 산업현장 비정형...", "url": "https://www.mtnews.net/news/articleView.html?idxno=24933", "desc": "포스코DX는 지난 5월 29일 NC AI와 윤석준 포스코DX 로봇자동화센터장과 김민재 NC AI CTO를 비롯한 양사 관계자들이 참석한 가운데, 'AI 기반 로봇 자율작업 체계 구현을 위한 업무협약(MOU)'을 체결했다고 밝혔다. 이번...", "date": "2026.06.01", "score": 15, "is_today": true, "source": "naver"}], "best_url": "https://www.apnews.kr/news/articleView.html?idxno=3048782"}, {"name": "성호전자", "code": "043260", "ctrt": 18.11, "vol_eok": 2228, "theme": "개별주", "memo": "222,828", "candidates": [{"title": "힘 빠진 코스닥...로보티즈 · 성호전자 · HLB는 '훨훨'", "url": "http://www.choicenews.co.kr/news/articleView.html?idxno=166049", "desc": "코스닥 시총 상위주 중 성호전자는 18.11% 치솟았고 심텍은 15.16% 추락했다. 코스닥 지수는 직전거래일 대비 24.77포인트(2.30%) 급락한 1050.03으로 마감했다. 외국인이 8015억원을 순매수한 반면 개인과 기관은...", "date": "2026.06.01", "score": 15, "is_today": true, "source": "naver"}, {"title": "삼성전자-성호전자, 실리콘 포토닉스 공동 개발…AI 반도체 병목 해소 ...", "url": "https://www.mt.co.kr/stock/2026/06/01/2026060111260287030", "desc": "삼성전자가 빛으로 데이터를 전송하는 '실리콘 포토닉스' 기술 개발을 선언한 가운데 성호전자의 자회사 ADS테크가 공동 개발 파트너로 낙점됐다. 1일 관련업계에 따르면 삼성전자와 ADS테크는 '실리콘 포토닉스...", "date": "2026.06.01", "score": 15, "is_today": true, "source": "naver"}, {"title": "[주식마감] \"젠슨 황 온다\" 기대감에 LG그룹株 '들썩'… 두산로보틱스·...", "url": "https://www.ggilbo.com/news/articleView.html?idxno=1161481", "desc": "우리기술, 성호전자, SFA반도체, PS일렉트로닉스, 세아메카닉스, 현대무벡스, 기가레인, 드림시큐리티, KBI메탈, 한국첨단소재, SKAI, 아스트, 이브이첨단소재, 알체라, 디앤디파마텍, 누리플랜...", "date": "2026.06.01", "score": 10, "is_today": true, "source": "naver"}, {"title": "코스피, 개인·기관 '매수 바람' 9000선 코 앞…코스닥 2%대 하락", "url": "https://www.newsworks.co.kr/news/articleView.html?idxno=842515", "desc": "성호전자는 18.1% 올랐다. 자회사 ADS테크가 삼성전자와 빛으로 데이터를 전송하는 실리콘 포토닉스 기술 공동 개발 파트너로 낙점됐다는 소식이 매수세로 이어졌다. 환율은 소폭 하락했다. 이날 오후 3시30분 기준...", "date": "2026.06.01", "score": 10, "is_today": true, "source": "naver"}, {"title": "[EBN 데이터센터] 1일 상승 종목 30選…LG그룹주·두산로보틱스 상한가", "url": "https://www.ebn.co.kr/news/articleView.html?idxno=1710891", "desc": "성호전자와 세아메카닉스, 에스아이리소스도 각각 18.11%, 17.18%, 14.36% 상승하며 종목별 순환매 흐름을 나타냈다. 특히 로보스타는 거래량 75만193주, 로보티즈는 138만415주, 엔젤로보틱스는 100만8514주를 기록해...", "date": "2026.06.01", "score": 10, "is_today": true, "source": "naver"}, {"title": "[코스닥 외국인] 로봇·반도체 집중 매수…2차전지는 차익실현", "url": "https://www.pinpointnews.co.kr/news/articleView.html?idxno=456885", "desc": "이 밖에 성호전자, 현대무벡스, 나무기술, 한국피아이엠, 켐트로닉스, 뉴파워프라즈마, 와이씨, 하이젠알앤엠, 에스비비테크, 스피어, 네패스, 제이앤티씨, 두산테스나 등에서도 외국인 매도 우위가 나타났다. 시장에서는...", "date": "2026.06.01", "score": 10, "is_today": true, "source": "naver"}, {"title": "[서울데이터랩]코스닥 거래상위 종목 혼조세…로봇·클라우드 강세, 통...", "url": "https://www.seoul.co.kr/news/economy/securities/2026/06/01/20260601500122?wlog_tag3=naver", "desc": "PS일렉트로닉스(332570)는 6.12%, 성호전자(043260)는 4.64%, 우리기술(032820)은 3.48% 각각 상승했다. 반면 빛과전자(069540)는 13.69% 하락한 4160원, 메이슨캐피탈(021880)은 8.12% 내린 181원, 드림시큐리티(203650)는 9.60...", "date": "2026.06.01", "score": 10, "is_today": true, "source": "naver"}, {"title": "엔비디아 다음은 CPO…성호전자가 숨겨진 승자가 될까", "url": "https://www.pinpointnews.co.kr/news/articleView.html?idxno=456560", "desc": "그동안 전자부품 업체로 알려졌던 성호전자가 이 시장에서 의미 있는 기회를 확보할 수 있다는 전망이 제기되며 투자자들의 관심이 높아지고 있다. iM증권은 최근 기업 탐방 보고서를 통해 성호전자가 자회사...", "date": "2026.05.31", "score": 5, "is_today": false, "source": "naver"}], "best_url": "http://www.choicenews.co.kr/news/articleView.html?idxno=166049"}, {"name": "세아메카닉스", "code": "396300", "ctrt": 17.18, "vol_eok": 306, "theme": "개별주", "memo": "30,619", "candidates": [{"title": "[특징주]세아메카닉스, LG전자 로봇 사업 확대 기대감과 함께 급등세", "url": "https://www.widedaily.com/news/articleView.html?idxno=294035", "desc": "세아메카닉스(396300)는 한국거래소에 따르면 15일 오전 10시 04분 전 거래일 대비 1120원(19.41%) 오른 6890원에 거래됐다. LG전자의 로봇 사업 확대 기대감이 커지는 가운데, 과거 LG 클로이(CLOi) 서빙로봇에 부품과 구동...", "date": "2026.05.15", "score": 20, "is_today": false, "source": "naver"}, {"title": "[특징주] 세아메카닉스, LG전자 로봇 사업 주목…클로이 구동 부품 공급...", "url": "https://www.etoday.co.kr/news/view/2584812", "desc": "이투데이=김우람 기자 | 세아메카닉스가 LG전자의 로봇 사업 확장에 따른 시장 관심 집중과 과거 LG클로이(CLOi) 서빙로봇 부품과 구동 메커니즘 적용 이력이 주목받으며 상승세다. 과거 로봇 관련 부품 공급 경험을...", "date": "2026.05.15", "score": 20, "is_today": false, "source": "naver"}, {"title": "[주식마감] \"젠슨 황 온다\" 기대감에 LG그룹株 '들썩'… 두산로보틱스·...", "url": "https://www.ggilbo.com/news/articleView.html?idxno=1161481", "desc": "PS일렉트로닉스, 세아메카닉스, 현대무벡스, 기가레인, 드림시큐리티, KBI메탈, 한국첨단소재, SKAI, 아스트, 이브이첨단소재, 알체라, 디앤디파마텍, 누리플랜, 이노인스트루먼트다. 이날 서울 외환시장에서 미국...", "date": "2026.06.01", "score": 10, "is_today": true, "source": "naver"}, {"title": "[EBN 데이터센터] 1일 상승 종목 30選…LG그룹주·두산로보틱스 상한가", "url": "https://www.ebn.co.kr/news/articleView.html?idxno=1710891", "desc": "성호전자와 세아메카닉스, 에스아이리소스도 각각 18.11%, 17.18%, 14.36% 상승하며 종목별 순환매 흐름을 나타냈다. 특히 로보스타는 거래량 75만193주, 로보티즈는 138만415주, 엔젤로보틱스는 100만8514주를 기록해...", "date": "2026.06.01", "score": 10, "is_today": true, "source": "naver"}, {"title": "[서울데이터랩]코스닥 거래상위 종목 혼조세…로봇·클라우드 강세, 통...", "url": "https://www.seoul.co.kr/news/economy/securities/2026/06/01/20260601500122?wlog_tag3=naver", "desc": "개별 종목별로는 나무기술(242040)이 18.45% 오른 1만 400원, 세아메카닉스(396300)가 18.53% 오른 6140원, 엑사이엔씨(054940)가 14.05% 상승한 820원으로 오름폭이 컸다. PS일렉트로닉스(332570)는 6.12%, 성호전자...", "date": "2026.06.01", "score": 10, "is_today": true, "source": "naver"}, {"title": "캐즘 뚫은 기술력…세아메카닉스, 글로벌 배터리 부품 공급 전방위 확대", "url": "https://www.pinpointnews.co.kr/news/articleView.html?idxno=455859", "desc": "세아메카닉스와 신성에스티는 배터리 부품 공급 확대 기대 속에 강세를 나타내고 있다. 세아메카닉스가 전기차용 배터리 부품 공급을 전방위로 확대하며 독자적인 성장 발판을 마련했다. 업계에 따르면 세아메카닉스는...", "date": "2026.05.28", "score": 5, "is_today": false, "source": "naver"}, {"title": "세라젬·LG이노텍 사로잡은 기술력…서울전자통신, 고부가 ODM 기업 변신...", "url": "https://www.pinpointnews.co.kr/news/articleView.html?idxno=455913", "desc": "세아메카닉스와 강원에너지는 2차전지 및 에너지 저장장치(ESS) 관련 수혜 기대감이 부각되는 분위기다. 크린앤사이언스와 지에프아이, S&K폴리텍, 인터엠 등 중소형 부품주들도 순환매 흐름 속에 상승세를 나타낸다. 특히...", "date": "2026.05.28", "score": 0, "is_today": false, "source": "naver"}, {"title": "AI 데이터센터發 전력 대란 해결사…신성에스티, ESS 장비 수혜주로 우...", "url": "https://www.pinpointnews.co.kr/news/articleView.html?idxno=455873", "desc": "세아메카닉스, 한중엔시에스, 신성에스티도 강한 상승 흐름을 이어가고 있다. 이들 기업은 전기차 배터리팩 부품, ESS 장비, 배터리 구조물 관련 사업 기대감이 부각되며 매수세가 집중되는 분위기다. ESS 시장 확대...", "date": "2026.05.28", "score": 0, "is_today": false, "source": "naver"}], "best_url": "https://www.widedaily.com/news/articleView.html?idxno=294035"}, {"name": "롯데에너지머티리얼즈", "code": "020150", "ctrt": 15.69, "vol_eok": 1281, "theme": "개별주", "memo": "128,190", "candidates": [{"title": "[특징주] 롯데에너지머티리얼즈, 적자 개선에 강세…익산공장 500억 투자", "url": "http://www.biztribune.co.kr/news/articleView.html?idxno=353679", "desc": "ㅣ 네이버증권 롯데에너지머티리얼즈가 1분기 영업손실 폭을 크게 줄이면서 주가도 강세를 보이고 있다. 11일 오전 10시 55분 유가증권시장에서 롯데에너지머티리얼즈는 전 거래일 대비 4.2%(3000원) 상승한...", "date": "2026.05.11", "score": 20, "is_today": false, "source": "naver"}, {"title": "[테크데이, '판'이 바뀐다]〈10〉롯데에너지머티리얼즈, AI 데이터센터용...", "url": "https://www.etnews.com/20260601000183", "desc": "롯데에너지머티리얼즈가 인공지능(AI) 데이터센터 시대에 대응해 초고속 데이터 전송용 회로박 기술 경쟁력 강화에 나서고 있다. 롯데에너지머티리얼즈는 전기차·에너지저장장치(ESS)용 전지박을 넘어 AI...", "date": "2026.06.01", "score": 15, "is_today": true, "source": "naver"}, {"title": "코스피, 젠슨 황 효과에 8700 직행…\"하반기 1만피 간다\"", "url": "https://www.hankyung.com/article/202606010900i", "desc": "AI 빅테크 관련 납품·수주 소식이 전해진 롯데에너지머티리얼즈(14.62%)와 가온전선(14.29%) 등도 큰 폭으로 상승했다. 코스피지수가 연일 급등을 이어가면서 하반기 추가 상승 기대감도 커지고 있다. 이날...", "date": "2026.06.01", "score": 10, "is_today": true, "source": "naver"}, {"title": "K배터리, 데이터센터용 ESS로 캐즘 뚫는다", "url": "https://www.hankyung.com/article/2026060101221", "desc": "롯데에너지머티리얼즈는 배터리용 동박 대신 AI 반도체에 쓰이는 회로박 생산 비중을 대폭 늘렸다. 지난해 전북 익산 1·2공장 전지박 생산 라인 일부를 회로박용으로 전환했다. 기존 연간 3700t 수준이던 회로박...", "date": "2026.06.01", "score": 10, "is_today": true, "source": "naver"}, {"title": "[기업家] 롯데그룹 ⑥ㅣ실적·글로벌 확장·ESG 강화…롯데백화점 천장...", "url": "https://www.cbci.co.kr/news/articleView.html?idxno=578458", "desc": "롯데에너지머티리얼즈는 전기차용 전지박 중심에서 에너지저장장치(ESS) 배터리와 인공지능(AI)용 회로박 소재 중심으로 사업 구조를 전환 중이며, 롯데케미칼은 고부가가치 스페셜티 소재 비중 확대에 나서고 있다....", "date": "2026.06.01", "score": 10, "is_today": true, "source": "naver"}, {"title": "\"종착지는 전지·반도체\"… 석화 빅4, '스페셜티' 승부", "url": "http://www.the-biz.co.kr/news/articleView.html?idxno=721679", "desc": "롯데 화학군 계열사인 롯데에너지머티리얼즈는 하이엔드 동박과 인공지능(AI)용 회로박을 키우고, LG화학은 양극재와 반도체용 고순도 소재를 함께 육성한다. 금호석유화학은 지난 3월 포스코퓨처엠, 배터리 스타트업...", "date": "2026.06.01", "score": 10, "is_today": true, "source": "naver"}, {"title": "롯데에너지머티리얼즈, 적자 개선에 장중 급등…AI 회로박 기대감↑[특...", "url": "https://www.newsway.co.kr/news/view?ud=2026051114453324378", "desc": "롯데에너지머티리얼즈가 1분기 영업손실 폭 축소와 AI(인공지능)용 고부가 회로박 사업 확대 기대감에 장중 강세를 보이고 있다. 말레이시아 공장 생산성 향상과 ESS(에너지저장장치) 출하 확대 기대가 투자심리를...", "date": "2026.05.11", "score": 5, "is_today": false, "source": "naver"}, {"title": "\"롯데에너지머티리얼즈, 가동률 저점 통과 중…올 하반기 ESS 낙수효과 ...", "url": "https://www.newsquest.co.kr/news/articleView.html?idxno=267094", "desc": "롯데에너지머티리얼즈의 2분기 영업이익은 –191억원으로 적자가 지속될 전망이다. 키움증권은 29일 롯데에너지머티리얼즈에 대해 투자의견 'BUY', 목표주가 8만2000원을 유지했다. 직전거래일 28일 기준 주가는...", "date": "2026.05.29", "score": 5, "is_today": false, "source": "naver"}], "best_url": "http://www.biztribune.co.kr/news/articleView.html?idxno=353679"}, {"name": "LS ELECTRIC", "code": "010120", "ctrt": 13.66, "vol_eok": 12988, "theme": "개별주", "memo": "1,298,866", "candidates": [{"title": "[특징주] 대형 수주 소식에 전선주 강세⋯가온전선 10%ㆍ대한전선 7%↑", "url": "https://www.etoday.co.kr/news/view/2589545", "desc": "앞서 LS는 지난달 15일 분기보고서에서 LS ELECTRIC의 수주잔고를 18조2681억원이라고 공시했으나, 이후 계산 오류를 바로잡아 16조7390억원으로 정정 재공시했다. 이로 인해 주가가 큰 폭으로 하락한 바 있다. 허민호...", "date": "2026.06.01", "score": 10, "is_today": true, "source": "naver"}, {"title": "\"LS, 공시 정정 실수에 펀더멘털 변화없다…주가 급락은 과도하다\"", "url": "https://www.newsquest.co.kr/news/articleView.html?idxno=267182", "desc": "5월 27일 지주회사인 ㈜LS는 자회사의 LS ELECTRIC 관련 수주금액 기재정정 해프닝이 발생했다. LS ELECTRIC의 자회사(LS의 손자회사) 수주금액을 크게 낮추었다. 실제 LS ELECTRIC이 직접 공시한 수주금액은 올바로...", "date": "2026.06.01", "score": 10, "is_today": true, "source": "naver"}, {"title": "[코스피 지수선물 옵션] 삼성전자·NAVER·LG전자 급등, SK하이닉스는 주...", "url": "https://www.pinpointnews.co.kr/news/articleView.html?idxno=456919", "desc": "반도체 장비와 부품주 가운데서는 삼성전기, 삼성SDI가 약세를 보인 반면 LS ELECTRIC, 한미반도체, 이수페타시스는 상승 마감했다. LG이노텍도 강한 상승세를 보이며 AI 서버와 첨단 패키징 수요 확대 기대를 반영했다....", "date": "2026.06.01", "score": 10, "is_today": true, "source": "naver"}, {"title": "엔비디아 훈풍, 코스피 '또 신고가'...삼성전자 & LG그룹주 '껑충'", "url": "http://www.choicenews.co.kr/news/articleView.html?idxno=166044", "desc": "전력기기주에선 LS ELECTRIC이 10.56% 급등했고 HD현대일렉트릭(1.23%), 효성중공업(3.42%) 등도 올랐다. 2차전지주들이 고개를 숙였다. LG에너지솔루션(-0.66%), 삼성SDI(-5.23%), 포스코퓨처엠(-5.91%) 등이 하락했다....", "date": "2026.06.01", "score": 10, "is_today": true, "source": "naver"}, {"title": "[거래소 기관] SK하이닉스 삼성전자 NAVER 현대모비스 쓸어 담았다...왜...", "url": "https://www.pinpointnews.co.kr/news/articleView.html?idxno=456891", "desc": "산업재와 조선·방산 분야에서는 LS ELECTRIC, 효성중공업, HD현대마린솔루션, HD현대중공업, 한국항공우주가 순매수 상위권에 이름을 올렸다. 전력 인프라 투자 확대와 글로벌 조선업 호황, 방산 수출 증가 기대가...", "date": "2026.06.01", "score": 10, "is_today": true, "source": "naver"}, {"title": "[거래소 외국인] 한화에어로스페이스·현대로템 매수 확대…방산주 존재...", "url": "https://www.pinpointnews.co.kr/news/articleView.html?idxno=456890", "desc": "한국거래소에 따르면 이날 외국인 순매수 상위권에는 SK스퀘어와 LS ELECTRIC, 두산로보틱스가 자리했다. SK스퀘어는 인공지능(AI)과 반도체 투자 포트폴리오 가치가 재조명되면서 관심을 받았고, LS ELECTRIC은 전력 인프라...", "date": "2026.06.01", "score": 10, "is_today": true, "source": "naver"}, {"title": "KOSPI 200 Closing Price List-5", "url": "https://en.yna.co.kr/view/AEN20260601009000320?input=2106m", "desc": "UP 23,000 LS ELECTRIC 267,000 UP 25,500 DL E&C 72,000 DN 4,500 NAVER 271,500 UP 37,500 kakaopay 47,400 UP 850 HYBE 216,000 DN 4,000 ECOPRO MAT 60,100 DN 2,100 SK ie technology 18,710 DN 600 (END)", "date": "2026.06.01", "score": 10, "is_today": true, "source": "naver"}, {"title": "일본 광역 전력망 재편 본격화, HVDC 프로젝트가 여는 전력 기자재 시장...", "url": "http://dream.kotra.or.kr/kotranews/cms/news/actionKotraBoardDetail.do?SITE_NO=3&MENU_ID=80&CONTENTS_NO=2&bbsGbn=242&bbsSn=242&pNttSn=241607", "desc": "LS일렉트릭 (LS ELECTRIC) 한국 HVDC 컨버터 밸브·변압기·차단기 효성중공업 한국 초고압 변압기 차단기·GIS 현대일렉트릭 한국 초고압 변압기 차단기·컨버터 [자료: 각 기업 공식 홈페이지] 시사점 및 진출 전략 제언...", "date": "2026.06.01", "score": 10, "is_today": true, "source": "naver"}], "best_url": "https://www.etoday.co.kr/news/view/2589545"}];
+
+let state = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+
+function saveState() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+
+function ensureState(name) {
+  if (!state[name]) state[name] = { chosen_idx: 0, decision: null };
+  return state[name];
+}
+
+function decide(name, decision) {
+  const st = ensureState(name);
+  st.decision = (st.decision === decision) ? null : decision;  // 같은 버튼 다시 누르면 해제
+  saveState();
+  render();
+}
+
+function navCandidate(name, delta) {
+  const st = ensureState(name);
+  const stock = DATA.find(s => s.name === name);
+  const max = (stock.candidates || []).length - 1;
+  let idx = (st.chosen_idx || 0) + delta;
+  if (idx < 0) idx = 0;
+  if (idx > max) idx = max;
+  st.chosen_idx = idx;
+  saveState();
+  render();
+}
+
+function _buildPayload() {
+  const results = DATA.map(s => {
+    const st = state[s.name] || {};
+    const idx = st.chosen_idx || 0;
+    const cands = s.candidates || [];
+    const cand = cands[idx] || null;
+    // recent_articles: 대표 1건(chosen) + 나머지 후보들 (URL dedup)
+    const seen = new Set();
+    const recent = [];
+    const tryAdd = (a) => {
+      if (!a || !a.url || seen.has(a.url)) return;
+      seen.add(a.url);
+      recent.push(a);
+    };
+    tryAdd(cand);
+    cands.forEach(tryAdd);
+    return {
+      name: s.name, code: s.code, ctrt: s.ctrt, vol_eok: s.vol_eok, theme: s.theme,
+      decision: st.decision || null,
+      chosen_article: (st.decision === "approved" && cand) ? cand : null,
+      recent_articles: recent.slice(0, 5),
+      candidates_seen: (st.chosen_idx || 0) + 1,
+      total_candidates: cands.length
+    };
+  });
+  return {
+    date: REVIEW_DATE,
+    exported_at: new Date().toISOString(),
+    summary: {
+      total: DATA.length,
+      approved: results.filter(r => r.decision === "approved").length,
+      rejected: results.filter(r => r.decision === "rejected").length,
+      skipped:  results.filter(r => r.decision === "skipped").length,
+      pending:  results.filter(r => !r.decision).length
+    },
+    results
+  };
+}
+
+function _showPushResult(html, color) {
+  const div = document.getElementById("pushResult");
+  div.style.display = "block";
+  div.style.background = color || "#f1f8f3";
+  div.innerHTML = html;
+}
+
+async function pushToNotion() {
+  const payload = _buildPayload();
+  const approved = payload.summary.approved;
+  if (approved === 0) {
+    _showPushResult("⚠️ 승인된 종목이 없습니다. ✅ 승인 버튼을 먼저 누르세요.", "#fff3e0");
+    return;
+  }
+  if (!PUSH_ENDPOINT) {
+    _showPushResult("⚠️ 푸시 서버가 비활성화 — JSON 다운로드로 폴백합니다.", "#fff3e0");
+    _downloadJson(payload);
+    return;
+  }
+  const btn = document.getElementById("btnPush");
+  btn.disabled = true;
+  btn.textContent = "⏳ 푸시 중...";
+  _showPushResult("⏳ 노션에 " + approved + "건 푸시 중...", "#e3f2fd");
+  try {
+    const res = await fetch(PUSH_ENDPOINT + "/push", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || ("HTTP " + res.status));
+    let msg = "✅ 노션 푸시 완료 — 총 " + data.total + "건 / 신규 " + data.created + ", 업데이트 " + data.updated;
+    let color = "#e8f5e9";
+    if (data.errors && data.errors.length) {
+      msg += "<br>⚠️ 실패 " + data.errors.length + "건: ";
+      msg += data.errors.map(e => e.name + " (" + e.error + ")").join(", ");
+      color = "#fff3e0";
+    }
+    _showPushResult(msg, color);
+  } catch (e) {
+    _showPushResult("❌ 푸시 실패: " + e.message + "<br>JSON 다운로드로 폴백합니다.", "#ffebee");
+    _downloadJson(payload);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "📤 노션에 푸시";
+  }
+}
+
+function _downloadJson(payload) {
+  const blob = new Blob([JSON.stringify(payload, null, 2)], {type: "application/json"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "reviewed_" + REVIEW_DATE + ".json";
+  document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
+}
+
+function resetAll() {
+  if (!confirm("모든 검수 결과를 초기화합니다.")) return;
+  state = {}; saveState(); render();
+}
+
+function escapeHtml(s) {
+  return String(s == null ? "" : s)
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+}
+
+function decisionLabel(d) {
+  return ({ approved: "✅ 승인", rejected: "❌ 거부", skipped: "⏭️ 스킵" })[d] || "";
+}
+
+function render() {
+  const cards = document.getElementById("cards");
+  cards.innerHTML = "";
+  let done = 0;
+
+  DATA.forEach((s, sIdx) => {
+    const st = state[s.name] || { chosen_idx: 0, decision: null };
+    if (st.decision) done++;
+
+    const card = document.createElement("div");
+    card.className = "stock-card" + (st.decision ? " " + st.decision : "");
+    card.dataset.name = s.name;
+
+    const ctrtClass = s.ctrt >= 0 ? "ctrt-up" : "ctrt-down";
+    const ctrtSign  = s.ctrt >= 0 ? "+" : "";
+
+    let html = "";
+    html += '<div class="stock-header">';
+    html += '<span class="stock-name">' + escapeHtml(s.name) + '</span>';
+    html += '<span class="' + ctrtClass + '">' + ctrtSign + s.ctrt.toFixed(2) + '%</span>';
+    html += '<span class="stock-meta">' + s.vol_eok.toLocaleString() + '억</span>';
+    html += '<span class="theme-tag">' + escapeHtml(s.theme) + '</span>';
+    if (s.memo) html += '<span class="memo">' + escapeHtml(s.memo) + '</span>';
+    if (st.decision) html += '<span class="decision-tag">→ ' + decisionLabel(st.decision) + '</span>';
+    html += '</div>';
+
+    const candidates = s.candidates || [];
+    if (candidates.length === 0) {
+      html += '<div class="empty">관련 기사 없음</div>';
+    } else {
+      const idx = st.chosen_idx || 0;
+      const cand = candidates[idx];
+      html += '<div class="nav-bar">';
+      html += '<button class="btn-nav" data-act="prev" data-name="' + escapeHtml(s.name) + '"' + (idx === 0 ? ' disabled' : '') + '>⬅️ 이전</button>';
+      html += '<span style="font-size:13px;color:#666;">후보 ' + (idx+1) + ' / ' + candidates.length + '</span>';
+      html += '<button class="btn-nav" data-act="next" data-name="' + escapeHtml(s.name) + '"' + (idx >= candidates.length-1 ? ' disabled' : '') + '>다음 ➡️</button>';
+      html += '<span style="margin-left:auto;font-size:12px;color:#999;">점수 ' + cand.score + '</span>';
+      html += '</div>';
+      html += '<div class="article">';
+      html += '<div class="article-meta">';
+      if (cand.date) html += '<span>' + escapeHtml(cand.date) + '</span> ';
+      if (cand.is_today) html += '<span class="badge-today">오늘</span>';
+      else if (cand.date) html += '<span class="badge-old">이전</span>';
+      html += '<span class="badge-source">' + escapeHtml(cand.source || "naver") + '</span>';
+      html += '</div>';
+      html += '<div class="article-title"><a href="' + escapeHtml(cand.url) + '" target="_blank" rel="noopener">' + escapeHtml(cand.title) + '</a></div>';
+      if (cand.desc) html += '<div class="article-desc">' + escapeHtml(cand.desc) + '</div>';
+      html += '</div>';
+    }
+
+    html += '<div class="actions">';
+    html += '<button class="btn-approve" data-act="approved" data-name="' + escapeHtml(s.name) + '">✅ 승인</button>';
+    html += '<button class="btn-reject"  data-act="rejected" data-name="' + escapeHtml(s.name) + '">❌ 거부</button>';
+    html += '<button class="btn-skip"    data-act="skipped"  data-name="' + escapeHtml(s.name) + '">⏭️ 스킵</button>';
+    html += '</div>';
+
+    card.innerHTML = html;
+    cards.appendChild(card);
+  });
+
+  document.getElementById("progressBar").style.width = (done / DATA.length * 100) + "%";
+  document.getElementById("progressText").textContent = done + " / " + DATA.length + " 검토";
+}
+
+document.addEventListener("click", (e) => {
+  const btn = e.target.closest("button[data-act]");
+  if (!btn) return;
+  const name = btn.dataset.name;
+  const act  = btn.dataset.act;
+  if (act === "prev")      navCandidate(name, -1);
+  else if (act === "next") navCandidate(name, 1);
+  else                     decide(name, act);
+});
+
+render();
+</script>
+</body>
+</html>

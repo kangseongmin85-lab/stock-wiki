@@ -1,0 +1,18 @@
+화신정공: gap20=98.8 streak=7 volx=3.7 close=4895 high60=5750 chg=6.18
+미래에셋생명: gap20=57.6 streak=0 volx=3.4 close=28300 high60=31200 chg=-3.58
+원익IPS: gap20=52.5 streak=2 volx=3.3 close=183300 high60=183300 chg=30.0
+브이엠: gap20=49.7 streak=4 volx=2.2 close=97000 high60=104000 chg=13.98
+후성: gap20=49.3 streak=1 volx=3.5 close=19010 high60=20050 chg=20.55
+피에스케이: gap20=46.5 streak=4 volx=2.4 close=169900 high60=186500 chg=13.42
+미래산업: gap20=46.3 streak=2 volx=1.0 close=47250 high60=49450 chg=20.54
+유진테크: gap20=41.5 streak=4 volx=1.8 close=196100 high60=201500 chg=9.98
+라이콤: gap20=40.8 streak=0 volx=1.0 close=7700 high60=9330 chg=-12.4
+비보존 제약: gap20=39.8 streak=6 volx=1.0 close=4045 high60=4305 chg=3.06
+테스: gap20=38.4 streak=1 volx=2.1 close=182200 high60=202500 chg=6.8
+현대백화점: gap20=36.4 streak=0 volx=1.7 close=177300 high60=190000 chg=-5.24
+HPSP: gap20=36.3 streak=2 volx=3.4 close=71500 high60=71500 chg=30.0
+코미코: gap20=31.0 streak=0 volx=1.5 close=124900 high60=139200 chg=-10.27
+타이거일렉: gap20=30.3 streak=2 volx=1.6 close=78700 high60=80900 chg=5.64
+에이팩트: gap20=30.2 streak=2 volx=2.2 close=11500 high60=12130 chg=13.08
+싸이맥스: gap20=30.1 streak=2 volx=1.5 close=46500 high60=47850 chg=6.77
+케이씨텍: gap20=26.6 streak=2 volx=2.1 close=87100 high60=89700 chg=14.01
