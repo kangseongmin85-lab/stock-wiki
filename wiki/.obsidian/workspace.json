@@ -1,0 +1,209 @@
+{
+  "main": {
+    "id": "2d78ef8463072b72",
+    "type": "split",
+    "children": [
+      {
+        "id": "fad70da6903b40bf",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "125124471021d6ae",
+            "type": "leaf",
+            "state": {
+              "type": "graph",
+              "state": {},
+              "icon": "lucide-git-fork",
+              "title": "그래프 뷰"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "ffd651554b58a286",
+    "type": "split",
+    "children": [
+      {
+        "id": "0685e5244f1d40a3",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "927c1e9ccef3b02b",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false
+              },
+              "icon": "lucide-folder-closed",
+              "title": "파일 탐색기"
+            }
+          },
+          {
+            "id": "7968584c8307332c",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "젠슨황_밸류체인",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "검색"
+            }
+          },
+          {
+            "id": "08c7e642fe5c97a0",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {},
+              "icon": "lucide-bookmark",
+              "title": "북마크"
+            }
+          }
+        ],
+        "currentTab": 1
+      }
+    ],
+    "direction": "horizontal",
+    "width": 200
+  },
+  "right": {
+    "id": "9e5c528b4b8bd62e",
+    "type": "split",
+    "children": [
+      {
+        "id": "b0c7a029d0df94a1",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "8c6544c29e468250",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "stocks/지투파워.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "지투파워 의 백링크"
+            }
+          },
+          {
+            "id": "d30732eb5d085391",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "stocks/지투파워.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "지투파워 의 나가는 링크"
+            }
+          },
+          {
+            "id": "df20fff4c0d1485a",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "태그"
+            }
+          },
+          {
+            "id": "ad8c08381fb9b8cb",
+            "type": "leaf",
+            "state": {
+              "type": "all-properties",
+              "state": {
+                "sortOrder": "frequency",
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-archive",
+              "title": "모든 속성"
+            }
+          },
+          {
+            "id": "0d9fec087d78137b",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "stocks/지투파워.md",
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "지투파워 의 개요"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:빠른 전환기 열기": false,
+      "graph:그래프 뷰 열기": false,
+      "canvas:새 캔버스 만들기": false,
+      "daily-notes:오늘의 일일 노트 열기": false,
+      "templates:템플릿 삽입": false,
+      "command-palette:명령어 팔레트 열기": false,
+      "bases:새 베이스 생성하기": false
+    }
+  },
+  "active": "125124471021d6ae",
+  "lastOpenFiles": [
+    "themes/젠슨황_밸류체인.md",
+    "stocks/손오공.md",
+    "analysis/AIDC_밸류체인_2026-06-09.md",
+    "2026-06-09.md",
+    "무제 1.canvas",
+    "analysis/로봇종목_끼분석_2026-06-08.md",
+    "analysis/로봇피지컬AI_수급분석_2026-06-08.md",
+    "log.md.tmp.42924.a13178165b95",
+    "analysis/로봇종목_끼분석_2026-06-08.md.tmp.42924.a7803c15f51f",
+    "log.md.tmp.42924.cecbdea5df41",
+    "analysis/로봇종목_끼분석_2026-06-08.md.tmp.42924.67533cddcf8b",
+    "log.md",
+    "stocks/한국비엔씨.md",
+    "log.md.tmp.42924.4fce18c6facb",
+    "analysis/로봇피지컬AI_수급분석_2026-06-08.md.tmp.42924.64ecf5724c36",
+    "themes/정신질환치료제.md",
+    "stocks/풍원정밀.md",
+    "stocks/로보로보.md",
+    "stocks/가비아.md",
+    "stocks/피델릭스.md",
+    "무제.canvas",
+    "stocks/클로봇.md",
+    "stocks/지투파워.md"
+  ]
+}

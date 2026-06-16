@@ -1,13 +1,12 @@
 ---
 tags: [바이오/의료AI, AI/데이터센터/로봇, 빅테크, 의료AI, 엔비디아, AI]
 sector: 바이오/의료AI
-last_updated: 2026-05-04
-rate_updated: 2026-05-04
-close_price: 7340
-change_rate: -1.87%
-notion_last_edited: 2026-05-04T10:23:00.000Z
+last_updated: 2026-05-17
+notion_last_edited: 2026-05-07T13:05:00.000Z
 theme: ["#의료AI", "#엔비디아", "#AI(인공지능)"]
 stock_code: 041910
+is_leader: 
+recent_breakout: 
 ---
 
 # 폴라리스AI파마
@@ -48,7 +47,14 @@ stock_code: 041910
 
 > 출처: Notion `지난기사 아카이브 + 링크` 100% 전수 복사 (요약·누락 금지)
 
+- [[특징주] 폴라리스AI파마, 알파타우 췌장암 세포 사멸·DCR 87% 임상 발표...](https://www.cstimes.com/news/articleView.html?idxno=688597)
+- [[특징주] 폴라리스AI파마, "해외 진출 본격화" 러시아·사우디·멕시코 ...](https://www.widedaily.com/news/articleView.html?idxno=278975)
+- [[특징주] 폴라리스AI파마, '엔비디아 공식 파트너 선정' 소식에 상한가...](https://www.widedaily.com/news/articleView.html?idxno=266957)
+- [[특징주] 폴라리스AI, 계열사 폴라리스AI파마 유상증자 참여 소식에 주...](https://www.widedaily.com/news/articleView.html?idxno=246240)
+- [[시간외 특징주] 폴라리스AI파마 주가 훨훨...운영자금 50억 마련 '순항...](https://www.pinpointnews.co.kr/news/articleView.html?idxno=289786)
+- [[시간외 특징주] 폴라리스AI파마, 대규모 자금 조달로 상한가](https://www.widedaily.com/news/articleView.html?idxno=246171)
 - [[단독] '셀바스그룹 주축' 의료AI 프로젝트, 美 트럼프家 '러브콜'…도미나리, 전략적 투자 '급물살'](https://www.newsprime.co.kr/news/article/?no=715674)
+- [(26.03.13)폴라리스오피스, OpenAI와 전략적 파트너십 체결…美 AI헬스케어 시장 진출](https://view.asiae.co.kr/article/2026031310301276902) / 2026-03-13 / 등락률: +30.0%
 
 ---
 
@@ -88,8 +94,8 @@ _직접 추가 또는 LLM이 분석 시 기록_
 
 | 날짜 | 등락률 | 재료 요약 |
 |------|--------|-----------|
-| 2026-04-30 | +4.9% | [[단독] '셀바스그룹 주축' 의료AI 프로젝트, 美 트럼프家 '러브콜'…도미나리, 전략적 투자 '급물살'](https://www.newspri |
+| 2026-05-07 | +8.0% | [[특징주] 폴라리스AI파마, 알파타우 췌장암 세포 사멸·DCR 87% 임상 발표...](https://www.cstimes.com/news/a |
 
 ## 마지막 업데이트
 
-2026-05-04 | Notion ingest (ingest_all.py 자동 생성)
+2026-05-17 | Notion ingest (ingest_all.py 자동 생성)

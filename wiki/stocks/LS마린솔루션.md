@@ -1,20 +1,19 @@
 ---
-tags: []
-sector: 기타
-last_updated: 2026-05-04
-rate_updated: 2026-05-04
-close_price: 49550
-change_rate: +29.88%
-notion_last_edited: 2026-05-04T09:34:00.000Z
-theme: []
+tags: [전력, 전선, 해저케이블]
+sector: 전력
+last_updated: 2026-05-17
+notion_last_edited: 2026-05-05T08:46:00.000Z
+theme: ["#전선", "#해저케이블"]
 stock_code: 060370
+is_leader: 
+recent_breakout: 
 ---
 
 # LS마린솔루션
 
 ## 한줄 요약
 
-[⏳ 요약 미작성]
+국내유일 해저 케이블 시공
 
 ---
 
@@ -91,7 +90,7 @@ _직접 추가 또는 LLM이 분석 시 기록_
 
 ## 연관 테마
 
-[⏳ 테마 없음]
+[[themes/전선]] | [[themes/해저케이블]]
 
 ---
 
@@ -103,8 +102,8 @@ _직접 추가 또는 LLM이 분석 시 기록_
 
 | 날짜 | 등락률 | 재료 요약 |
 |------|--------|-----------|
-| 2026-05-04 | +29.9% | [[특징주] LS마린솔루션(060370), 고부가가치 해저 전력망 시장 진출 속도](https://www.incheonilbo.com/news/ |
+| 2026-05-04 | +29.9% | 국내유일 해저 케이블 시공 |
 
 ## 마지막 업데이트
 
-2026-05-04 | Notion ingest (ingest_all.py 자동 생성)
+2026-05-17 | Notion ingest (ingest_all.py 자동 생성)

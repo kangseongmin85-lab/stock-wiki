@@ -1,13 +1,12 @@
 ---
 tags: [금융, 증권]
 sector: 금융
-last_updated: 2026-05-04
-rate_updated: 2026-05-04
-close_price: 5190
-change_rate: -0.76%
-notion_last_edited: 2026-04-30T15:11:00.000Z
+last_updated: 2026-05-17
+notion_last_edited: 2026-05-06T10:16:00.000Z
 theme: ["#증권"]
 stock_code: 001510
+is_leader: 
+recent_breakout: 
 ---
 
 # SK증권
@@ -36,9 +35,7 @@ stock_code: 001510
 > 출처: Notion `추가 중요내용` 섹션 | 등락률은 Notion DB `등락률(%)` 컬럼 기준
 
 - [2026-04-28] [SK증권, 액면병합·증권주 강세 맞물려…24%대 급등[특징주]](https://www.newsway.co.kr/news/view?ud=2026042811134398403) / 등락률 미기재 / [등급 미분류]
-- [2026-04-27] [[특징주] SK증권, 액면병합 후 상한가](https://www.kfenews.co.kr/news/articleView.html?idxno=657343) / 등락률: +29.89% / [등급 미분류]
-- [2026-04-22] [[특징주] SK증권, 2대 1 액면병합 완료…27일 거래 재개 앞두고 부각](https://www.tokenpost.kr/news/economy/352104) / 등락률 미기재 / [등급 미분류]
-- [2026-04-22] [[특징주] SK증권, 2대 1 액면병합...27일부터 거래 재개](http://www.newstnt.com/news/articleView.html?idxno=607828) / 등락률 미기재 / [등급 미분류]
+- [2026-04-27] [[특징주] SK증권, 액면병합 후 상한가](https://www.kfenews.co.kr/news/articleView.html?idxno=657343) / 등락률 미기재 / [등급 미분류]
 
 ---
 
@@ -46,12 +43,18 @@ stock_code: 001510
 
 > 출처: Notion `지난기사 아카이브 + 링크` 100% 전수 복사 (요약·누락 금지)
 
+- [SK증권, 액면병합·증권주 강세 맞물려…24%대 급등[특징주]](https://www.newsway.co.kr/news/view?ud=2026042811134398403)
+- [[특징주] SK증권, 액면병합 후 상한가](https://www.kfenews.co.kr/news/articleView.html?idxno=657343)
+- [[특징주] SK증권, 2대 1 액면병합 완료…27일 거래 재개 앞두고 부각](https://www.tokenpost.kr/news/economy/352104)
+- [[특징주] SK증권, 2대 1 액면병합...27일부터 거래 재개](http://www.newstnt.com/news/articleView.html?idxno=607828)
 - [동전주 탈출한 상상인증권, 손실 80% 줄였다…1000원선 유지 가능할까](https://n.news.naver.com/mnews/article/088/0000998552?sid=101)
 - [[특징주] 상법 개정안 통과에 증권주 강세… 상상인증권 ‘上’](https://n.news.naver.com/mnews/article/366/0001144569?sid=101)
 - [(26.02.12)증시 불기둥에 10대 증권사 실적 껑충…순이익 전년 대비 43%↑](https://n.news.naver.com/mnews/article/586/0000122402?sid=101) / 2026-02-12 / 등락률: +3.4%
 - [주식 거래대금·예탁금 폭증하자…증권株 일제히 ‘불기둥’](https://n.news.naver.com/mnews/article/011/0004584425?sid=101)
 - [(26.03.05)[특징주] SK증권, 자사주 소각과 주식 병합 소식에 23% 급등](https://n.news.naver.com/mnews/article/366/0001145980?sid=101)
 - [증권주, 코스피 신고가 랠리 ‘최대 수혜’](https://n.news.naver.com/mnews/article/016/0002602138?sid=101)
+- [(26.03.19)주총 시즌 앞두고 증권株 이목 집중···주주환원 강화 기대감 ‘쑥’](https://www.todaykorea.co.kr/news/articleView.html?idxno=341115) / 2026-03-19 / 등락률: +15.9%
+- [저PBR의 반란은 계속된다…NH투자·한국금융지주 등 밸류업 수혜 '톡톡'](https://www.pinpointnews.co.kr/news/articleView.html?idxno=438501)
 
 ---
 
@@ -67,36 +70,9 @@ stock_code: 001510
 
 ## 재무 현황
 
-> 출처: DART OpenAPI + FDR(주가) | 기준: 2026-05-04 | 종목코드: 001510
-> 회계연도: 2025년 (연결 기준) | 주가: 5230원 (2026-04-30)
+[⏳ fetch_finance.py 실행 필요]
 
-### 밸류에이션
-
-| 항목 | 수치 |
-|------|------|
-| 시가총액 | [⏳ 계산 불가] |
-| PER | [⏳] |
-| PBR | [⏳] |
-| EPS | - |
-| BPS | - |
-
-### 2025년 연간 실적 (DART 연결)
-
-| 항목 | 수치 |
-|------|------|
-| 매출액 | - |
-| 영업이익 | 78억 |
-| 순이익 | 287억 |
-| 부채비율 | 1034.5% |
-
-### 분기 실적 (DART 연결)
-
-| 분기 | 매출 | 영업이익 | 순이익 | 부채비율 |
-|------|------|----------|--------|----------|
-| 2025.Q1 | - | 5억 | 27억 | 1108.4% |
-| 2025.Q2 | - | 47억 | 129억 | 1051.8% |
-| 2025.Q3 | - | 83억 | 189억 | 1112.7% |
-| 2025.Q4 | - | -57억 | -57억 | 1034.5% |
+---
 
 ## 차트·거래량 메모
 
@@ -110,6 +86,16 @@ _직접 추가 또는 LLM이 분석 시 기록_
 
 ---
 
+---
+
+## 등락률 누적 로그
+
+<!-- ingest 자동 기록 -->
+
+| 날짜 | 등락률 | 재료 요약 |
+|------|--------|-----------|
+| 2026-05-06 | +8.7% | [SK증권, 액면병합·증권주 강세 맞물려…24%대 급등[특징주]](https://www.newsway.co.kr/news/view?ud=2026 |
+
 ## 마지막 업데이트
 
-2026-05-04 | Notion ingest (ingest_all.py 자동 생성)
+2026-05-17 | Notion ingest (ingest_all.py 자동 생성)

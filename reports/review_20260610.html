@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>기사 검수 - 20260610</title>
+<style>
+* { box-sizing: border-box; }
+body { font-family: -apple-system, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; max-width: 1100px; margin: 0 auto; padding: 20px; background: #f5f5f7; color: #222; }
+.topbar { position: sticky; top: 10px; background: white; padding: 14px 18px; border-radius: 12px; display: flex; align-items: center; gap: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 16px; z-index: 10; }
+.topbar h2 { margin: 0; font-size: 17px; }
+.progress { flex: 1; height: 8px; background: #eee; border-radius: 4px; overflow: hidden; }
+.progress-bar { height: 100%; background: #4CAF50; transition: width 0.2s; }
+.stock-card { background: white; padding: 18px; border-radius: 10px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); border-left: 4px solid transparent; }
+.stock-card.approved { border-left-color: #4CAF50; background: #f1f8f3; }
+.stock-card.rejected { border-left-color: #f44336; background: #fdecea; }
+.stock-card.skipped  { border-left-color: #999; background: #f5f5f5; }
+.stock-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
+.stock-name { font-size: 17px; font-weight: 700; }
+.stock-meta { color: #666; font-size: 13px; }
+.ctrt-up   { color: #d32f2f; font-weight: 600; }
+.ctrt-down { color: #1976d2; font-weight: 600; }
+.theme-tag { background: #e3f2fd; color: #1976d2; padding: 2px 8px; border-radius: 4px; font-size: 12px; }
+.memo { color: #888; font-size: 12px; margin-left: 4px; }
+.article { background: #fafafa; padding: 12px; border-radius: 8px; margin: 8px 0; }
+.article-meta { color: #666; font-size: 12px; margin-bottom: 4px; }
+.article-title { font-weight: 600; margin: 4px 0; line-height: 1.4; }
+.article-title a { color: #1565c0; text-decoration: none; }
+.article-title a:hover { text-decoration: underline; }
+.article-desc { color: #444; font-size: 13px; line-height: 1.5; }
+.nav-bar { display: flex; align-items: center; gap: 8px; margin: 8px 0 4px; }
+.actions { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+button { padding: 8px 14px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 13px; }
+button:disabled { opacity: 0.4; cursor: default; }
+.btn-approve { background: #4CAF50; color: white; }
+.btn-reject  { background: #f44336; color: white; }
+.btn-skip    { background: #9e9e9e; color: white; }
+.btn-nav     { background: #e0e0e0; color: #333; padding: 6px 10px; }
+.btn-export  { background: #1976d2; color: white; }
+.btn-reset   { background: white; color: #888; border: 1px solid #ddd; }
+.badge-today { background: #4CAF50; color: white; font-size: 11px; padding: 2px 6px; border-radius: 3px; margin-right: 4px; }
+.badge-old   { background: #ff9800; color: white; font-size: 11px; padding: 2px 6px; border-radius: 3px; margin-right: 4px; }
+.badge-source { background: #7e57c2; color: white; font-size: 11px; padding: 2px 6px; border-radius: 3px; }
+.empty { color: #aaa; font-style: italic; padding: 18px; text-align: center; background: #fafafa; border-radius: 8px; }
+.decision-tag { margin-left: auto; font-size: 13px; font-weight: 600; }
+</style>
+</head>
+<body>
+<div class="topbar">
+  <h2>기사 검수 - 20260610</h2>
+  <div class="progress"><div class="progress-bar" id="progressBar"></div></div>
+  <span id="progressText" style="font-size:13px;color:#666;"></span>
+  <button class="btn-export" onclick="pushToNotion()" id="btnPush">📤 노션에 푸시</button>
+  <button class="btn-reset" onclick="resetAll()">초기화</button>
+</div>
+
+<div id="pushResult" style="margin:12px 0;padding:10px;border-radius:6px;display:none;font-size:14px;"></div>
+
+<div id="cards"></div>
+
+<script>
+const REVIEW_DATE     = "20260610";
+const STORAGE_KEY     = "review_" + REVIEW_DATE;
+const PUSH_ENDPOINT   = "http://127.0.0.1:8765";  // 비어있으면 푸시 비활성, 다운로드만
+const DATA            = [{"name": "화신정공", "code": "126640", "ctrt": 29.91, "vol_eok": 948, "theme": "개별주", "memo": "94,870", "candidates": [{"title": "[특징주] 화신정공, 보스턴다이나믹스 '아틀라스' 공급망 편입 기대감에...", "url": "https://www.widedaily.com/news/articleView.html?idxno=295327", "desc": "코스닥 자동차 부품 전문기업 화신정공(126640)이 현대자동차그룹의 로보틱스 계열사 보스턴다이나믹스의 국내 공급망 점검 소식에 힘입어 이틀 연속 상한가를 기록했다. 휴머노이드 로봇 '아틀라스(Atlas)' 양산을 위한...", "date": "2026.06.09", "score": 20, "is_today": false, "source": "naver"}, {"title": "[특징주] 화신정공, 보스턴다이나믹스 \"韓 로봇 공급망으로 화신정공 찍...", "url": "https://www.widedaily.com/news/articleView.html?idxno=295325", "desc": "화신정공(126640)의 주가가 상한가를 기록하며 시장의 주목을 받았다. 8일 한국거래소에 따르면 화신정공의 주가는 전일 대비 29.95% 상승한 2625원에 거래 마감했다. 이는 현대자동차그룹의 로봇 계열사 '보스턴다이나믹스...", "date": "2026.06.08", "score": 20, "is_today": false, "source": "naver"}, {"title": "[특징주] '아틀라스 공급망' 기대감에 화신정공 상한가", "url": "https://www.newspim.com/news/view/20260608000306", "desc": "화신정공이 현대자동차그룹 계열 로봇 기업 보스턴다이내믹스의 휴머노이드 로봇 공급망 참여 기대감에 상한가를 기록했다. 한국거래소에 따르면 8일 오전 10시 13분 기준 화신정공은 전 거래일 대비 605원(29.95...", "date": "2026.06.08", "score": 20, "is_today": false, "source": "naver"}, {"title": "[특징주] 보스턴다이나믹스 방문 소식에…화신정공 상한가", "url": "https://biz.chosun.com/stock/stock_general/2026/06/08/IUYKMKGD6FAADDGRDLIMDD6BBE/?utm_source=naver&utm_medium=original&utm_campaign=biz", "desc": "코스닥 자동차 부품 기업 화신정공이 8일 장 초반 상한가(일일 상승 제한폭 최상단)를 기록했다. 현대차그룹의 로보틱스 계열사 보스턴다이나믹스와의 협업 기대감에 매수세가 몰린 것으로 풀이된다. 이날 오전 9시...", "date": "2026.06.08", "score": 20, "is_today": false, "source": "naver"}, {"title": "화신정공·크라우드웍스·솔트웨어 SK이터닉스, CSA, 버넥트 상한가 직행", "url": "https://www.cbci.co.kr/news/articleView.html?idxno=580890", "desc": "이날 오전 시장에서는 화신정공, 크라우드웍스, 솔트웨어, 버넥트, SK이터닉스, CSA 코스믹 등이 가격제한폭까지 오르며 상한가 종목 명단에 이름을 올렸다. 특히 화신정공은 거래량이 2천만 주를 웃도는 등 활발한 거래가...", "date": "2026.06.10", "score": 15, "is_today": true, "source": "naver"}, {"title": "[10일 특징주] 방산株, 미·이란 중동 긴장 재고조에 '강세'", "url": "https://www.newsworks.co.kr/news/articleView.html?idxno=843518", "desc": "코스닥에서는 ▲화신정공 ▲버넥트 ▲솔트웨어 ▲서산 ▲유디엠텍 ▲CSA 코스믹 등이 상한가를 찍었다. SK이터닉스는 SK그룹이 신재생에너지 사업 재편에 나선다는 언론 보도가 나오면서 매수세가 몰린 것으로 보인다....", "date": "2026.06.10", "score": 10, "is_today": true, "source": "naver"}, {"title": "[주식마감] 신재생에너지 '빅딜' 기대감에 SK이너틱스 상한가... 티엠씨...", "url": "https://www.ggilbo.com/news/articleView.html?idxno=1162967", "desc": "주식마감 10일 SK이터닉스, 티엠씨, 화신정공, 버넥트, 솔트웨어, 서산, 유디엠텍, CSA 코스믹이 상한가에 이름을 올리고 장을 마감한 가운데 투자자들의 관심이 뜨겁다. 이날 코스피에서는 SK이터닉스, 티엠씨가...", "date": "2026.06.10", "score": 10, "is_today": true, "source": "naver"}, {"title": "[마감시황] 코스닥, 1.67% 내린 951.63 마감…외국인·기관 동반 순매도", "url": "https://www.seoul.co.kr/news/economy/securities/2026/06/10/20260610500214?wlog_tag3=naver", "desc": "서산은 29.93%, 화신정공은 29.91%, 솔트웨어는 29.88% 뛰었다. 반면 세미티에스는 29.90% 급락하며 하한가를 기록했고, 네오이뮨텍은 29.46%, 컬러레이는 29.23%, 하이퍼코퍼레이션은 23.35%, 삼목에스폼은 22.79...", "date": "2026.06.10", "score": 10, "is_today": true, "source": "naver"}], "best_url": "https://www.widedaily.com/news/articleView.html?idxno=295327"}, {"name": "티엠씨", "code": "217590", "ctrt": 29.74, "vol_eok": 806, "theme": "개별주", "memo": "80,646", "candidates": [{"title": "[특징주] 티엠씨 상한가, 美 데이터센터 광케이블 공급 본격화에 수혜주...", "url": "https://www.widedaily.com/news/articleView.html?idxno=295500", "desc": "티엠씨(217590)의 주가가 상한가를 기록하며 시장의 주목을 받고 있다. 10일 한국거래소에 따르면 티엠씨의 주가는 오후 4시 29분 기준 전일 대비 29.74% 상승한 2만2600원에 거래되고 있다. 이는 티엠씨가 해양플랜트를...", "date": "2026.06.10", "score": 30, "is_today": true, "source": "naver"}, {"title": "[특징주] 티엠씨, 美 데이터센터-광통신 관련 주문 급증…공장 풀가동 ...", "url": "https://www.etoday.co.kr/news/view/2592281", "desc": "이투데이=설경진 기자 | 티엠씨가 미국 데이터센터와 광통신망 관련 주문에 수요가 급증하면서 공장을 풀가동 하고 있다는 소식에 상승세다. 10일 오후 2시 34분 현재 티엠씨는 전일대비 2410원(13.83%) 상승한 1aks9830원에...", "date": "2026.06.10", "score": 30, "is_today": true, "source": "naver"}, {"title": "[특징주] 美 데이터센터 광케이블 공급…티엠씨, 상한가", "url": "http://www.hansbiz.co.kr/news/articleView.html?idxno=839581", "desc": "| 서울=한스경제 김유진 기자 | 티엠씨가 미국 데이터센터와의 광통신 케이블 공급계약 소식에 19일 장 초반 상한가를 기록했다. 한국거래소에 따르면 이날 오전 10시 23분 기준 유가증권시장에서 티엠씨는 전 거래일...", "date": "2026.05.19", "score": 20, "is_today": false, "source": "naver"}, {"title": "[특징주] 티엠씨, 美데이터센터 110억 규모 광케이블 공급계약…'上'", "url": "https://www.ajunews.com/view/20260519101346227", "desc": "아주경제=최윤선 기자 solarchoi@ajunews.com 티엠씨가 상한가를 기록하고 있다. 미국 데이터센터·인공지능(AI)... 19일 한국거래소에 따르면 이날 오전 10시 14분 기준 티엠씨 전 거래일 대비 6900원(29.81%) 오른 3만50원에...", "date": "2026.05.19", "score": 20, "is_today": false, "source": "naver"}, {"title": "[특징주] 티엠씨, 美 AI 데이터센터에 110억 광케이블 공급계약…장 초...", "url": "https://www.tokenpost.kr/news/economy/361028", "desc": "티엠씨가 미국 데이터센터·인공지능(AI) 인프라 업체와 110억원 규모의 광통신 케이블 공급계약을 맺었다는 소식에 급등하고 있다. 한국거래소에 따르면 티엠씨는 장 초반 가격제한폭까지 오르며 3만50원에 거래됐다....", "date": "2026.05.19", "score": 20, "is_today": false, "source": "naver"}, {"title": "[특징주] 티엠씨, 美 기업과 110억원 광통신 케이블 공급계약 '상한가'", "url": "https://www.g-enews.com/view.php?ud=20260519095116885244093b5d4e_1", "desc": "기업 티엠씨가 상한가를 기록하고 있다. 미국 데이터센터·인공지능(AI) 인프라 기업과 대규모 광통신 케이블 공급계약을 체결했다는 보도가 영향을 준 것으로 보인다. 19일 한국거래소에 따르, 티엠씨는 이날 오전 9시...", "date": "2026.05.19", "score": 20, "is_today": false, "source": "naver"}, {"title": "티엠씨, 110억 북미 광케이블 수주 소식에 상한가[특징주]", "url": "https://www.newsway.co.kr/news/view?ud=2026051909591067901", "desc": "특수케이블 강소기업 티엠씨가 북미 시장에서 대규모 인공지능(AI) 데이터센터용 광통신 케이블 수주를... 19일 한국거래소에 따르면 이날 오전 9시 58분 기준 티엠씨는 전 거래일보다 6900원(29.81%) 오른 3만50원에...", "date": "2026.05.19", "score": 20, "is_today": false, "source": "naver"}, {"title": "[특징주] 티엠씨, 110억 규모 데이터센터용 광케이블 수주에 '상한가'", "url": "https://www.newsworks.co.kr/news/articleView.html?idxno=841168", "desc": "티엠씨가 장중 강세다. 미국 데이터센터용 대규모 광케이블 공급계약을 맺었다는 소식의 영향으로 보인다. 19일 한국거래소에 따르면 오전 9시 46분 기준 티엠씨는 전일 대비 6900원(29.81%) 뛴 3만50원에 거래되며...", "date": "2026.05.19", "score": 20, "is_today": false, "source": "naver"}], "best_url": "https://www.widedaily.com/news/articleView.html?idxno=295500"}, {"name": "후성", "code": "093370", "ctrt": 18.2, "vol_eok": 12963, "theme": "개별주", "memo": "1,296,387", "candidates": [{"title": "[특징주] 이차전지 전해질 전문 후성 주가 이틀 연속 20%대 불기둥", "url": "https://www.g-enews.com/view.php?ud=202606101541309438c5557f8da8_1", "desc": "반도체 가스, 이차전지 전해질과 냉매 등을 제조하는 후성의 주가가 이틀 연속 20%대 급등하고 있다.... 후성은 방산업체 퍼스텍과 드론 생산업체 유콘시스템, 내화물 업체 한국내화(주), 후성정공(주) 등과 함께...", "date": "2026.06.10", "score": 30, "is_today": true, "source": "naver"}, {"title": "[특징주] 후성, 1분기 실적 선방에도 약세…2분기 LiPF6·반도체가스 개...", "url": "https://www.tokenpost.kr/news/economy/360710", "desc": "후성이 1분기 실적이 예상치를 웃돌았다는 증권가 평가 속에 장중 약세를 나타내고 있다. 다만... 유진투자증권에 따르면 후성의 1분기 연결 기준 매출액은 1415억원, 영업이익은 93억원으로 집계됐다. 매출은 기존...", "date": "2026.05.18", "score": 20, "is_today": false, "source": "naver"}, {"title": "[특징주] 후성, 1분기 실적 발표...향후 분기별 사업 전망", "url": "https://www.newstnt.com/news/articleView.html?idxno=702866", "desc": "유진투자증권이 후성에 대한 기업 분석 보고서를 통해 1분기 실적 검토와 함께 향후 사업 전망을 발표했다. 18일 한병화 유진투자증권 연구원의 분석에 따르면, 후성의 1분기 연결 기준 매출액은 1,415억 원...", "date": "2026.05.18", "score": 20, "is_today": false, "source": "naver"}, {"title": "[거래소 외국인] 삼성전자 SK하이닉스 팔고 LG이노텍 후성 담았다...투자...", "url": "https://www.pinpointnews.co.kr/news/articleView.html?idxno=459127", "desc": "한국거래소에 따르면 이날 외국인 순매수 상위에는 LG이노텍, 후성, LG씨엔에스, 삼성생명, SK텔레콤, SK, 현대모비스가 이름을 올렸다. 이어 DB하이텍, POSCO홀딩스, LG, 대한항공, 삼성물산, HD현대중공업도 매수세가...", "date": "2026.06.10", "score": 15, "is_today": true, "source": "naver"}, {"title": "후성, 대체 불가능한 2차전지 핵심 소재 기술력…글로벌 시장 독점 체제...", "url": "https://www.pinpointnews.co.kr/news/articleView.html?idxno=459084", "desc": "가장 강한 흐름을 보이는 종목은 후성이다. 한국거래소에 따르면 이날 오후 3시14분 현재 후성은 18%대 상승 흐름 속에서 1만 6,040원에 거래 중이며, 리튬 관련 소재 수요 회복 기대가 단기 모멘텀으로 작용하고 있다. 전해질...", "date": "2026.06.10", "score": 15, "is_today": true, "source": "naver"}, {"title": "반도체 핵심 공정 소재 '육불화텅스텐' 부족 현상 심화…후성 등 반사이...", "url": "https://www.theguru.co.kr/news/article.html?no=102878", "desc": "육불화텅스텐 가격 상승으로 이어지는 가운데 국내 기업 후성 등 관련 제조사들의 수혜도 예상된다. 10일... 이 같은 상황은 후성과 SK스페셜티 등 국내 업체에 호재가 될 전망이다. 이들 업체는 이미 삼성전자와...", "date": "2026.06.10", "score": 15, "is_today": true, "source": "naver"}, {"title": "외국인·기관, 후성 '러브콜'...삼성전자·한화솔루션은 '팔자'", "url": "https://www.newstnt.com/news/articleView.html?idxno=705899", "desc": "가운데 후성(093370)을 중심으로 한 양대 주체의 매수세 집중과 삼성전자(005930)·한화솔루션(009830) 등... ◆ 외국인 : '후성' 중심 매수세 장 초반과 중반 이후 외국인 투자자의 움직임에서 가장 눈에 띄는 변화는...", "date": "2026.06.10", "score": 15, "is_today": true, "source": "naver"}, {"title": "후성 주가 급등세…수차례 VI 발동하기도", "url": "https://www.cbci.co.kr/news/articleView.html?idxno=580910", "desc": "AI가 생성 후성(093370)이 10일 장중 급등세를 보이며 투자자들의 관심을 끌고 있다. 장 초반부터 강한 매수세가 유입되면서 대체거래소(NXT)와 한국거래소(KRX)에서 변동성완화장치(VI)가 잇따라 발동됐다. 후성은...", "date": "2026.06.10", "score": 15, "is_today": true, "source": "naver"}], "best_url": "https://www.g-enews.com/view.php?ud=202606101541309438c5557f8da8_1"}, {"name": "제주은행", "code": "006220", "ctrt": 14.56, "vol_eok": 1983, "theme": "개별주", "memo": "198,343", "candidates": [{"title": "제주은행, 전행 AX 확산 본격화", "url": "http://www.enewstoday.co.kr/news/articleView.html?idxno=2437784", "desc": "제주은행이 업무 방식 자체를 AI 중심으로 재구성하는 전행 AX(AI Transformation) 전략의 본격적인 실행 단계에 진입했다고 10일 밝혔다. 제주은행은 AI를 활용한 업무 효율화 프로젝트를 통해 문서 작성, 데이터 조회 및...", "date": "2026.06.10", "score": 15, "is_today": true, "source": "naver"}, {"title": "[업앤다운]은행주 하락…제주은행↑·신한지주↓", "url": "https://www.nspna.com/news/?mode=view&newsid=816160", "desc": "이날 가장 큰 상승률을 보인 종목은 제주은행이다. 제주은행은 전거래일 대비 14.56%(1620원) 올라 1만2750원으로 장을 마쳤다. 케이뱅크는 전거래일 대비 4.33%(250원) 상승해 6030원으로 장을 마감했고...", "date": "2026.06.10", "score": 15, "is_today": true, "source": "naver"}, {"title": "[주식마감] 신재생에너지 '빅딜' 기대감에 SK이너틱스 상한가... 티엠씨...", "url": "https://www.ggilbo.com/news/articleView.html?idxno=1162967", "desc": "레버리지, 제주은행, KODEX 미국나스닥100, TIGER 미국우주테크, PLUS 삼성전자선물단일종목인버스2X, RISE 삼성전자SK하이닉스채권혼합50, TIGER 반도체TOP10, KODEX 200타겟위클리커버드콜이다. 이날 코스닥 시장 거래...", "date": "2026.06.10", "score": 10, "is_today": true, "source": "naver"}, {"title": "신한금융, 5兆 규모 포용금융 공급 나선다", "url": "http://www.fnnews.com/news/202606101839132304", "desc": "계열사별로는 △신한은행 1776억원 △신한카드 1500억원 △제주은행·신한저축은행 60억원이다. 소각되는 연체채권은 8~10년 이상 장기간 연장된 채권으로, 이자금액이 원금 대비 2.5~3배에 달한다. 원리금 합계액은...", "date": "2026.06.10", "score": 10, "is_today": true, "source": "naver"}, {"title": "보이스피싱 범죄, 이제 제주에선 안 된다", "url": "http://www.samdailbo.com/news/articleView.html?idxno=265837", "desc": "또 농협과 제주은행 등 금융당국과 협력해 현금자동입출금기(ATM) 옆에 '안심봉투'를 비치하는 등 보이스피싱 범죄를 차단하기 위한 예방활동에 힘쓰고 있다. '안심봉투'에는 지급정지 신청 방법, 112신고 등 온·오프라인...", "date": "2026.06.10", "score": 10, "is_today": true, "source": "naver"}, {"title": "신한금융, 연체채권 5000억 소각...포용금융 4.5조 공급한다", "url": "https://www.thepublic.kr/news/articleView.html?idxno=307263", "desc": "제주은행과 신한저축은행도 채권 소각에 참여한다. 아울러 5년이 지난 채권은 원칙적으로 소멸시효 연장을 제한하고 채무조정을 우선 추진하기로 했다. 시효 연장이 필요한 경우에는 3년마다 재심사를 실시한다....", "date": "2026.06.10", "score": 10, "is_today": true, "source": "naver"}, {"title": "신한금융, 5조원 규모 '포용금융 2.0 ON' 본격 가동", "url": "https://www.kfenews.co.kr/news/articleView.html?idxno=658711", "desc": "제주은행·신한저축은행 등도 약 60억원 규모의 연체채권 소각에 동참한다. 소멸시효 연장 관행도 개선한다. 5년 경과 채권은 시효 연장을 원칙적으로 차단하고, 채무조정을 우선 추진한다. 불가피하게 연장하는...", "date": "2026.06.10", "score": 10, "is_today": true, "source": "naver"}, {"title": "신한금융, '포용금융 2.0' 가속… 대환대출·채권소각 확대", "url": "https://www.asiatoday.co.kr/kn/view.php?key=20260611010003690", "desc": "이와 함께 생계형 기초연금수급자 비상금대출을 새롭게 선보이고, 신한은행의 땡겨요 사업자대출과 제주은행의 ERP 뱅킹 등 그룹사 특화 서비스를 기반으로 자영업자와 중소기업 지원도 강화했다.또 장기 연체 고객의...", "date": "2026.06.10", "score": 10, "is_today": true, "source": "naver"}], "best_url": "http://www.enewstoday.co.kr/news/articleView.html?idxno=2437784"}, {"name": "모헨즈", "code": "006920", "ctrt": 14.54, "vol_eok": 212, "theme": "개별주", "memo": "21,287", "candidates": [{"title": "[특징주] 모헨즈, 이 대통령 시진핑 새만금 투자 적극 검토 발언에↑......", "url": "https://www.cstimes.com/news/articleView.html?idxno=708279", "desc": "컨슈머타임스=전은정 기자 | 모헨즈 주가가 강세다. 모헨즈는 2일 오후 2시8분 기준 전일보다 18.81% 오른 3695원에 거래중이다. 이재명 대통령이 시진핑 중국 국가주석이 새만금 교차투자에 대해 \"적극적으로 검토하겠다\"고...", "date": "2026.06.02", "score": 20, "is_today": false, "source": "naver"}, {"title": "[주식마감] 신재생에너지 '빅딜' 기대감에 SK이너틱스 상한가... 티엠씨...", "url": "https://www.ggilbo.com/news/articleView.html?idxno=1162967", "desc": "제약, 모헨즈, KBI메탈, 아주IB투자, 이노인스트루먼트, 휴림로봇, 주성엔지니어링, 고영, 에스아이리소스이다. 이날 코스피는 전날보다 366.11포인트(4.52%) 내린 7,730.82로 장을 마쳤다. 지수는 전장 대비 197.16포인트...", "date": "2026.06.10", "score": 10, "is_today": true, "source": "naver"}, {"title": "[마감시황] 코스피, 366.11포인트 내린 7730.82 마감", "url": "https://www.lcnews.co.kr/news/articleView.html?idxno=203268", "desc": "전반적으로 국내 증시가 주춤했지만 신세계(+9.78%), 롯데쇼핑(+7.48%) 등 백화점주와 서산(+29.93%), 모헨즈(+14.54%) 등 시멘트·레미콘주의 강세가 돋보였다. 코스닥은 개장 후 상승과 하락을 반복하다 전 거래일...", "date": "2026.06.10", "score": 10, "is_today": true, "source": "naver"}, {"title": "SOC 인프라 물량 확보 기대…모헨즈, 레미콘 공급 확대로 실적 개선 청신...", "url": "https://www.pinpointnews.co.kr/news/articleView.html?idxno=458089", "desc": "업종 내에서 가장 두드러진 흐름을 보인 종목은 모헨즈였다. 모헨즈는 28.86% 오른 4175원에 거래를 마감하며 상한가를 기록했다. 레미콘 및 건설 자재 사업을 영위하는 가운데 지역 건설 경기 회복 기대감이 집중되며...", "date": "2026.06.07", "score": 5, "is_today": false, "source": "naver"}, {"title": "[박정식의 국내 주식시황] 美 반도체주 저가 매수세 유입에 국내증시 동...", "url": "https://www.newsquest.co.kr/news/articleView.html?idxno=267462", "desc": "거래량 상위 종목으로는 피스피스스튜디오, 흥아해운, 대한광통신, 모헨즈, SK증권 등이 있다. 6/8(월) 대체거래소(NXT) 애프터마켓에서는 정부 GPU사업, NAVER, 삼성에스디에스, 엘리스 선점 소식에 삼성에스디에스가...", "date": "2026.06.09", "score": 0, "is_today": false, "source": "naver"}, {"title": "[주식마감] 美 당뇨학회서 '4중 작용 비만약' 발표 소식에 대원제약 상...", "url": "https://www.ggilbo.com/news/articleView.html?idxno=1162038", "desc": "에스아이리소스, 모헨즈, CSA 코스믹, 아이로보틱스, 보원케미칼, 원익IPS, 휴림로봇이다. 이날 코스피는 전장보다 478.82포인트(5.54%) 내린 8,160.59로 장을 마쳤다. 3.66% 내린 8,323.20으로 출발한 지수는 급격히 낙폭을...", "date": "2026.06.05", "score": 0, "is_today": false, "source": "naver"}, {"title": "[EBN 데이터센터] 5일 상승 종목 30選…금융·헬스케어주 강세", "url": "https://www.ebn.co.kr/news/articleView.html?idxno=1711433", "desc": "모헨즈는 28.86%, 파로스아이바이오는 24.13%, 라이콤은 20.37% 뛰어 코스닥 강세 분위기를 이어갔다. 이 밖에 에이치와이티씨가 18.90%, 캔버스엔이 18.67%, 디에스케이가 16.67%, 비보존 제약이 15.28%, 모비릭스가 15.08...", "date": "2026.06.05", "score": 0, "is_today": false, "source": "naver"}, {"title": "[EBN 데이터센터] 코스피, 외국인 '팔자'에 급락…차익실현에 대형주 약...", "url": "https://www.ebn.co.kr/news/articleView.html?idxno=1711181", "desc": "상승률 상위에는 M83과 모헨즈, 이노인스트루먼트가 나란히 가격제한폭까지 올랐고, 디젠스와 원익IPS, 테스, 브이엠도 20%대 급등세를 보였다. 반면 에스제이그룹은 25.00% 하락했고 디티앤씨알오, 피에스텍...", "date": "2026.06.04", "score": 0, "is_today": false, "source": "naver"}], "best_url": "https://www.cstimes.com/news/articleView.html?idxno=708279"}, {"name": "오브젠", "code": "417860", "ctrt": 13.12, "vol_eok": 313, "theme": "개별주", "memo": "31,327", "candidates": [{"title": "[특징주] 오브젠, 글로벌 기업 아웃시스템즈와 파트너십 체결 소식에 10...", "url": "https://www.widedaily.com/news/articleView.html?idxno=295416", "desc": "기업 오브젠(417860)의 주가가 글로벌 AI 기반 애플리케이션 플랫폼 기업 아웃시스템즈(OutSystems)와의 파트너십 체결 소식에 장 초반 강세를 보이고 있다. 10일 오전 9시 46분 기준 오브젠은 전 거래일 대비 10.53% 오른 1만...", "date": "2026.06.10", "score": 30, "is_today": true, "source": "naver"}, {"title": "글로벌 기업 아웃시스템즈와 파트너십…오브젠 8%↑[특징주]", "url": "https://www.edaily.co.kr/news/newspath.asp?newsid=03207846645480408", "desc": "오브젠(417860)의 주가가 장 초반 급등하고 있다. 글로벌 AI 애플리케이션 플랫폼 기업 아웃시스템즈(OutSystems)와의 파트너십을 체결했다는 소식에 매수세가 몰리는 것으로 보인다. 10일 엠피닥터에 따르면 오브젠은...", "date": "2026.06.10", "score": 30, "is_today": true, "source": "naver"}, {"title": "[특징주] 오브젠, 네이버클라우드·AI 기대감에 급등", "url": "https://www.bizwork.co.kr/news/articleView.html?idxno=416205", "desc": "오브젠 주가가 장중 급등세를 보이고 있다. 5일 한국거래소에 오브젠의 주가는 이날 오전 9시 13분 현재 전 거래일 대비 28.42%(2700원) 오른 1만2200원에 거래중이다. 이는 네이버클라우드와의 관계가 재부각된 가운데...", "date": "2026.06.05", "score": 20, "is_today": false, "source": "naver"}, {"title": "오브젠, 아웃시스템즈와 기업 AI 서비스 구축 '맞손'", "url": "https://zdnet.co.kr/view/?no=20260610160014", "desc": "오브젠이 아웃시스템즈와 손잡고 데이터와 애플리케이션 개발 역량을 결합하는 기업 인공지능(AI) 서비스 구축 시장 공략에 박차를 가한다. 오브젠은 아웃시스템즈와 파트너십을 체결했다고 10일 밝혔다. 이번 협력은...", "date": "2026.06.10", "score": 15, "is_today": true, "source": "naver"}, {"title": "오브젠, 아웃시스템즈와 기업 AI 서비스 구축 파트너십", "url": "https://www.widedaily.com/news/articleView.html?idxno=295441", "desc": "인공지능(AI) 풀스택 데이터 플랫폼 기업 오브젠은 글로벌 AI기반 애플리케이션 플랫폼 기업 아웃시스템즈(OutSystems)와 파트너십을 체결하고 AI 서비스 구축 사업 확대에 나선다고 10일 밝혔다. 회사 측에 따르면 오브젠...", "date": "2026.06.10", "score": 15, "is_today": true, "source": "naver"}, {"title": "오브젠, 아웃시스템즈와 기업 AI 서비스 구축 파트너십", "url": "https://www.newsis.com/view/NISX20260610_0003663279", "desc": "인공지능(AI) 풀스택 데이터 플랫폼 기업 오브젠은 글로벌 AI기반 애플리케이션 플랫폼 기업 아웃시스템즈(OutSystems)와 파트너십을 체결하고 AI 서비스 구축 사업 확대에 나선다고 10일 밝혔다. 회사 측에 따르면 오브젠...", "date": "2026.06.10", "score": 15, "is_today": true, "source": "naver"}, {"title": "오브젠, 아웃시스템즈와 맞손…\"AI 서비스 구축 사업 확대\"", "url": "https://www.newspim.com/news/view/20260610000190", "desc": "오브젠이 글로벌 AI 애플리케이션 플랫폼 기업 아웃시스템즈(OutSystems)와 파트너십을 체결하고 기업 대상 AI 서비스 구축 사업 확대에 나선다. 10일 오브젠은 아웃시스템즈와 협력 체계를 구축하고 AI 서비스 개발 및...", "date": "2026.06.10", "score": 15, "is_today": true, "source": "naver"}, {"title": "오브젠, 글로벌 플랫폼 기업 OutSystems와 협력…AI 서비스 구축 사업 강...", "url": "https://view.asiae.co.kr/article/2026061008101911420", "desc": "인공지능(AI) 풀스택 데이터 플랫폼 기업 오브젠이 글로벌 AI 기반 애플리케이션 플랫폼 기업 OutSystems와 파트너십을 맺고 AI 서비스 구축 사업 확대에 나선다. 오브젠은 이번 협력을 통해 OutSystems 플랫폼을 활용한...", "date": "2026.06.10", "score": 15, "is_today": true, "source": "naver"}], "best_url": "https://www.widedaily.com/news/articleView.html?idxno=295416"}, {"name": "피에스케이홀딩스", "code": "031980", "ctrt": 9.68, "vol_eok": 1608, "theme": "개별주", "memo": "160,853", "candidates": [{"title": "[6월11일자] 비즈니스포스트 아침의 주요기사", "url": "https://www.businesspost.co.kr/BP?command=article_view&num=439730", "desc": "확보 '피에스케이' ● 팩토리얼 상장에 포스코퓨처엠 전고체 배터리 사업 힘 받나, 엄기천 전고체 양... 종근당홀딩스-종근당 '지배구조 지표' 온도차, 종근당 5대 제약사 비해 준수율 미흡 ● K뷰티 '헤어케어' 글로벌...", "date": "2026.06.10", "score": 10, "is_today": true, "source": "naver"}, {"title": "코스피, 또 4.5% 급락 7,730 마감...이번주 급락→급반등→급락", "url": "https://www.delighti.co.kr/news/articleView.html?idxno=117560", "desc": "피에스케이홀딩스(+10.9%), 테스(+7.4%), 삼천당제약(+6.6%), 피에스케이(+5.5%), 주성엔지니어링(+3.8%) 등은 올랐다. 주성엔지니어링(3.81%), 삼천당제약(6.60%), 이오테크닉스(1.27%)는 올랐고, 게임사 펄어비스는 창사 이래...", "date": "2026.06.10", "score": 10, "is_today": true, "source": "naver"}, {"title": "[오늘의 주목주] '차익실현' 네이버 주가 11%대 급락, 코스피 4%대 내린...", "url": "https://www.businesspost.co.kr/BP?command=article_view&num=439715", "desc": "코스닥시장에서는 정규거래 마감 기준 피에스케이홀딩스 주가가 시가총액 상위 30개 종목 가운데 가장 많이 움직였다. 피에스케이홀딩스 주식은 직전 거래일보다 10.96%(1만3700원) 오른 13만8700원에 거래를 마쳤다....", "date": "2026.06.10", "score": 10, "is_today": true, "source": "naver"}, {"title": "한화세미텍, 하이닉스에 하이브리드 본딩 통합시스템 공급", "url": "https://www.thelec.kr/news/articleView.html?idxno=57884", "desc": "피에스케이홀딩스는 플라즈마 기반 건식 세정 장비를 보유한 피에스케이의 모회사다. 그러나 한화세미텍이 자체 플라즈마 활성화 모듈을 만들면서 협력이 무산된 것으로 보인다. 업계에 따르면 하이브리드 본더...", "date": "2026.06.10", "score": 10, "is_today": true, "source": "naver"}, {"title": "코스닥 '뚝'...로보티즈·대한광통신 '급락', 삼천당제약은 '껑충'", "url": "http://www.choicenews.co.kr/news/articleView.html?idxno=166398", "desc": "주성엔지니어링(3.81%), 이오테크닉스(1.27%), 피에스케이(5.50%), 유진테크(5.09%), 테스(7.43%), 두산테스나... 로봇주 중 레인보우로보틱스(-4.01%), 로보티즈(-5.34%), 에스피지(-7.52%), 원익홀딩스(-4.98%) 등이...", "date": "2026.06.10", "score": 10, "is_today": true, "source": "naver"}, {"title": "코스피, 6% 급락하며 7500선 마감…변동성 장세 지속", "url": "https://view.asiae.co.kr/article/2026061016031503126", "desc": "피에스케이홀딩스(+10.9%), 테스(+7.4%), 삼천당제약(+6.6%), 피에스케이(+5.5%), 주성엔지니어링(+3.8%) 등은 전 거래일보다 주가가 오른 채로 장을 마쳤다. 한편 서울 외환시장에서 원·달러 환율은 오후 3시30분...", "date": "2026.06.10", "score": 10, "is_today": true, "source": "naver"}, {"title": "인프라부터 스마트팜까지... 솔트웨어, AI 기반 SaaS 3종 무기로 독주 체...", "url": "https://www.pinpointnews.co.kr/news/articleView.html?idxno=459075", "desc": "피에스케이홀딩스는 8.56% 상승하며 13만 5,700원에 거래중이다. 반도체 장비 업황 개선 기대가 밸류업 수급과 결합되는 흐름이다. 코미코는 7.68% 상승하며 10만 7,900원에 거래중이다. 반도체 소재 수요 증가 기대가 주가를...", "date": "2026.06.10", "score": 10, "is_today": true, "source": "naver"}, {"title": "코스피, 7500선으로 6%대 급락…매도 사이드카 발동", "url": "https://view.asiae.co.kr/article/2026061014023767567", "desc": "5%), HPSP(-8.0%), 로보티즈(-7.7%), 리노공업(-6.8%), 레인보우로보틱스(-5.7%) 등이 약세를 보였다. 반면 피에스케이홀딩스(+12.8%), 테스(+5.5%), 보로노이(+4.0%), 삼천당제약(+3.5%), 주성엔지니어링(+2.6%) 등은 강세다.", "date": "2026.06.10", "score": 10, "is_today": true, "source": "naver"}], "best_url": "https://www.delighti.co.kr/news/articleView.html?idxno=117560"}, {"name": "비보존 제약", "code": "082800", "ctrt": 10.01, "vol_eok": 193, "theme": "개별주", "memo": "19,351", "candidates": [{"title": "[주식마감] 신재생에너지 '빅딜' 기대감에 SK이너틱스 상한가... 티엠씨...", "url": "https://www.ggilbo.com/news/articleView.html?idxno=1162967", "desc": "신라섬유, 비보존 제약, 모헨즈, KBI메탈, 아주IB투자, 이노인스트루먼트, 휴림로봇, 주성엔지니어링, 고영, 에스아이리소스이다. 이날 코스피는 전날보다 366.11포인트(4.52%) 내린 7,730.82로 장을 마쳤다. 지수는...", "date": "2026.06.10", "score": 10, "is_today": true, "source": "naver"}, {"title": "[주식] 코스피·코스닥 나란히 하락 속 비보존제약 10%↑", "url": "https://www.hitnews.co.kr/news/articleView.html?idxno=76780", "desc": "오늘의 증시 시장 지수 KOSPI: 7,730.82 (▼4.52%) KOSDAQ: 951.63 (▼1.67%) 상승 종목 비보존 제약(+10.01%), 삼천당제약(+6.60%), 마크로젠(+6.29%), 보로노이(+6.17%), 루닛(+6.15%) 하락 종목 제이에스링크(-10.56%), 프로티나...", "date": "2026.06.10", "score": 10, "is_today": true, "source": "naver"}, {"title": "대웅바이오 이코사연질캡슐 300mg 영업자 회수 조치", "url": "http://www.medical-tribune.co.kr/news/articleView.html?idxno=214210", "desc": "(성분 펠라고니움시도이데스11%에탄올추출물)도 품질부적합 우려(용기불량, 성상이상)로 영업자 회수 조치됐다. 회수 대상 제품 제조번호는 2500, 25003, 25004이다. 이들 제품은 비보존제약에서 위탁생산됐다.", "date": "2026.06.10", "score": 10, "is_today": true, "source": "naver"}, {"title": "양 제약지수 동반 하락, 유가증권시장 제약지수 1만 4000선 유지", "url": "http://www.newsmp.com/news/articleView.html?idxno=254466", "desc": "이 가운데 코스닥시장 제약제수의 풍전약품(+10.70%)과 비보존제약(+10.01%)는 두 자릿수의 상승률을 기록했으며, 삼천당제약(+6.60%), 에스바이오메딕스(+6.03%) 등의 주가도 5% 이상 상승했다. 반면, 인트론바이오...", "date": "2026.06.10", "score": 10, "is_today": true, "source": "naver"}, {"title": "[주가] 6월 10일 주요 제약·바이오·기기 5% 변동 현황", "url": "https://www.medipana.com/news/articleView.html?idxno=412672", "desc": "비보존 제약 주가가 3345원에서 3680원으로 10.01% 늘었다. 코어라인소프트 주가가 2955원에서 3175원으로 7.45% 늘었다. 이지케어텍 주가가 6620원에서 7070원으로 6.8% 늘었다. 삼천당제약 주가가...", "date": "2026.06.10", "score": 10, "is_today": true, "source": "naver"}, {"title": "[헬스 이모저모] 대웅제약, 비보존, 일동제약 등", "url": "http://www.bizwnews.com/news/articleView.html?idxno=138329", "desc": "사진=비보존 ◆비보존, 한국보건산업진흥원 글로벌 진출 지원 사업 2개 과제 동시 선정 비보존제약 관계사 비보존이 국가 지원사업을 발판으로 주요 신약 파이프라인의 글로벌 사업화 전략 강화에 나선다. 해외 인허가...", "date": "2026.06.10", "score": 10, "is_today": true, "source": "naver"}, {"title": "바이오株도 못 피한 ‘검은 월요일’…대원제약 강세 '눈길'[바이오맥짚...", "url": "https://www.edaily.co.kr/news/newspath.asp?newsid=02676486645480408", "desc": "코스피 시장에서는 대원제약이 10% 넘게 상승했고, 코스닥 시장에서는 비보존제약이 7% 가까이 올랐다. 8일 한미약품 주가 추이. (이미지=KG제로인 엠피닥터) 호재보다 강했던 증시 충격…한미약품, 16% 급락 이날...", "date": "2026.06.10", "score": 10, "is_today": true, "source": "naver"}, {"title": "K뷰티 성장 착시…낮아진 장벽, 옥석 가리기 본격화[NW리포트]", "url": "https://www.newsway.co.kr/news/view?ud=2026060916304470002", "desc": "비보존제약은 인수했던 화장품 제조업체 스피어테크를 청산했고, 대원제약이 인수한 에스디생명공학 역시 정상화 작업이 진행 중이다. 한때 중국 마스크팩 시장 호황의 수혜를 누렸던 에스디생명공학은 이후 실적...", "date": "2026.06.10", "score": 10, "is_today": true, "source": "naver"}], "best_url": "https://www.ggilbo.com/news/articleView.html?idxno=1162967"}];
+
+let state = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+
+function saveState() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+
+function ensureState(name) {
+  if (!state[name]) state[name] = { chosen_idx: 0, decision: null };
+  return state[name];
+}
+
+function decide(name, decision) {
+  const st = ensureState(name);
+  st.decision = (st.decision === decision) ? null : decision;  // 같은 버튼 다시 누르면 해제
+  saveState();
+  render();
+}
+
+function navCandidate(name, delta) {
+  const st = ensureState(name);
+  const stock = DATA.find(s => s.name === name);
+  const max = (stock.candidates || []).length - 1;
+  let idx = (st.chosen_idx || 0) + delta;
+  if (idx < 0) idx = 0;
+  if (idx > max) idx = max;
+  st.chosen_idx = idx;
+  saveState();
+  render();
+}
+
+function _buildPayload() {
+  const results = DATA.map(s => {
+    const st = state[s.name] || {};
+    const idx = st.chosen_idx || 0;
+    const cands = s.candidates || [];
+    const cand = cands[idx] || null;
+    // recent_articles: 대표 1건(chosen) + 나머지 후보들 (URL dedup)
+    const seen = new Set();
+    const recent = [];
+    const tryAdd = (a) => {
+      if (!a || !a.url || seen.has(a.url)) return;
+      seen.add(a.url);
+      recent.push(a);
+    };
+    tryAdd(cand);
+    cands.forEach(tryAdd);
+    return {
+      name: s.name, code: s.code, ctrt: s.ctrt, vol_eok: s.vol_eok, theme: s.theme,
+      decision: st.decision || null,
+      chosen_article: (st.decision === "approved" && cand) ? cand : null,
+      recent_articles: recent.slice(0, 5),
+      candidates_seen: (st.chosen_idx || 0) + 1,
+      total_candidates: cands.length
+    };
+  });
+  return {
+    date: REVIEW_DATE,
+    exported_at: new Date().toISOString(),
+    summary: {
+      total: DATA.length,
+      approved: results.filter(r => r.decision === "approved").length,
+      rejected: results.filter(r => r.decision === "rejected").length,
+      skipped:  results.filter(r => r.decision === "skipped").length,
+      pending:  results.filter(r => !r.decision).length
+    },
+    results
+  };
+}
+
+function _showPushResult(html, color) {
+  const div = document.getElementById("pushResult");
+  div.style.display = "block";
+  div.style.background = color || "#f1f8f3";
+  div.innerHTML = html;
+}
+
+async function pushToNotion() {
+  const payload = _buildPayload();
+  const approved = payload.summary.approved;
+  if (approved === 0) {
+    _showPushResult("⚠️ 승인된 종목이 없습니다. ✅ 승인 버튼을 먼저 누르세요.", "#fff3e0");
+    return;
+  }
+  if (!PUSH_ENDPOINT) {
+    _showPushResult("⚠️ 푸시 서버가 비활성화 — JSON 다운로드로 폴백합니다.", "#fff3e0");
+    _downloadJson(payload);
+    return;
+  }
+  const btn = document.getElementById("btnPush");
+  btn.disabled = true;
+  btn.textContent = "⏳ 푸시 중...";
+  _showPushResult("⏳ 노션에 " + approved + "건 푸시 중...", "#e3f2fd");
+  try {
+    const res = await fetch(PUSH_ENDPOINT + "/push", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || ("HTTP " + res.status));
+    let msg = "✅ 노션 푸시 완료 — 총 " + data.total + "건 / 신규 " + data.created + ", 업데이트 " + data.updated;
+    let color = "#e8f5e9";
+    if (data.errors && data.errors.length) {
+      msg += "<br>⚠️ 실패 " + data.errors.length + "건: ";
+      msg += data.errors.map(e => e.name + " (" + e.error + ")").join(", ");
+      color = "#fff3e0";
+    }
+    _showPushResult(msg, color);
+  } catch (e) {
+    _showPushResult("❌ 푸시 실패: " + e.message + "<br>JSON 다운로드로 폴백합니다.", "#ffebee");
+    _downloadJson(payload);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "📤 노션에 푸시";
+  }
+}
+
+function _downloadJson(payload) {
+  const blob = new Blob([JSON.stringify(payload, null, 2)], {type: "application/json"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "reviewed_" + REVIEW_DATE + ".json";
+  document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
+}
+
+function resetAll() {
+  if (!confirm("모든 검수 결과를 초기화합니다.")) return;
+  state = {}; saveState(); render();
+}
+
+function escapeHtml(s) {
+  return String(s == null ? "" : s)
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+}
+
+function decisionLabel(d) {
+  return ({ approved: "✅ 승인", rejected: "❌ 거부", skipped: "⏭️ 스킵" })[d] || "";
+}
+
+function render() {
+  const cards = document.getElementById("cards");
+  cards.innerHTML = "";
+  let done = 0;
+
+  DATA.forEach((s, sIdx) => {
+    const st = state[s.name] || { chosen_idx: 0, decision: null };
+    if (st.decision) done++;
+
+    const card = document.createElement("div");
+    card.className = "stock-card" + (st.decision ? " " + st.decision : "");
+    card.dataset.name = s.name;
+
+    const ctrtClass = s.ctrt >= 0 ? "ctrt-up" : "ctrt-down";
+    const ctrtSign  = s.ctrt >= 0 ? "+" : "";
+
+    let html = "";
+    html += '<div class="stock-header">';
+    html += '<span class="stock-name">' + escapeHtml(s.name) + '</span>';
+    html += '<span class="' + ctrtClass + '">' + ctrtSign + s.ctrt.toFixed(2) + '%</span>';
+    html += '<span class="stock-meta">' + s.vol_eok.toLocaleString() + '억</span>';
+    html += '<span class="theme-tag">' + escapeHtml(s.theme) + '</span>';
+    if (s.memo) html += '<span class="memo">' + escapeHtml(s.memo) + '</span>';
+    if (st.decision) html += '<span class="decision-tag">→ ' + decisionLabel(st.decision) + '</span>';
+    html += '</div>';
+
+    const candidates = s.candidates || [];
+    if (candidates.length === 0) {
+      html += '<div class="empty">관련 기사 없음</div>';
+    } else {
+      const idx = st.chosen_idx || 0;
+      const cand = candidates[idx];
+      html += '<div class="nav-bar">';
+      html += '<button class="btn-nav" data-act="prev" data-name="' + escapeHtml(s.name) + '"' + (idx === 0 ? ' disabled' : '') + '>⬅️ 이전</button>';
+      html += '<span style="font-size:13px;color:#666;">후보 ' + (idx+1) + ' / ' + candidates.length + '</span>';
+      html += '<button class="btn-nav" data-act="next" data-name="' + escapeHtml(s.name) + '"' + (idx >= candidates.length-1 ? ' disabled' : '') + '>다음 ➡️</button>';
+      html += '<span style="margin-left:auto;font-size:12px;color:#999;">점수 ' + cand.score + '</span>';
+      html += '</div>';
+      html += '<div class="article">';
+      html += '<div class="article-meta">';
+      if (cand.date) html += '<span>' + escapeHtml(cand.date) + '</span> ';
+      if (cand.is_today) html += '<span class="badge-today">오늘</span>';
+      else if (cand.date) html += '<span class="badge-old">이전</span>';
+      html += '<span class="badge-source">' + escapeHtml(cand.source || "naver") + '</span>';
+      html += '</div>';
+      html += '<div class="article-title"><a href="' + escapeHtml(cand.url) + '" target="_blank" rel="noopener">' + escapeHtml(cand.title) + '</a></div>';
+      if (cand.desc) html += '<div class="article-desc">' + escapeHtml(cand.desc) + '</div>';
+      html += '</div>';
+    }
+
+    html += '<div class="actions">';
+    html += '<button class="btn-approve" data-act="approved" data-name="' + escapeHtml(s.name) + '">✅ 승인</button>';
+    html += '<button class="btn-reject"  data-act="rejected" data-name="' + escapeHtml(s.name) + '">❌ 거부</button>';
+    html += '<button class="btn-skip"    data-act="skipped"  data-name="' + escapeHtml(s.name) + '">⏭️ 스킵</button>';
+    html += '</div>';
+
+    card.innerHTML = html;
+    cards.appendChild(card);
+  });
+
+  document.getElementById("progressBar").style.width = (done / DATA.length * 100) + "%";
+  document.getElementById("progressText").textContent = done + " / " + DATA.length + " 검토";
+}
+
+document.addEventListener("click", (e) => {
+  const btn = e.target.closest("button[data-act]");
+  if (!btn) return;
+  const name = btn.dataset.name;
+  const act  = btn.dataset.act;
+  if (act === "prev")      navCandidate(name, -1);
+  else if (act === "next") navCandidate(name, 1);
+  else                     decide(name, act);
+});
+
+render();
+</script>
+</body>
+</html>

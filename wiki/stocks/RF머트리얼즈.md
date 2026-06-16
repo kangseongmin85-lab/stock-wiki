@@ -1,13 +1,12 @@
 ---
-tags: [기계/방산, 반도체, 원자재, 통신, 전력반도체, 갈륨, 방산, 통신/통신장비]
+tags: [기계/방산, 반도체, 원자재, 통신, 전력반도체, 갈륨, 방산, 통신-통신장비]
 sector: 기계/방산
-last_updated: 2026-05-04
-rate_updated: 2026-05-04
-close_price: 108600
-change_rate: +16.40%
-notion_last_edited: 2026-05-04T10:26:00.000Z
+last_updated: 2026-05-17
+notion_last_edited: 2026-05-12T09:32:00.000Z
 theme: ["#전력반도체", "#갈륨", "#방산", "#통신/통신장비"]
 stock_code: 327260
+is_leader: 
+recent_breakout: 
 ---
 
 # RF머트리얼즈
@@ -78,6 +77,9 @@ stock_code: 327260
 - [(25.10.15)[급등주 핵심체크] RF머트리얼즈, 엔비디아향 방열 모듈 공급으로 주가 날개?](https://www.dailyinvest.kr/news/articleView.html?idxno=68996)
 - [[리포트 브리핑]RFHIC, '내러티브와 펀더멘털의 조화' 목표가 89,000원 - 신한투자증권](https://www.newspim.com/news/view/20260325000647)
 - [(26.03.04)[모닝 리포트] "RFHIC, 방산부터 CPO까지…실적·내러티브 모두 강화"](https://www.newspim.com/news/view/20260304000078)
+- [(26.04.10)RF머트리얼즈, 72.9억 규모 공급계약 체결](https://n.news.naver.com/mnews/article/018/0006254674?sid=101) / 2026-04-10 / 등락률: +22.5%
+- [팔란티어·AMD·아이온큐 실적 공개…고용지표 발표[이번주 美 증시는]](https://n.news.naver.com/mnews/article/008/0005352554?sid=101)
+- [(26.04.03)[특징주] “광에 이어 RF 모듈도 매력적” 증권가 평가에…RF머트리얼즈 11% 강세](https://n.news.naver.com/mnews/article/366/0001153942?sid=101)
 
 ---
 
@@ -117,8 +119,8 @@ _직접 추가 또는 LLM이 분석 시 기록_
 
 | 날짜 | 등락률 | 재료 요약 |
 |------|--------|-----------|
-| 2026-04-30 | +6.8% | [[특징주] RF머트리얼즈, 美 Metallife-USA와 72억 공급계약에 급등](https://www.tokenpost.kr/news/eco |
+| 2026-05-12 | +3.4% | [[특징주] RF머트리얼즈, 美 Metallife-USA와 72억 공급계약에 급등](https://www.tokenpost.kr/news/eco |
 
 ## 마지막 업데이트
 
-2026-05-04 | Notion ingest (ingest_all.py 자동 생성)
+2026-05-17 | Notion ingest (ingest_all.py 자동 생성)

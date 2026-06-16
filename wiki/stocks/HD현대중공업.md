@@ -1,13 +1,12 @@
 ---
 tags: [조선/해운, 조선기자재, 해양플랜트]
 sector: 조선/해운
-last_updated: 2026-05-04
-rate_updated: 2026-05-04
-close_price: 680000
-change_rate: -0.73%
-notion_last_edited: 2026-04-30T16:15:00.000Z
+last_updated: 2026-05-17
+notion_last_edited: 2026-05-14T14:12:00.000Z
 theme: ["#조선기자재", "#해양플랜트"]
 stock_code: 329180
+is_leader: 
+recent_breakout: 
 ---
 
 # HD현대중공업
@@ -35,16 +34,16 @@ stock_code: 329180
 
 > 출처: Notion `추가 중요내용` 섹션 | 등락률은 Notion DB `등락률(%)` 컬럼 기준
 
+- [2026-05-14] [[특징주] HD현대중공업 노조 '성과급 30%' 요구…파업 리스크에 7% ' 털썩...](https://www.etoday.co.kr/news/view/2584490) / 등락률 미기재 / [등급 미분류]
+- [2026-05-09] [[특징주] HD현대중공업, 2.1조원 선박 수주에도 5%↓...차익실현에 밀려](https://www.tokenpost.kr/news/economy/357893) / 등락률 미기재 / [등급 미분류]
+- [2026-05-09] [[특징주] HD현대중공업, 아시아 6척·오세아니아 2척 선박 건조 계약... ...](https://www.newstnt.com/news/articleView.html?idxno=701637) / 등락률 미기재 / [등급 미분류]
+- [2026-05-07] [[특징주] HD현대중공업, 1분기 호실적 발표에 6%↑](https://www.newsworks.co.kr/news/articleView.html?idxno=840060) / 등락률 미기재 / [등급 미분류]
 - [2026-04-22] [美 데이터센터 발전기 납품…HD현대중공업 11%↑ [특징주]](https://www.dailian.co.kr/news/view/1636617/?sc=Naver) / 등락률 미기재 / [등급 미분류]
 - [2026-04-22] [[특징주] HD현대중공업, 쇄빙선·발전기 수주 '겹호재'에 8%대 강세](https://www.ajunews.com/view/20260422142604692) / 등락률 미기재 / [등급 미분류]
 - [2026-04-22] [[특징주] HD현대중공업, 미·유럽서 1.1조 잇단 수주에 강세…데이터센...](https://www.tokenpost.kr/news/economy/352024) / 등락률 미기재 / [등급 미분류]
 - [2026-04-22] [[특징주] HD현대중공업, 미국·유럽서 1.1조 수주…발전기 및 쇄빙선 계...](http://www.newstnt.com/news/articleView.html?idxno=607734) / 등락률 미기재 / [등급 미분류]
 - [2026-04-21] [[특징주] HD현대중공업, 고유가 장기화에 따른 조선업 수익성 기대감에...](https://www.widedaily.com/news/articleView.html?idxno=292709) / 등락률 미기재 / [등급 미분류]
 - [2026-04-13] [[특징주] HD현대중공업, 중대재해 정정 공시 여파에 약세](http://www.seoulwire.com/news/articleView.html?idxno=716479) / 등락률 미기재 / [등급 미분류]
-- [2026-04-01] [[특징주] HD현대중공업, HD한국조선해양 EB 발행 부담에 3%대 하락](https://www.ajunews.com/view/20260401144954001) / 등락률 미기재 / [등급 미분류]
-- [2026-04-01] [[특징주] HD현대중공업, 3조 규모 해외 교환사채 발행 소식에 '약세'](http://www.newstnt.com/news/articleView.html?idxno=602737) / 등락률 미기재 / [등급 미분류]
-- [2026-04-01] [[특징주] HD현대중공업, 모회사 EB 발행 계획에 5%↓](http://www.seoulwire.com/news/articleView.html?idxno=714469) / 등락률 미기재 / [등급 미분류]
-- [2026-04-01] [[특징주] HD한국조선해양 교환사채 발행 소식에…HD현대중공업 6% 급락](https://biz.chosun.com/stock/stock_general/2026/04/01/NKYVXY3OFFBNBIA6VQESZ7XZ5Y/?utm_source=naver&utm_medium=original&utm_campaign=biz) / 등락률 미기재 / [등급 미분류]
 
 ---
 
@@ -52,6 +51,9 @@ stock_code: 329180
 
 > 출처: Notion `지난기사 아카이브 + 링크` 100% 전수 복사 (요약·누락 금지)
 
+- [[특징주] HD현대중공업, 2.1조원 선박 수주에도 5%↓...차익실현에 밀려](https://www.tokenpost.kr/news/economy/357893)
+- [[특징주] HD현대중공업, 아시아 6척·오세아니아 2척 선박 건조 계약... ...](https://www.newstnt.com/news/articleView.html?idxno=701637)
+- [[특징주] HD현대중공업, 1분기 호실적 발표에 6%↑](https://www.newsworks.co.kr/news/articleView.html?idxno=840060)
 - [美 데이터센터 발전기 납품…HD현대중공업 11%↑ [특징주]](https://www.dailian.co.kr/news/view/1636617/?sc=Naver)
 - [[특징주] HD현대중공업, 쇄빙선·발전기 수주 '겹호재'에 8%대 강세](https://www.ajunews.com/view/20260422142604692)
 - [[특징주] HD현대중공업, 미·유럽서 1.1조 잇단 수주에 강세…데이터센...](https://www.tokenpost.kr/news/economy/352024)
@@ -77,6 +79,13 @@ stock_code: 329180
 - [HD현대, 1.2조원 규모 선박 수주…LPG·PC선 등 12척](https://n.news.naver.com/mnews/article/003/0013865699?sid=101)
 - [HD한국조선해양, 계열사 이익에 외형 성장 전망-목표가 상향…LS증권](https://n.news.naver.com/mnews/article/008/0005347500?sid=101)
 - [HD현대중공업, 美데이터센터용 6271억 규모 발전설비 '첫 수주'](https://n.news.naver.com/mnews/article/003/0013902440?sid=101)
+- [(26.04.22)HD현대중공업, 美 데이터센터에 발전용 엔진 공급…6271억원 규모](https://n.news.naver.com/mnews/article/119/0003083313?sid=101) / 2026-04-22 / 등락률: +11.3%
+- [바르질라, 텍사스 데이터센터에 전력 솔루션 공급](https://www.marketscreener.com/news/wartsila-to-supply-power-solution-for-texas-data-center-ce7f59d9d080f525)
+- [조선주, 선박엔진 주도 강세…HD현대마린엔진 18%↑[핫종목]](https://n.news.naver.com/mnews/article/421/0008909650?sid=101)
+- [iM증권 "한화엔진, 데이터센터 없어도 충분⋯본업 체력 상승"](https://www.etoday.co.kr/news/view/2580143)
+- [데이터센터에 韓선박엔진도 가져가는 美…조선주 장기호황 기대감](https://n.news.naver.com/mnews/article/277/0005756216?rc=N&ntype=RANKING&sid=101)
+- [HD한국조선해양, 1Q 영업익 57.8%↑…“하반기 美 LNG 프로젝트 입찰 본격화”](https://www.etoday.co.kr/news/view/2582372)
+- [HD현대중공업, 1분기 영업익 9054억…전년비 108.8% ↑](https://n.news.naver.com/mnews/article/016/0002640158?sid=101)
 
 ---
 
@@ -86,42 +95,15 @@ stock_code: 329180
 - **사업 구조**: 동사는 2019년에 HD한국조선해양에서 물적분할되어 신규 설립되었고, 2025년에 HD현대미포와 합병을 완료함.
 조선사업은 일반상선, 고부가가치 가스선, 해양관련 선박 건조 및 친환경 선박 개발을 진행하며, 해양플랜트사업은 원유생산 설비 및 플랜트공사를 영위함.
 동사는 친환경 연료 엔진 분야 선도기업으로, LNG, LPG, 메탄올, 에탄 엔진에서 높은 점유...
-- **유통가능주식 비율**: 30.65%
+- **유통가능주식 비율**: 30.62%
 
 ---
 
 ## 재무 현황
 
-> 출처: DART OpenAPI + FDR(주가) | 기준: 2026-05-04 | 종목코드: 329180
-> 회계연도: 2025년 (연결 기준) | 주가: 685000원 (2026-04-30)
+[⏳ fetch_finance.py 실행 필요]
 
-### 밸류에이션
-
-| 항목 | 수치 |
-|------|------|
-| 시가총액 | 61.8조 |
-| PER | 43.6배 |
-| PBR | 6.61배 |
-| EPS | 15702원 |
-| BPS | 103626원 |
-
-### 2025년 연간 실적 (DART 연결)
-
-| 항목 | 수치 |
-|------|------|
-| 매출액 | 17.6조 |
-| 영업이익 | 2.0조 |
-| 순이익 | 1.4조 |
-| 부채비율 | 180.1% |
-
-### 분기 실적 (DART 연결)
-
-| 분기 | 매출 | 영업이익 | 순이익 | 부채비율 |
-|------|------|----------|--------|----------|
-| 2025.Q1 | 3.8조 | 4,337억 | 2,842억 | 260.0% |
-| 2025.Q2 | 4.1조 | 4,715억 | 2,109억 | 219.3% |
-| 2025.Q3 | 4.4조 | 5,573억 | 4,308억 | 221.6% |
-| 2025.Q4 | 5.2조 | 5,750억 | 4,896억 | 180.1% |
+---
 
 ## 차트·거래량 메모
 
@@ -135,6 +117,16 @@ _직접 추가 또는 LLM이 분석 시 기록_
 
 ---
 
+---
+
+## 등락률 누적 로그
+
+<!-- ingest 자동 기록 -->
+
+| 날짜 | 등락률 | 재료 요약 |
+|------|--------|-----------|
+| 2026-05-13 | +3.7% | [[특징주] HD현대중공업, 2.1조원 선박 수주에도 5%↓...차익실현에 밀려](https://www.tokenpost.kr/news/econ |
+
 ## 마지막 업데이트
 
-2026-05-04 | Notion ingest (ingest_all.py 자동 생성)
+2026-05-17 | Notion ingest (ingest_all.py 자동 생성)

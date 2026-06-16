@@ -1,13 +1,12 @@
 ---
-tags: [유니콘, 자동차, 유통/물류, 마켓컬리, 종합상사, 중고차/렌터카]
+tags: [유니콘, 자동차, 유통/물류, 통신, 마켓컬리, 종합상사, 중고차-렌터카, 5G-6G]
 sector: 유니콘
-last_updated: 2026-05-04
-rate_updated: 2026-05-04
-close_price: 6590
-change_rate: +12.27%
-notion_last_edited: 2025-12-16T06:00:00.000Z
-theme: ["#마켓컬리", "#종합상사", "#중고차/렌터카"]
+last_updated: 2026-06-08
+notion_last_edited: 2026-06-08T11:43:00.000Z
+theme: ["#마켓컬리", "#종합상사", "#중고차/렌터카", "#5G/6G"]
 stock_code: 001740
+is_leader: 
+recent_breakout: 
 ---
 
 # SK네트웍스
@@ -35,7 +34,11 @@ stock_code: 001740
 
 > 출처: Notion `추가 중요내용` 섹션 | 등락률은 Notion DB `등락률(%)` 컬럼 기준
 
-_[⏳ 추가 중요내용 없음]_
+- [2026-06-08] [2026.05.26] [[특징주] SK네트웍스, "美 주파수 경매 앞두고 미국 5G 투자 확대" 수혜...](https://www.widedaily.com/news/articleView.html?idxno=294632) / 등락률: +30.00%% / [등급 미분류]
+- [2026-06-08] [2026.05.26] [[특징주] SK네트웍스, 업스테이지 투자 확대에 27% 급등…장중 52주 신고...](https://www.ajunews.com/view/20260526143824602) / 등락률: +30.00%% / [등급 미분류]
+- [2026-06-08] [2026.05.14] [[특징주] SK네트웍스, 1분기 영업익 102% '어닝 서프라이즈'에 장중 상한...](https://www.widedaily.com/news/articleView.html?idxno=294017) / 등락률: +30.00%% / [등급 미분류]
+- [2026-06-08] [2026.05.14] [SK네트웍스, 1분기 영업익 102% 증가에 상한가[특징주]](http://www.edaily.co.kr/news/newspath.asp?newsid=04136086645448920) / 등락률: +30.00%% / [등급 미분류]
+- [2026-06-08] [2026.05.26] [SK네트웍스 주가 급등…장중 상한가 터치에 거래대금 5000억원 돌파](https://www.job-post.co.kr/news/articleView.html?idxno=216775) / 등락률: +30.00%% / [등급 미분류]
 
 ---
 
@@ -43,22 +46,34 @@ _[⏳ 추가 중요내용 없음]_
 
 > 출처: Notion `지난기사 아카이브 + 링크` 100% 전수 복사 (요약·누락 금지)
 
-_[⏳ 아카이브 없음]_
+- [[특징주] SK네트웍스, 자사주 소각 계획에 6%대 상승](https://www.namdonews.com/news/articleView.html?idxno=903504)
+- [[특징주] SK네트웍스, 자사주 소각 계획에 6% 상승 마감(종합)](https://www.yna.co.kr/view/AKR20260310050651008?input=1195m)
+- [[특징주] SK네트웍스, 자사주 소각 발표에 급상승](https://www.dnews.co.kr/uhtml/view.jsp?idxno=202603101343013140575)
+- [[특징주] SK네트웍스, 자사주 소각 계획에 '강세'](https://www.cstimes.com/news/articleView.html?idxno=696760)
+- [[특징주] SK네트웍스, 자사주 소각 계획 '상승'](https://www.jeonmae.co.kr/news/articleView.html?idxno=1237078)
+- [[ET특징주]SK네트웍스, 자사주 소각 소식에 상승세](https://www.etnews.com/20260310000132)
+- [[특징주] SK네트웍스, 1000억원대 자사주 소각에 '강세'](https://www.g-enews.com/view.php?ud=20260310100057557044093b5d4e_1)
+- [[특징주] SK네트웍스, 대규모 자사주 소각 계획에 6% 강세](https://www.ajunews.com/view/20260310101503462)
+- [[특징주] SK네트웍스, "美 주파수 경매 앞두고 미국 5G 투자 확대" 수혜...](https://www.widedaily.com/news/articleView.html?idxno=294632)
+- [[특징주] SK네트웍스, 업스테이지 투자 확대에 27% 급등…장중 52주 신고...](https://www.ajunews.com/view/20260526143824602)
+- [[특징주] SK네트웍스, 1분기 영업익 102% '어닝 서프라이즈'에 장중 상한...](https://www.widedaily.com/news/articleView.html?idxno=294017)
+- [SK네트웍스, 1분기 영업익 102% 증가에 상한가[특징주]](http://www.edaily.co.kr/news/newspath.asp?newsid=04136086645448920)
+- [SK네트웍스 주가 급등…장중 상한가 터치에 거래대금 5000억원 돌파](https://www.job-post.co.kr/news/articleView.html?idxno=216775)
 
 ---
 
 ## 기업 기본 정보
 
-- **홈페이지**: -
-- **사업 구조**: -
-- **유통가능주식 비율**: -
+- **홈페이지**: [http://www.sknetworks.co.kr/](http://www.sknetworks.co.kr/)
+- **사업 구조**: 동사는 1956년 설립되어 1977년 상장되었으며, 2025년 미국 법인과 행복나무를 설립해 사업을 확장함. 동사는 휴대폰 정보통신 유통, 통신 인프라, 글로벌 트레이딩, 자동차 관리, 환경가전 렌털, 호텔·리조트, 데이터 비즈니스를 운영하고 있음. 정보통신사업부는 국내 1위 이동통신 유통사업자로 연간 약 400만대 시장을 보유하며, AI Company로 ...
+- **유통가능주식 비율**: 47.32%
 
 ---
 
 ## 재무 현황
 
-> 출처: DART OpenAPI + FDR(주가) | 기준: 2026-05-04 | 종목코드: 001740
-> 회계연도: 2025년 (연결 기준) | 주가: 5870원 (2026-04-30)
+> 출처: DART OpenAPI + FDR(주가) | 기준: 2026-06-08 | 종목코드: 001740
+> 회계연도: 2025년 (연결 기준) | 주가: 14170원 (2026-06-08)
 
 ### 밸류에이션
 
@@ -96,10 +111,20 @@ _직접 추가 또는 LLM이 분석 시 기록_
 
 ## 연관 테마
 
-[[themes/마켓컬리]] | [[themes/종합상사]] | [[themes/중고차-렌터카]]
+[[themes/마켓컬리]] | [[themes/종합상사]] | [[themes/중고차-렌터카]] | [[themes/5G-6G]]
 
 ---
 
+---
+
+## 등락률 누적 로그
+
+<!-- ingest 자동 기록 -->
+
+| 날짜 | 등락률 | 재료 요약 |
+|------|--------|-----------|
+| 2026-06-08 | +30.0% | [[특징주] SK네트웍스, 자사주 소각 계획에 6%대 상승](https://www.namdonews.com/news/articleView.htm |
+
 ## 마지막 업데이트
 
-2026-05-04 | Notion ingest (ingest_all.py 자동 생성)
+2026-06-08 | Notion ingest (ingest_all.py 자동 생성)

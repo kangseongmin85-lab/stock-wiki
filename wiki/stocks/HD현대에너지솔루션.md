@@ -1,13 +1,12 @@
 ---
 tags: [에너지, 태양광-발전]
 sector: 에너지
-last_updated: 2026-05-04
-rate_updated: 2026-05-04
-close_price: 221000
-change_rate: -4.33%
-notion_last_edited: 2026-05-04T10:05:00.000Z
+last_updated: 2026-05-17
+notion_last_edited: 2026-05-14T14:45:00.000Z
 theme: ["#태양광-발전"]
 stock_code: 322000
+is_leader: 
+recent_breakout: 
 ---
 
 # HD현대에너지솔루션
@@ -35,7 +34,7 @@ stock_code: 322000
 
 > 출처: Notion `추가 중요내용` 섹션 | 등락률은 Notion DB `등락률(%)` 컬럼 기준
 
-- [2026-04-30] [[특징주] ‘흑자전환’ HD현대에너지솔루션, 1분기 호실적 힘입어 역대...](https://biz.chosun.com/stock/stock_general/2026/04/30/2NGQM5CKTFFE7GQMKNAOQJXF2Y/?utm_source=naver&utm_medium=original&utm_campaign=biz) / 등락률: +7.19% / [등급 미분류]
+- [2026-04-30] [[특징주] ‘흑자전환’ HD현대에너지솔루션, 1분기 호실적 힘입어 역대...](https://biz.chosun.com/stock/stock_general/2026/04/30/2NGQM5CKTFFE7GQMKNAOQJXF2Y/?utm_source=naver&utm_medium=original&utm_campaign=biz) / 등락률 미기재 / [등급 미분류]
 - [2026-04-22] [[특징주] HD현대에너지솔루션, 미국-이란 2차 협상 무산 우려에 국제 유...](https://www.widedaily.com/news/articleView.html?idxno=292765) / 등락률 미기재 / [등급 미분류]
 - [2026-04-03] [[특징주] 태양광 규제 완화 기대에 '에스에너지·HD현대에너지솔루션' ...](https://www.newspim.com/news/view/20260403000275) / 등락률 미기재 / [등급 미분류]
 - [2026-03-17] [[특징주] HD현대에너지솔루션, 엔비디아 훈풍에 주가↑](https://www.ajunews.com/view/20260317150608618) / 등락률 미기재 / [등급 미분류]
@@ -93,6 +92,9 @@ stock_code: 322000
 - [트럼프 '이란 타격' 발언에 국제유가 다시 급등](https://n.news.naver.com/mnews/article/422/0000850800?sid=104)
 - [(26.04.02)당정청, 전쟁추경으로 실물경제 안정·재생에너지 전환](https://n.news.naver.com/mnews/article/014/0005501758?sid=100) / 2026-04-02 / 등락률: +7.6%
 - [수소충전 입지 완화·방음벽 태양광 허용…공공기관 규제 251건 손질](https://n.news.naver.com/mnews/article/421/0008867741?sid=101)
+- [(26.02.26)HD현대에너지솔루션, 미국 LA 태양광 사업 참여…테슬라 인버터와 통합](https://www.theguru.co.kr/news/article.html?no=98461) / 2026-02-26 / 등락률: -0.1%
+- [[특징주] 태양광주 급등세⋯유가 폭등에 규제 완화로 HD현대엔솔 25.99%↑](https://www.etoday.co.kr/news/view/2572452)
+- [[특징주] ‘흑자전환’ HD현대에너지솔루션, 1분기 호실적 힘입어 역대 최고가 경신](https://n.news.naver.com/mnews/article/366/0001160978?sid=101)
 
 ---
 
@@ -132,8 +134,8 @@ _직접 추가 또는 LLM이 분석 시 기록_
 
 | 날짜 | 등락률 | 재료 요약 |
 |------|--------|-----------|
-| 2026-04-30 | +7.2% | [[특징주] ‘흑자전환’ HD현대에너지솔루션, 1분기 호실적 힘입어 역대...](https://biz.chosun.com/stock/stock_ |
+| 2026-05-14 | +15.1% | [[특징주] ‘흑자전환’ HD현대에너지솔루션, 1분기 호실적 힘입어 역대...](https://biz.chosun.com/stock/stock_ |
 
 ## 마지막 업데이트
 
-2026-05-04 | Notion ingest (ingest_all.py 자동 생성)
+2026-05-17 | Notion ingest (ingest_all.py 자동 생성)

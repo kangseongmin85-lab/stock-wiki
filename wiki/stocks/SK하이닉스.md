@@ -1,8 +1,8 @@
 ---
-tags: [반도체, 빅테크, 반도체-소재/부품, HBM, 3D-낸드, 엔비디아]
+tags: [반도체, 빅테크, 반도체-소재-부품, HBM, 3D-낸드, 엔비디아]
 sector: 반도체
-last_updated: 2026-05-08
-notion_last_edited: 2026-05-07T12:23:00.000Z
+last_updated: 2026-05-25
+notion_last_edited: 2026-05-18T13:38:00.000Z
 theme: ["#반도체-소재/부품", "#HBM(고대역폭메모리)", "#3D-낸드(NAND)", "#엔비디아"]
 stock_code: 000660
 is_leader: 
@@ -13,20 +13,23 @@ recent_breakout:
 
 ## 한줄 요약
 
-[⏳ 요약 미작성]
+AI 메모리 슈퍼사이클 핵심 수혜주이자 HBM(고대역폭메모리) 글로벌 1위. 엔비디아 HBM4 물량을 선점하며 1분기 영업이익 37.6조·영업이익률 72%로 역대 최대를 기록, 시총 1,000조를 돌파한 코스피 반도체 대장주.
 
 ---
 
 ## 현재 투자 포인트
 
-- 🟢 [강세] [⏳ Notion 재료 분석 필요]
-- 🔴 [리스크] [⏳ 리스크 분석 필요]
+- 🟢 [강세] HBM4 엔비디아 공급 주도(물량 2/3 확보) + 메모리 슈퍼사이클(D램 1분기 95%↑) → 1Q 영업이익률 72% 역대 최대 / 재료등급: **구조적 성장**
+- 🟢 [강세] 美 ADR/GDR 상장 추진(6~7월)으로 글로벌 자금 재평가 기대 / 재료등급: **중기 모멘텀**
+- 🔴 [리스크] 코스피 8000 터치 후 외국인 차익실현·변동성 확대, BNK "하반기 둔화" 투자의견 보유로 하향, 환율(1,530원대)·중동 지정학 변수
 
 ---
 
 ## 대장주 판단
 
-[⏳ 대장주 판단 미작성]
+현재 HBM 테마 대장주: **SK하이닉스** (시총·실적·수급·HBM4 주도권 모두 1위)
+이 종목 포지션: **1군(대장)** → 삼성전자와 메모리 양강이나 HBM 주도권은 SK하이닉스 우위. 변화 조건: 삼성전자 HBM4 엔비디아 퀄 통과 + 점유율 역전 시 재평가
+> ⚠️ 재료 신선도: 타임라인 최신 재료는 2026-05-18 기준. 06-05~06-07 시황에서 대형주 급락(SK하이닉스 당일 -9.92%, analysis/시황_2026-06-05·06-07 참조) — 매매 판단 시 질문 시점 실시간 가격·수급 재확인 필요
 
 ---
 
@@ -34,16 +37,13 @@ recent_breakout:
 
 > 출처: Notion `추가 중요내용` 섹션 | 등락률은 Notion DB `등락률(%)` 컬럼 기준
 
-- [2026-05-07] [[특징주] 삼성전자·SK하이닉스, 장중 최고가 후 하락 전환](https://www.newspim.com/news/view/20260507000456) / 등락률: +3.31% / [등급 미분류]
-- [2026-05-07] [[특징주] 삼성전자SK하이닉스.. 등락 반복에도 '최고가' 경신](https://www.g-enews.com/view.php?ud=20260507094654550044093b5d4e_1) / 등락률: +3.31% / [등급 미분류]
-- [2026-05-07] [[특징주] 삼성전자·SK하이닉스, 장중 조정 양상](http://www.issuenbiz.com/news/articleView.html?idxno=76425) / 등락률: +3.31% / [등급 미분류]
-- [2026-05-07] [[특징주] 삼성전자·SK하이닉스 상승 출발후 장중 하락전환](https://www.yna.co.kr/view/AKR20260507045700008?input=1195m) / 등락률: +3.31% / [등급 미분류]
-- [2026-05-07] [[특징주] 삼성전자·SK하이닉스, 미·이란 종전 기대에 프리마켓서 강세](https://www.newspim.com/news/view/20260507000082) / 등락률: +3.31% / [등급 미분류]
-- [2026-05-07] [[특징주] 종전 기대감에 삼성전자·SK하이닉스, 프리마켓서 또 급등](https://www.ajunews.com/view/20260507082103084) / 등락률: +3.31% / [등급 미분류]
-- [2026-05-06] [[특징주] 삼성전자·SK하이닉스, 10%대 급등…7천피 돌파 견인](https://www.ebn.co.kr/news/articleView.html?idxno=1707705) / 등락률 미기재 / [등급 미분류]
-- [2026-05-06] [[특징주] 삼성전자-SK하이닉스, 급등...SK스퀘어는 '황제주'](https://www.asiatime.co.kr/article/20260506500135) / 등락률 미기재 / [등급 미분류]
-- [2026-05-06] [[특징주] SK하이닉스 '160만닉스' 달성··· +10%대 상승](https://www.jeonmae.co.kr/news/articleView.html?idxno=1253851) / 등락률 미기재 / [등급 미분류]
-- [2026-05-06] [[특징주] '26만 전자·160만 닉스' 달성…삼성전자·SK하이닉스 10% 가까...](https://www.joongangenews.com/news/articleView.html?idxno=516955) / 등락률 미기재 / [등급 미분류]
+- [2026-05-18] [[특징주] 삼성전자 장중 반등…SK하이닉스도 1%대↑](https://www.ajunews.com/view/20260518135442764) / 등락률: +1.15% / [등급 미분류]
+- [2026-05-18] [[특징주] 美 기술주 급락…삼성전자·SK하이닉스, 동반 하락](https://www.ekn.kr/web/view.php?key=20260518024365508) / 등락률: +1.15% / [등급 미분류]
+- [2026-05-18] [[특징주] 삼성전자 SK하이닉스, 국제유가 급등과 美 기술주 하락에 '급락...](https://www.g-enews.com/view.php?ud=20260518091200332644093b5d4e_1) / 등락률: +1.15% / [등급 미분류]
+- [2026-05-15] [[특징주] 삼성전자, 중동 리스크·파업 우려 겹치며 급락…SK하이닉스도...](https://www.tokenpost.kr/news/economy/360022) / 등락률 미기재 / [등급 미분류]
+- [2026-05-15] [[ET특징주] 꿈의 '8000피' 터치… 삼성전자·SK하이닉스 숨고르기](https://www.etnews.com/20260515000124) / 등락률 미기재 / [등급 미분류]
+- [2026-05-15] [[특징주] 삼성전자·SK하이닉스, 장초반 동반 약세](https://www.yna.co.kr/view/AKR20260515033000008?input=1195m) / 등락률 미기재 / [등급 미분류]
+- [2026-05-14] [[특징주] 삼성전자, 노조 리스크 딛고 '강세'.. SK하이닉스는 '숨고르기...](https://www.g-enews.com/view.php?ud=20260514094333666344093b5d4e_1) / 등락률 미기재 / [등급 미분류]
 
 ---
 
@@ -51,6 +51,44 @@ recent_breakout:
 
 > 출처: Notion `지난기사 아카이브 + 링크` 100% 전수 복사 (요약·누락 금지)
 
+- [[특징주] 삼성전자 장중 반등…SK하이닉스도 1%대↑](https://www.ajunews.com/view/20260518135442764)
+- [[특징주] 삼성전자 SK하이닉스, 국제유가 급등과 美 기술주 하락에 '급락...](https://www.g-enews.com/view.php?ud=20260518091200332644093b5d4e_1)
+- [[특징주] 美 기술주 급락…삼성전자·SK하이닉스, 동반 하락](https://www.ekn.kr/web/view.php?key=20260518024365508)
+- [[특징주] 삼성전자, 중동 리스크·파업 우려 겹치며 급락…SK하이닉스도...](https://www.tokenpost.kr/news/economy/360022)
+- [[ET특징주] 꿈의 '8000피' 터치… 삼성전자·SK하이닉스 숨고르기](https://www.etnews.com/20260515000124)
+- [[특징주] 삼성전자·SK하이닉스, 장초반 동반 약세](https://www.yna.co.kr/view/AKR20260515033000008?input=1195m)
+- [[특징주] 삼성전자, 노조 리스크 딛고 '강세'.. SK하이닉스는 '숨고르기...](https://www.g-enews.com/view.php?ud=20260514094333666344093b5d4e_1)
+- [[특징주] SK하이닉스, 프리마켓 장중 202만1000원…첫 200만원선 돌파](https://www.tokenpost.kr/news/economy/359440)
+- [프리마켓 달군 반도체株…SK하이닉스 첫 200만원 돌파[특징주]](https://www.newsway.co.kr/news/view?ud=2026051408321620531)
+- [[특징주] SK하이닉스, 프리마켓서 '200만원' 첫 돌파](https://www.newspim.com/news/view/20260514000100)
+- ['200만닉스' 눈앞…SK하이닉스 신고가 경신[특징주]](http://www.fnnews.com/news/202605131518587194)
+- [[ET특징주] SK하이닉스, 증권가 '310만' 전망에 주가 7%↑… 삼성전자도...](https://www.etnews.com/20260513000222)
+- [[특징주] 삼성전자, 노사협상 결렬 급락...SK하이닉스도 '약세'](https://www.asiatime.co.kr/article/20260513500046)
+- [[특징주] 삼성전자·SK하이닉스, 노사협상 결렬 여파로 하락세](http://www.issuenbiz.com/news/articleView.html?idxno=76566)
+- [[특징주] 삼성전자, 장초반 5% 넘게 하락…SK하이닉스도 약세](http://www.segyebiz.com/newsView/20260513504351?OutUrl=naver)
+- [[특징주] 삼성전자·SK하이닉스, 투자심리 위축에 프리마켓서 약세](https://www.newspim.com/news/view/20260513000066)
+- [[특징주] 코스피 8000 코앞.. SK하이닉스·삼성산자 '최고가' 갈아 치워](https://www.g-enews.com/view.php?ud=2026051209254156944093b5d4e_1)
+- [[ET특징주] 190만원선 뚫고 고공행진…SK하이닉스, 주가 13% 급등](https://www.etnews.com/20260511000279)
+- [[특징주] "삼성전자 33만·SK하이닉스 190만"…메모리 가격이 끌고 목표...](https://www.newstnt.com/news/articleView.html?idxno=701763)
+- [[특징주] SK하이닉스, 장중 190만원 터치…삼성전자도 7% 급등](https://www.ajunews.com/view/20260511110250883)
+- [[특징주] 삼성전자·SK하이닉스, 美 증시 기술주 훈풍 나란히 '불기둥'](https://www.g-enews.com/view.php?ud=20260511093642817044093b5d4e_1)
+- [[특징주] '28만전자·185만닉스' 새 역사…삼성전자·SK하이닉스 동반 신...](https://www.ziksir.com/news/articleView.html?idxno=133418)
+- [[특징주] SK하이닉스 주가 190만원 터치…'200만닉스' 머지 않았다](http://www.newsdream.kr/news/articleView.html?idxno=112017)
+- [[특징주] 삼성전자, 30만전자 '눈앞'…SK하이닉스 장중 190만닉스 '터치...](https://www.newsworks.co.kr/news/articleView.html?idxno=840311)
+- [[특징주] 삼성전자·SK하이닉스, 동반 급등...'28만전자'·'180만 닉스'](https://www.cstimes.com/news/articleView.html?idxno=705081)
+- [[특징주] 거침없는 SK하이닉스·삼성전자...주가 급등세](https://www.joongangenews.com/news/articleView.html?idxno=518200)
+- [[특징주] SK하이닉스, 개미 1주일새 9464억 순매수…코스피 신고가 랠리...](https://www.tokenpost.kr/news/economy/357835)
+- [[특징주] 삼성전자·SK하이닉스...반도체주 랠리 주춤](http://www.issuenbiz.com/news/articleView.html?idxno=76455)
+- [[특징주] 삼성전자·SK하이닉스, 美 반도체주 약세와 전쟁 영향 '파란 불...](https://www.g-enews.com/view.php?ud=20260508091009641144093b5d4e_1)
+- [[특징주] 삼성전자·SK하이닉스 3%대 동반 약세…미 반도체 차익실현·중...](https://www.etoday.co.kr/news/view/2582622)
+- [[특징주] 삼성전자·SK하이닉스 약세…미·이란 긴장 재부각에 반도체주...](https://www.tokenpost.kr/news/economy/357440)
+- [[특징주] 삼성전자·SK하이닉스, 미·이란 종전 기대 후퇴에 프리마켓서...](https://www.newspim.com/news/view/20260508000086)
+- [[특징주] 삼성전자·SK하이닉스, 장중 최고가 후 하락 전환](https://www.newspim.com/news/view/20260507000456)
+- [[특징주] 삼성전자SK하이닉스.. 등락 반복에도 '최고가' 경신](https://www.g-enews.com/view.php?ud=20260507094654550044093b5d4e_1)
+- [[특징주] 삼성전자·SK하이닉스, 장중 조정 양상](http://www.issuenbiz.com/news/articleView.html?idxno=76425)
+- [[특징주] 삼성전자·SK하이닉스 상승 출발후 장중 하락전환](https://www.yna.co.kr/view/AKR20260507045700008?input=1195m)
+- [[특징주] 삼성전자·SK하이닉스, 미·이란 종전 기대에 프리마켓서 강세](https://www.newspim.com/news/view/20260507000082)
+- [[특징주] 종전 기대감에 삼성전자·SK하이닉스, 프리마켓서 또 급등](https://www.ajunews.com/view/20260507082103084)
 - [[특징주] 삼성전자·SK하이닉스, 10%대 급등…7천피 돌파 견인](https://www.ebn.co.kr/news/articleView.html?idxno=1707705)
 - [[특징주] 삼성전자-SK하이닉스, 급등...SK스퀘어는 '황제주'](https://www.asiatime.co.kr/article/20260506500135)
 - [[특징주] SK하이닉스 '160만닉스' 달성··· +10%대 상승](https://www.jeonmae.co.kr/news/articleView.html?idxno=1253851)
@@ -221,6 +259,24 @@ recent_breakout:
 - [교보證 "삼성전자, 메모리 호황 지속…목표주가 33만원 제시"](https://n.news.naver.com/mnews/article/003/0013927074?sid=101)
 - [11% 급등한 SK하이닉스 '시총 1000조' 돌파...‘150만 닉스’도 정조준](https://n.news.naver.com/mnews/article/243/0000097429?sid=101)
 - [SK하이닉스, 차세대 1C D램 수요 확대 선제 대응 나선다](https://n.news.naver.com/mnews/article/092/0002421245?sid=105)
+- [미국 국무부 차관보 "삼성전자 SK하이닉스와 협력 희망", 메모리 품귀 해소에 '팍스 실리카' 활용 검토](https://www.businesspost.co.kr/BP?command=article_view&num=437188)
+- [“SK 한 주로 하이닉스·앤트로픽 동시 투자?”…해외 개미들은 韓 지배구조 ‘열공’ 중](https://n.news.naver.com/mnews/article/366/0001162827?sid=101)
+- [미국 AI 반도체주 '날개'…AMD 19%·슈퍼마이크로 24% 폭등](https://n.news.naver.com/mnews/article/421/0008929926?rc=N&ntype=RANKING&sid=101)
+- [주가 급등한 AMD, CPU 시장 규모 4년 뒤 168조원 전망](https://www.yna.co.kr/view/AKR20260507012000009)
+- ['슈퍼乙' K반도체, 선급금+최소 매출 보장 LTA 확대…수주산업 변신](https://n.news.naver.com/mnews/article/421/0008929987?rc=N&ntype=RANKING&sid=101)
+- ["SK하이닉스, 2분기도 어닝 서프라이즈".. 미래에셋, 목표가 270만 원 상향](https://www.g-enews.com/view.php?ud=20260427085325297644093b5d4e_1)
+- [[단독]UAE 투자부 차관, SK하이닉스 방문…투자 기대 ↑](https://www.inews24.com/view/1967335?sicode=01)
+- ["장비값도 대겠다"…빅테크, 하이닉스 메모리 확보 총력전](https://n.news.naver.com/mnews/article/018/0006275439?sid=101)
+- ["중동뉴스와 괴리" 美 S&P500 사상 첫 7,400대 마감(종합)](https://n.news.naver.com/mnews/article/001/0016070676?sid=101)
+- [블룸버그 "코스피 5%대 급락 원인은 김용범 AI 국민배당금 제안"](https://n.news.naver.com/mnews/article/008/0005356375?sid=101)
+- [“구형 반도체 끝난줄 알았는데 공장 풀가동”…파운드리 주가 동반 반등](https://n.news.naver.com/mnews/article/009/0005677890)
+- [SK하닉 GDR 웃돈 주고 산다 … AI 메모리 질주에 글로벌 자금 '러시'](https://biz.newdaily.co.kr/site/data/html/2026/05/11/2026051100062.html)
+- [AI 병목 주범 된 메모리 확보전···D램·SSD 품귀에 삼성·SK 협상력 ‘최고조’](https://www.enewstoday.co.kr/news/articleView.html?idxno=2428928)
+- [김용범 “기업 초과이윤 환원할 ‘국민배당금’ 설계해야”](https://n.news.naver.com/mnews/article/023/0003975943?sid=100)
+- [코스피 첫 8000 돌파했지만…외국인 차익실현에 변동성 확대](https://www.thepublic.kr/news/articleView.html?idxno=304546)
+- [(26.05.12)씨티, 삼전 46만원·하이닉스 310만원으로 목표가 상향](https://n.news.naver.com/mnews/article/005/0001848490?sid=101)
+- [하나증권 "글로벌 D램 수요 2030년까지 5배 성장, 반도체주 반발 매수세 유입 기대"](https://www.businesspost.co.kr/BP?command=article_view&num=437669)
+- ['200만닉스' 눈앞…SK하이닉스 신고가 경신[특징주]](https://n.news.naver.com/mnews/article/014/0005521008?sid=101)
 
 ---
 
@@ -230,15 +286,42 @@ recent_breakout:
 - **사업 구조**: 동사는 1949년 설립 이후 2012년 에스케이하이닉스로 상호 변경하고, 2025년 에스케이파워텍 지분 인수로 종속회사를 확대함.
 경기도 이천 본사를 중심으로 글로벌 반도체 기업으로, DRAM 및 NAND 중심의 메모리 반도체와 Foundry 사업을 운영하고 있음.
 AI 기술 확산에 대응하여 HBM4 양산 체제와 256GB DDR5 개발로 기술 리더십을 강...
-- **유통가능주식 비율**: 75.11%
+- **유통가능주식 비율**: 74.91%
 
 ---
 
 ## 재무 현황
 
-[⏳ fetch_finance.py 실행 필요]
+> 출처: DART OpenAPI + FDR(주가) | 기준: 2026-05-25 | 종목코드: 000660
+> 회계연도: 2025년 (연결 기준) | 주가: 1941000원 (2026-05-22)
 
----
+### 밸류에이션
+
+| 항목 | 수치 |
+|------|------|
+| 시가총액 | [⏳ 계산 불가] |
+| PER | [⏳] |
+| PBR | [⏳] |
+| EPS | - |
+| BPS | - |
+
+### 2025년 연간 실적 (DART 연결)
+
+| 항목 | 수치 |
+|------|------|
+| 매출액 | 97.1조 |
+| 영업이익 | 47.2조 |
+| 순이익 | 42.9조 |
+| 부채비율 | 45.9% |
+
+### 분기 실적 (DART 연결)
+
+| 분기 | 매출 | 영업이익 | 순이익 | 부채비율 |
+|------|------|----------|--------|----------|
+| 2025.Q1 | 17.6조 | 7.4조 | 8.1조 | 52.2% |
+| 2025.Q2 | 22.2조 | 9.2조 | 7.0조 | 48.1% |
+| 2025.Q3 | 24.4조 | 11.4조 | 12.6조 | 48.4% |
+| 2025.Q4 | 32.8조 | 19.2조 | 15.2조 | 45.9% |
 
 ## 차트·거래량 메모
 
@@ -260,8 +343,8 @@ _직접 추가 또는 LLM이 분석 시 기록_
 
 | 날짜 | 등락률 | 재료 요약 |
 |------|--------|-----------|
-| 2026-05-07 | +3.3% | [[특징주] 삼성전자·SK하이닉스, 10%대 급등…7천피 돌파 견인](https://www.ebn.co.kr/news/articleView.ht |
+| 2026-05-18 | +1.1% | [[특징주] 삼성전자 장중 반등…SK하이닉스도 1%대↑](https://www.ajunews.com/view/20260518135442764) |
 
 ## 마지막 업데이트
 
-2026-05-08 | Notion ingest (ingest_all.py 자동 생성)
+2026-05-25 | Notion ingest (ingest_all.py 자동 생성)

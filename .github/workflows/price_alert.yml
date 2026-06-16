@@ -1,0 +1,80 @@
+name: 🚨 장중 가격알림
+
+on:
+  workflow_dispatch:  # 수동 실행 + cron-job.org 외부 트리거 (5분 정밀도)
+    inputs:
+      mode:
+        description: "scan(기본) | test(봇·API 연결 점검) | force(장외 강제 스캔)"
+        default: "scan"
+        required: false
+  schedule:
+    # 30분마다 깨어나 28분간 내부에서 1분 주기 스캔 (알림 지연 최대 ~70초)
+    # KST 09:00~15:30 = UTC 00:00~06:30, 평일. GitHub schedule 지연 대비
+    # 백업 — 정밀 트리거는 cron-job.org 30분 주기 권장 (뉴스봇과 동일 방식)
+    - cron: "*/30 0-6 * * 1-5"
+
+# 윈도우 중복 방지: 진행 중이면 새 트리거는 대기 (취소 금지 — 스캔 루프 보호)
+concurrency:
+  group: price-alert
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  alert:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - name: 코드 체크아웃
+        uses: actions/checkout@v4
+
+      - name: Python 설정
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      # 기준선(하루 1회 일봉)·발송기록(일별 dedup) 캐시 — run 간 상태 유지
+      - name: 상태 캐시 복원/저장
+        uses: actions/cache@v4
+        with:
+          path: |
+            _cache/price_alert_baseline.json
+            _cache/price_alert_sent.json
+          key: price-alert-${{ runner.os }}-${{ github.run_id }}
+          restore-keys: |
+            price-alert-${{ runner.os }}-
+
+      - name: 가격알림 스캔
+        env:
+          ALERT_BOT_TOKEN: ${{ secrets.ALERT_BOT_TOKEN }}
+          ALERT_CHAT_ID:   ${{ secrets.ALERT_CHAT_ID }}
+          ALERT_HOLDINGS:  ${{ secrets.ALERT_HOLDINGS }}
+          ALERT_WATCHLIST: ${{ secrets.ALERT_WATCHLIST }}
+        run: |
+          MODE="${{ github.event.inputs.mode }}"
+          MODE="${MODE:-scan}"
+          if [ "$MODE" = "test" ]; then
+            echo "--- 네이버 API 도달성 프로브 (러너 해외 IP 차단 여부) ---"
+            python - <<'EOF'
+          import urllib.request, json
+          UA = {"User-Agent": "Mozilla/5.0"}
+          for label, url in [
+              ("fchart 일봉", "https://fchart.stock.naver.com/sise.nhn?symbol=005930&timeframe=day&count=3&requestType=0"),
+              ("polling 실시간", "https://polling.finance.naver.com/api/realtime/domestic/stock/005930"),
+          ]:
+              try:
+                  req = urllib.request.Request(url, headers=UA)
+                  body = urllib.request.urlopen(req, timeout=10).read().decode("utf-8", "replace")
+                  ok = ("data=" in body) or ("closePrice" in body)
+                  print(f"[{label}] {'OK' if ok else 'FAIL(응답 이상)'} — {body[:80]!r}")
+              except Exception as e:
+                  print(f"[{label}] FAIL — {e}")
+          EOF
+            python price_alert.py --test
+          elif [ "$MODE" = "force" ]; then
+            python price_alert.py --force
+          else
+            # 28분 루프 × 60초 간격 — 30분 트리거와 맞물려 연속 1분 스캔
+            python price_alert.py --loop 28 --interval 60
+          fi
