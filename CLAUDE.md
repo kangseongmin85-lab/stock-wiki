@@ -278,6 +278,7 @@ Ingest 및 스크리닝 시 반드시 아래 기준으로 분류한다.
 | 모순 처리 | [⚠️ 모순] 태그 필수 표시 |
 | Stale 처리 | [stale: YYYY-MM-DD] 태그 추가 |
 | 분석 저장 | 재료/거래량/시황/뉴스기사 관련 분석은 반드시 `analysis/`에 저장 |
+| 주식 일정 | `리포트_실행.bat` [일정]이 `schedule_scan.py`로 후보덤프 → "일정 업데이트해줘" 시 Claude가 판단·태그·중복제거 후 `schedule_push.py --apply`로 노션 🗓️주식일정 DB + `wiki/일정.md` 동기화 (먼저 `--dry-run`) |
 | overview 업데이트 | 매일 밤 9시 스케줄에서만 일괄 업데이트 |
 
 ---
@@ -359,6 +360,29 @@ Ingest 및 스크리닝 시 반드시 아래 기준으로 분류한다.
 4. 결과 보고. (위키는 다음 ingest 때 Notion→frontmatter 자동 전파)
 
 > 분류 기준: 사업분류=카테고리, 사업정체성(예: 반도체 장비)+최근 재료드라이버(예: 온디바이스AI)=관련테마, 키워드는 관련테마 미러. 동종 피어 태깅과 일관성 유지(예: 원익IPS=반도체/#반도체 장비). 테마편승·과도태깅 금지 — 사업 실체에 근거.
+
+---
+
+## 주식 일정 자동 업데이트 (schedule_scan.py + schedule_push.py)
+
+노션 **🗓️ 주식 일정** DB(`database_id=20dffbf4617380a99df6c90c5de6fdc9`, 데이터소스 `collection://20dffbf4-6173-80b1-9dc6-000bdae4c938`)에 **매매에 영향 주는 일정**을 매일 쌓고, 동시에 `wiki/일정.md`(옵시디언 미러)를 자동 동기화한다. taxonomy와 동일한 **"배치 후보덤프 → Claude 적용"** 패턴. **판단은 Claude(나)가 세션에서 직접 수행.**
+
+DB 스키마: `이름`(title) / `날짜`(date, 범위 가능) / `태그`(multi_select).
+태그 어휘(4범위): **실적발표 · IPO/상장 · 락업해제 · 거시/정책 · 지정학 · 종목공시**.
+
+| 스크립트 | 역할 | 트리거 |
+|----------|------|--------|
+| `schedule_scan.py` | (읽기전용) 노션 기존일정(중복기준) + 오늘의 시황 docx 헤드라인 + 네이버 뉴스API(일정 키워드)에서 **날짜 있는 미래 이벤트 후보** 수집 → `reports/schedule_todo.json` | `리포트_실행.bat` [일정] 단계 자동 |
+| `schedule_push.py` | Claude가 고른 `picks.json` 을 노션 DB에 upsert(이름+날짜 중복 스킵) + 노션 현재상태로 `wiki/일정.md` 재생성. `--dry-run`/`--sync-wiki` 지원 | Claude가 호출 |
+
+**Claude 루틴 (요청: "일정 업데이트해줘" 또는 리포트 실행 직후):**
+1. `reports/schedule_todo.json` 읽기 (없으면 `python schedule_scan.py` 먼저).
+2. `candidates` 중 **날짜가 확정된 매매영향 이벤트만** 선별 → 4범위 태그 부여 → `existing_events` 와 중복제거(이름+날짜). 날짜 애매·과거·단순 회고성은 버린다. date_hints가 비었어도 본문에 날짜 단서가 있으면 추론, 불명확하면 제외(억지 추가 금지 — [[taxonomy-fill-no-forcing]] 원칙 동일).
+3. `picks.json` 작성: `[{"name","date":"YYYY-MM-DD","end":"(범위면)","tags":[...],"note":""}]`.
+4. `python schedule_push.py --apply picks.json --dry-run` (생성/스킵·`reports/일정_preview.md` 확인) → 이상 없으면 `--dry-run` 빼고 실제 실행.
+5. 결과 보고 (생성 N · 스킵 N · 다가오는 일정 요약).
+
+> 위키만 다시 맞추려면 `python schedule_push.py --sync-wiki` (노션→`wiki/일정.md`). 시황분석 시 임박 일정은 `wiki/일정.md` 또는 `AIDC_카탈리스트_캘린더.md` 참고.
 
 ---
 

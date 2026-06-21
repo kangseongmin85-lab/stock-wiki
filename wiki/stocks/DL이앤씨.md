@@ -1,8 +1,8 @@
 ---
 tags: [건설/인프라, 에너지, SMR, 원자력-발전, 건설]
 sector: 건설/인프라
-last_updated: 2026-05-17
-notion_last_edited: 2026-05-07T13:13:00.000Z
+last_updated: 2026-06-16
+notion_last_edited: 2026-06-16T13:49:00.000Z
 theme: ["#SMR(소형모듈원자로)", "#원자력-발전", "#건설"]
 stock_code: 375500
 is_leader: 
@@ -47,11 +47,11 @@ recent_breakout:
 - [DL이앤씨, 美 엑스에너지 나스닥 상장에 '공식 파트너사' 주목…"원전 사업 가치 재평가"](https://www.newsprime.co.kr/news/article/?no=729109)
 - [[특징주] 종전 기대감·에너지 안보 중요성 부각…건설주 강세](https://n.news.naver.com/mnews/article/366/0001153250?sid=101)
 - [에너지 안보 급부상에 플랜트 수주 증가 전망…대우건설 14% ↑](https://n.news.naver.com/mnews/article/008/0005338083?sid=101)
-- [400억 달러 투입 앨라배마 SMR 10기 건설… 트럼프·다카이치 '원전 동맹' 선언](https://www.g-enews.com/view.php?ud=202603250650259982fbbec65dfb_1) / 2026-03-25 / 등락률: +14.9%
+- [400억 달러 투입 앨라배마 SMR 10기 건설… 트럼프·다카이치 '원전 동맹' 선언](https://www.g-enews.com/view.php?ud=202603250650259982fbbec65dfb_1)
 - [DL이앤씨, 美 엑스에너지와 150억 원 SMR 설계 계약](https://n.news.naver.com/mnews/article/011/0004603210?sid=101)
-- [(26.03.19)대미투자 유력 1호는 원전…건설주 날았다](https://www.hankyung.com/article/2026031932731) / 2026-03-19 / 등락률: +0.6%
+- [(26.03.19)대미투자 유력 1호는 원전…건설주 날았다](https://www.hankyung.com/article/2026031932731)
 - [[특징주] 유가 불안정·대미투자특별법 국무회의 통과에 원전주 강세](https://n.news.naver.com/mnews/article/001/0015965519?sid=101)
-- [(26.03.17)대미협상실무단, 18일 워싱턴 회동…1호 투자프로젝트 ‘원전’ 유력](https://n.news.naver.com/mnews/article/016/0002614877?sid=101) / 2026-03-17 / 등락률: +0.5%
+- [(26.03.17)대미협상실무단, 18일 워싱턴 회동…1호 투자프로젝트 ‘원전’ 유력](https://n.news.naver.com/mnews/article/016/0002614877?sid=101)
 - [대우건설, 원전·LNG 재평가 힘입어 성장 기대...목표가 2.8만원 -유진證](https://n.news.naver.com/mnews/article/014/0005507838?sid=101)
 - ["SMR까지 품었다"…'미국발 에너지 빅사이클' 올라탄 DL](https://n.news.naver.com/mnews/article/008/0005341155?sid=101)
 
@@ -93,8 +93,8 @@ _직접 추가 또는 LLM이 분석 시 기록_
 
 | 날짜 | 등락률 | 재료 요약 |
 |------|--------|-----------|
-| 2026-05-07 | +7.7% | [DL이앤씨, 美 엑스에너지 나스닥 상장에 '공식 파트너사' 주목…"원전 사업 가치 재평가"](https://www.newsprime.co.kr |
+| 2026-06-16 | +14.8% | [DL이앤씨, 美 엑스에너지 나스닥 상장에 '공식 파트너사' 주목…"원전 사업 가치 재평가"](https://www.newsprime.co.kr |
 
 ## 마지막 업데이트
 
-2026-05-17 | Notion ingest (ingest_all.py 자동 생성)
+2026-06-16 | Notion ingest (ingest_all.py 자동 생성)

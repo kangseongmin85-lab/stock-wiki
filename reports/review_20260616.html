@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>기사 검수 - 20260616</title>
+<style>
+* { box-sizing: border-box; }
+body { font-family: -apple-system, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; max-width: 1100px; margin: 0 auto; padding: 20px; background: #f5f5f7; color: #222; }
+.topbar { position: sticky; top: 10px; background: white; padding: 14px 18px; border-radius: 12px; display: flex; align-items: center; gap: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 16px; z-index: 10; }
+.topbar h2 { margin: 0; font-size: 17px; }
+.progress { flex: 1; height: 8px; background: #eee; border-radius: 4px; overflow: hidden; }
+.progress-bar { height: 100%; background: #4CAF50; transition: width 0.2s; }
+.stock-card { background: white; padding: 18px; border-radius: 10px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); border-left: 4px solid transparent; }
+.stock-card.approved { border-left-color: #4CAF50; background: #f1f8f3; }
+.stock-card.rejected { border-left-color: #f44336; background: #fdecea; }
+.stock-card.skipped  { border-left-color: #999; background: #f5f5f5; }
+.stock-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
+.stock-name { font-size: 17px; font-weight: 700; }
+.stock-meta { color: #666; font-size: 13px; }
+.ctrt-up   { color: #d32f2f; font-weight: 600; }
+.ctrt-down { color: #1976d2; font-weight: 600; }
+.theme-tag { background: #e3f2fd; color: #1976d2; padding: 2px 8px; border-radius: 4px; font-size: 12px; }
+.memo { color: #888; font-size: 12px; margin-left: 4px; }
+.article { background: #fafafa; padding: 12px; border-radius: 8px; margin: 8px 0; }
+.article-meta { color: #666; font-size: 12px; margin-bottom: 4px; }
+.article-title { font-weight: 600; margin: 4px 0; line-height: 1.4; }
+.article-title a { color: #1565c0; text-decoration: none; }
+.article-title a:hover { text-decoration: underline; }
+.article-desc { color: #444; font-size: 13px; line-height: 1.5; }
+.nav-bar { display: flex; align-items: center; gap: 8px; margin: 8px 0 4px; }
+.actions { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+button { padding: 8px 14px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 13px; }
+button:disabled { opacity: 0.4; cursor: default; }
+.btn-approve { background: #4CAF50; color: white; }
+.btn-reject  { background: #f44336; color: white; }
+.btn-skip    { background: #9e9e9e; color: white; }
+.btn-nav     { background: #e0e0e0; color: #333; padding: 6px 10px; }
+.btn-export  { background: #1976d2; color: white; }
+.btn-reset   { background: white; color: #888; border: 1px solid #ddd; }
+.badge-today { background: #4CAF50; color: white; font-size: 11px; padding: 2px 6px; border-radius: 3px; margin-right: 4px; }
+.badge-old   { background: #ff9800; color: white; font-size: 11px; padding: 2px 6px; border-radius: 3px; margin-right: 4px; }
+.badge-source { background: #7e57c2; color: white; font-size: 11px; padding: 2px 6px; border-radius: 3px; }
+.empty { color: #aaa; font-style: italic; padding: 18px; text-align: center; background: #fafafa; border-radius: 8px; }
+.decision-tag { margin-left: auto; font-size: 13px; font-weight: 600; }
+</style>
+</head>
+<body>
+<div class="topbar">
+  <h2>기사 검수 - 20260616</h2>
+  <div class="progress"><div class="progress-bar" id="progressBar"></div></div>
+  <span id="progressText" style="font-size:13px;color:#666;"></span>
+  <button class="btn-export" onclick="pushToNotion()" id="btnPush">📤 노션에 푸시</button>
+  <button class="btn-reset" onclick="resetAll()">초기화</button>
+</div>
+
+<div id="pushResult" style="margin:12px 0;padding:10px;border-radius:6px;display:none;font-size:14px;"></div>
+
+<div id="cards"></div>
+
+<script>
+const REVIEW_DATE     = "20260616";
+const STORAGE_KEY     = "review_" + REVIEW_DATE;
+const PUSH_ENDPOINT   = "http://127.0.0.1:8765";  // 비어있으면 푸시 비활성, 다운로드만
+const DATA            = [{"name": "씨에스윈드", "code": "112610", "ctrt": 29.83, "vol_eok": 2425, "theme": "개별주", "memo": "242,578", "candidates": [{"title": "[특징주] 씨에스윈드, 트럼프 美 풍력개발 금지 행정명령 폐지에 급등…...", "url": "https://www.cstimes.com/news/articleView.html?idxno=709920", "desc": "컨슈머타임스=전은정 기자 | 씨에스윈드가 강세다. 씨에스윈드는 16일 오후 1시 기준 전일보다 10.74% 오른 4만8450원에 거래중이다. 도널드 트럼프 행정부가 임기 초 발표했던 신규 풍력발전 개발 금지 행정명령이 사실상...", "date": "2026.06.16", "score": 30, "is_today": true, "source": "naver"}, {"title": "[주식마감] 트럼프 풍력 규제 후퇴에 씨에스윈드 상한가… 씨에스베어링...", "url": "https://www.ggilbo.com/news/articleView.html?idxno=1164049", "desc": "16일 씨에스윈드, 화신, 일성건설, 성문전자, 성문전자우, 화신정공, 씨에스베어링, 서산, 파인디앤씨, 유진테크놀로지, 더코디가 상한가에 이름을 올리고 장을 마감하면서 투자자들의 관심이 집중되고 있다....", "date": "2026.06.16", "score": 15, "is_today": true, "source": "naver"}, {"title": "美 풍력발전 제한 조치 효력 상실…씨에스윈드 상한가[핫종목]", "url": "https://www.news1.kr/finance/general-stock/6199130", "desc": "16일 한국거래소에 따르면 씨에스윈드(112610)는 전일 대비 1만 3050원(29.83%) 오른 5만 6800원에 상한가로 장을 마쳤다. 이외에도 SK오션플랜트(100090)(26.92%), SK이터닉스(475150)(14.23%), 대명에너지(389260)(16.30%), OCI홀딩스...", "date": "2026.06.16", "score": 15, "is_today": true, "source": "naver"}, {"title": "[16일 특징주] 美 '풍력발전 금지' 완화 기대에…재생에너지株 '강세'", "url": "https://www.newsworks.co.kr/news/articleView.html?idxno=844097", "desc": "16일 한국거래소에 따르면 씨에스윈드는 전일 대비 1만3050원(29.83%) 뛴 5만6800원에 거래를 마치며 상한가를 기록했다. 같은 날 재생에너지 관련주로 묶이는 SK오션플랜트(26.92%), 대명에너지(16.30%), SK이터닉스(14.23%) 등도...", "date": "2026.06.16", "score": 10, "is_today": true, "source": "naver"}, {"title": "[애프터마켓 브리핑] 코스피 8700선 회복…외국인 사흘째 '사자'", "url": "https://biz.sbs.co.kr/article_hub/20000316926?division=NAVER", "desc": "현재 화면에는 씨에스윈드가 상한가 풀리지 않고 있고요. SK오션플랜트는 26% 넘는 급등세 보여주고... 이렇게 애프터마켓 흐름과 특징주까지 봤습니다. 이어서 오늘 밤 열리는 뉴욕증시도 대비해 보시죠. 지금까지...", "date": "2026.06.16", "score": 10, "is_today": true, "source": "naver"}, {"title": "[특징주] SK이터닉스, \"SK그룹 1.8조 신재생 사업 재편\" 기대감에 연일 ...", "url": "https://www.widedaily.com/news/articleView.html?idxno=295868", "desc": "씨에스윈드 29.83%, 씨에스베어링 29.79%, 동국S&C 25.61%, SK오션플랜트 23.67%, 금양그린파워 12.64%, GS글로벌 12.02%, 태웅 11.99% 등도 오름세를 보이고 있다. SK이터닉스는 에너지 전문 기업으로 국내 약 800MWh 규모의...", "date": "2026.06.16", "score": 10, "is_today": true, "source": "naver"}, {"title": "2030년 신규 해상풍력 물량, 정부 목표치 30% 불과", "url": "https://www.segye.com/newsView/20260616515190?OutUrl=naver", "desc": "오영진 씨에스윈드(풍력발전 설비업체) 전략본부장은 “예상 사업 수요가 참담한 수준”이라며 “2030년까지 이르는 과정에서 몇 곳이나 먹거리를 나눌 수 있을지 모르겠다”고 했다. 김성은 뷔나에너지...", "date": "2026.06.16", "score": 10, "is_today": true, "source": "naver"}, {"title": "AI 직원이 일하는 회사로…SK AX, 에이전틱 전환 본격화", "url": "https://www.newspim.com/news/view/20260616001120", "desc": "SK하이닉스는 디지털 트윈 기반 제조 혁신과 자율형 공장 구축을 추진 중이며, 씨에스윈드는 생산 데이터와 AI 에이전트를 연계해 생산 계획과 일정 관리를 최적화하고 있다. 신한금융그룹은 데이터 보안과...", "date": "2026.06.16", "score": 10, "is_today": true, "source": "naver"}], "best_url": "https://www.cstimes.com/news/articleView.html?idxno=709920"}, {"name": "SK오션플랜트", "code": "100090", "ctrt": 29.88, "vol_eok": 3389, "theme": "개별주", "memo": "338,961", "candidates": [{"title": "[특징주] SK오션플랜트, SK그룹 1.8조 신재생에너지 재편 기대감에 '매수...", "url": "https://www.widedaily.com/news/articleView.html?idxno=295499", "desc": "SK오션플랜트(100090)의 주가가 급등하며 시장의 주목을 받고 있다. 10일 한국거래소에 따르면 SK오션플랜트의 주가는 오후 4시 3분 기준 전일 대비 17.33% 상승한 1만7060원에 거래되고 있다. 이는 SK그룹이 글로벌...", "date": "2026.06.10", "score": 20, "is_today": false, "source": "naver"}, {"title": "[특징주] SK이터닉스·SK오션플랜트, SK 신재생 사업 매각 소식에 동반 ...", "url": "https://www.etoday.co.kr/news/view/2592128", "desc": "이투데이=정수천 기자 | SK이터닉스와 SK오션플랜트가 장 초반 강세다. SK그룹의 신재생에너지 사업 매각 이슈가 부각되면서 관련주 전반으로 매수세가 유입되는 모습이다. 10일 오전 9시15분 SK이터닉스는 전 거래일...", "date": "2026.06.10", "score": 20, "is_today": false, "source": "naver"}, {"title": "[특징주] SK그룹 시총 2000조 돌파…하이닉스 애프터마켓서도 강세", "url": "https://www.newspim.com/news/view/20260616001157", "desc": "SK오션플랜트는 4550원(26.92%) 상승한 2만1450원으로 SK 관련 종목 중 상승률 1위를 나타냈다. 다만 SK텔레콤은 5300원(5.03%) 내린 10만100원, SK네트웍스는 850원(6.61%) 하락한 1만2000원에 거래를 마쳤다. ISC는...", "date": "2026.06.16", "score": 10, "is_today": true, "source": "naver"}, {"title": "[16일 특징주] 美 '풍력발전 금지' 완화 기대에…재생에너지株 '강세'", "url": "https://www.newsworks.co.kr/news/articleView.html?idxno=844097", "desc": "같은 날 재생에너지 관련주로 묶이는 SK오션플랜트(26.92%), 대명에너지(16.30%), SK이터닉스(14.23%) 등도 상승 마감했다. 재생에너지주가 강세를 보인 건 미국 내 풍력발전 사업 제한이 완화될 것이라는 기대감이 커진...", "date": "2026.06.16", "score": 10, "is_today": true, "source": "naver"}, {"title": "[애프터마켓 브리핑] 코스피 8700선 회복…외국인 사흘째 '사자'", "url": "https://biz.sbs.co.kr/article_hub/20000316926?division=NAVER", "desc": "SK오션플랜트는 26% 넘는 급등세 보여주고 있습니다. LIG디펜스, 방산주 전반 강세를 보였고, 독일... 이렇게 애프터마켓 흐름과 특징주까지 봤습니다. 이어서 오늘 밤 열리는 뉴욕증시도 대비해 보시죠. 지금까지...", "date": "2026.06.16", "score": 10, "is_today": true, "source": "naver"}, {"title": "[특징주] SK이터닉스, \"SK그룹 1.8조 신재생 사업 재편\" 기대감에 연일 ...", "url": "https://www.widedaily.com/news/articleView.html?idxno=295868", "desc": "씨에스윈드 29.83%, 씨에스베어링 29.79%, 동국S&C 25.61%, SK오션플랜트 23.67%, 금양그린파워 12.64%, GS글로벌 12.02%, 태웅 11.99% 등도 오름세를 보이고 있다. SK이터닉스는 에너지 전문 기업으로 국내 약 800MWh 규모의...", "date": "2026.06.16", "score": 10, "is_today": true, "source": "naver"}, {"title": "[기획] 밀려오는 노봉법 후폭풍… 7월 역대급 ‘아스팔트 하투’ 공포", "url": "https://www.dt.co.kr/article/12067944?ref=naver", "desc": "19일엔 고려아연, 23일 현대엔지니어링과 SK에코플랜트, 24일엔 현대제철이 각각 예고돼 있고, CJ대한통운은 24일 교섭요구 노조 확정공고 이의신청 재심이 열린다. 중노위는 전날 한화오션이 웰리브지회를 상대로 제기한...", "date": "2026.06.16", "score": 10, "is_today": true, "source": "naver"}, {"title": "SK하닉 사상 최고가 안착…코스피 8700선도 탈환", "url": "https://biz.sbs.co.kr/article_hub/20000316960?division=NAVER", "desc": "SK에코플랜트 자회사인 SK오션플랜트는 26% 넘게 폭등했고, SK이터닉스도 14% 상승했습니다. 종전 합의에 중동 재건, 수출 등 새로운 기회 창출 기대감에 방산주와 건설주도 폭등했습니다. 이달 초 증시 폭락의...", "date": "2026.06.16", "score": 10, "is_today": true, "source": "naver"}], "best_url": "https://www.widedaily.com/news/articleView.html?idxno=295499"}, {"name": "태웅", "code": "044490", "ctrt": 29.09, "vol_eok": 983, "theme": "개별주", "memo": "98,375", "candidates": [{"title": "[특징주] SK이터닉스, \"SK그룹 1.8조 신재생 사업 재편\" 기대감에 연일 ...", "url": "https://www.widedaily.com/news/articleView.html?idxno=295868", "desc": "씨에스윈드 29.83%, 씨에스베어링 29.79%, 동국S&C 25.61%, SK오션플랜트 23.67%, 금양그린파워 12.64%, GS글로벌 12.02%, 태웅 11.99% 등도 오름세를 보이고 있다. SK이터닉스는 에너지 전문 기업으로 국내 약 800MWh 규모의...", "date": "2026.06.16", "score": 10, "is_today": true, "source": "naver"}, {"title": "[마감시황] 코스피, 2%대 상승하며 8700선 안착...반도체·에너지·방산...", "url": "https://www.pinpointnews.co.kr/news/articleView.html?idxno=460599", "desc": "씨에스윈드가 상한가인 29.83% 급등했고 SK오션플랜트는 26.92%, 태웅은 22.37% 상승했다. 이어 대명에너지 16.30%, SK이터닉스 14.23%, 한화솔루션 9.04%, 금양그린파워 8.78% 등이 강세를 보였다. 국제유가 급락과...", "date": "2026.06.16", "score": 10, "is_today": true, "source": "naver"}, {"title": "[코스닥 외국인] 테스·에코프로는 사고, HPSP·레인보우로보틱스는 팔...", "url": "https://www.pinpointnews.co.kr/news/articleView.html?idxno=460601", "desc": "또한 로보티즈, 고영, 코스모로보틱스, 태웅, 비나텍도 외국인 매도 우위 종목으로 분류되며 로봇 및 자동화 관련주 전반이 조정을 받았다. 이 밖에도 현대무벡스, 비에이치아이, 스피어, 나무기술, 성호전자까지 순매도...", "date": "2026.06.16", "score": 10, "is_today": true, "source": "naver"}, {"title": "[마감시황] 코스피 8700선 초반 안착…풍력·건설 종목 매수세 증가", "url": "https://www.joongangenews.com/news/articleView.html?idxno=526329", "desc": "이번 미국과 이란의 전쟁으로 친환경 에너지 전환이 가속화될 것이라는 전망에 씨에스윈드와 씨에스베어링 등이 상한가를 달성했고, SK오션플랜트와 태웅 등 풍력 발전 관련 종목의 상승세가 두드러졌다. 또...", "date": "2026.06.16", "score": 10, "is_today": true, "source": "naver"}, {"title": "[EBN 데이터센터] 16일 상승 종목 30選…재건 기대에 건설주 강세", "url": "https://www.ebn.co.kr/news/articleView.html?idxno=1712731", "desc": "태웅도 4만1850원으로 22.37% 오르며 강한 주가 흐름을 이어갔다. 풍력 밸류체인 전반으로 매수세가... 특히 코스피의 대우건설, 씨에스윈드, SK오션플랜트와 코스닥의 화신정공, 태웅, 대명에너지 등은 높은...", "date": "2026.06.16", "score": 10, "is_today": true, "source": "naver"}, {"title": "글로벌인프라본부 출범… 대우건설, 에너지·토탈 디벨로퍼로 도약", "url": "https://www.pinpointnews.co.kr/news/articleView.html?idxno=460488", "desc": "대한전선, LS ELECTRIC, 성광벤드, 태웅은 원전 건설과 송배전 설비 확대에 따른 장기 성장성이 부각되고 있다. 한전기술과 한전산업은 원전 설계와 운영 분야의 핵심 기업으로 안정적인 수혜가 예상된다. 원전 유지보수와...", "date": "2026.06.16", "score": 10, "is_today": true, "source": "naver"}, {"title": "글로벌 항공우주 팽창…케이피항공산업, 고부가 부품 국산화 선도", "url": "https://www.pinpointnews.co.kr/news/articleView.html?idxno=460459", "desc": "제노코와 나라스페이스테크놀로지, 세아베스틸지주, 태웅은 위성 전자장비와 우주 소재, 특수강 부문에서 사업 경쟁력을 강화하고 있다. 나라스페이스테크놀로지는 초소형 위성 개발을 통해 국내 뉴스페이스 산업 성장의...", "date": "2026.06.16", "score": 10, "is_today": true, "source": "naver"}, {"title": "[Who Is ?] 허용도 태웅 회장", "url": "https://www.businesspost.co.kr/BP?command=article_view&num=439728", "desc": "허용도 태웅 회장. ◆ 생애 허용도는 태웅의 회장이다. 해상풍력과 SMR 등 차세대 에너지 특수단조 시장 선점에 집중하고 있다. 1948년 1월19일 경남 산청에서 태어났다. 진주농림고등학교와 진주교육대학교를...", "date": "2026.06.12", "score": 5, "is_today": false, "source": "naver"}], "best_url": "https://www.businesspost.co.kr/BP?command=article_view&num=439728"}, {"name": "대우건설", "code": "047040", "ctrt": 19.87, "vol_eok": 13046, "theme": "개별주", "memo": "1,304,618", "candidates": [{"title": "미·이란 종전 합의에 건설주 강세…대우건설 23%↑[특징주]", "url": "https://www.dailian.co.kr/news/view/1656427/?sc=Naver", "desc": "16일 한국거래소에 따르면, 이날 오전 11시 23분 현재 대우건설은 전 거래일 대비 23.36%(5350원) 오른 2만8250원에 거래되고 있다. 주가는 2만3150원에 출발한 뒤 장중 2만8750원까지 오르며 강세를 이어가고 있다....", "date": "2026.06.16", "score": 30, "is_today": true, "source": "naver"}, {"title": "[특징주] 미·이란 종전 MOU에 대우건설 주가↑", "url": "http://www.metroseoul.co.kr/article/20260616500155", "desc": "대우건설 CI/대우건설 대우건설이 미국과 이란의 종전 양해각서(MOU) 서명 소식에 힘입어 장중 급등하고 있다. 16일 한국거래소에 따르면 이날 오전 11시 18분 기준 대우건설은 전 거래일 대비 4850원(21.18%) 오른...", "date": "2026.06.16", "score": 30, "is_today": true, "source": "naver"}, {"title": "[특징주] 대우건설, 체코 원전 수주 부각에 20%대 급등", "url": "https://www.namdonews.com/news/articleView.html?idxno=913712", "desc": "대우건설이 20% 넘게 급등하고 있다. 체코 원전 사업 참여를 통한 해외 원전 시공 실적 확보가 재평가받으면서 투자심리가 개선된 것으로 풀이된다. 16일 오전 10시 40분 현재 대우건설은 전 거래일보다 20% 가량오른...", "date": "2026.06.16", "score": 30, "is_today": true, "source": "naver"}, {"title": "[특징주] 이란 재건 기대에 건설주 강세...대우건설 20% 급등", "url": "https://www.newspim.com/news/view/20260616000442", "desc": "상지건설은 2050원(27.52%) 상승한 9500원, 대우건설은 4600원(20.09%) 오른 2만7500원에 거래되고 있다. 미국 성조기와 이란 국기. [사진=로이터 뉴스핌] DL이앤씨는 9000원(11.39%) 오른 8만8000원, 삼성E&A는 3500원(6.72%) 상승한...", "date": "2026.06.16", "score": 30, "is_today": true, "source": "naver"}, {"title": "[특징주] 대우건설, 미·이란 휴전 소식에 20%대 급등", "url": "https://www.ajunews.com/view/20260616101805954", "desc": "아주경제=송윤서 기자 sys0303@ajunews.com 대우건설 기업이미지(CI) [사진=대우건설 제공] 대우건설이 미국과 이란 간 휴전 소식에 힘입어 장 초반 20% 넘게 급등하고 있다. 16일 한국거래소에 따르면 대우건설은 오전 10시...", "date": "2026.06.16", "score": 30, "is_today": true, "source": "naver"}, {"title": "[특징주] 대우건설, 체코 원전 수주 모멘텀에 '급등'", "url": "https://www.cstimes.com/news/articleView.html?idxno=709875", "desc": "컨슈머타임스=김예령 기자 | 대우건설 주가가 체코 원전 수주를 계기로 글로벌 원전 사업 기대감이 커지면서 장 초반 급등하고 있다. 16일 오전 9시 44분 기준 대우건설은 전 거래일 대비 5500원(24.02%) 오른 2만8400원에...", "date": "2026.06.16", "score": 30, "is_today": true, "source": "naver"}, {"title": "[특징주] 대우건설, 체코 원전 수주 재평가에 중동 훈풍까지… 19%대 강...", "url": "https://www.tokenpost.kr/news/economy/369718", "desc": "대우건설이 체코 원전 수주에 따른 글로벌 원전 사업 재평가 기대와 중동 리스크 완화 기대를 동시에 반영하며 장 초반 큰 폭으로 오르고 있다. 현재 시세에 따르면 대우건설은 2만7350원으로 전일 대비 4450원(19.43%) 상승...", "date": "2026.06.16", "score": 30, "is_today": true, "source": "naver"}, {"title": "[특징주] \"글로벌 원전 대장주 뜬다\" 대우건설, 체코 원전·중동 종전 겹...", "url": "https://www.widedaily.com/news/articleView.html?idxno=295783", "desc": "대우건설이 체코 원전 수주를 통한 글로벌 시장 재평가 전망과 미국·이란의 종전 합의 기대감에 힘입어 장 초반 22% 넘게 급등하고 있다. 16일 오전 9시 40분 현재 코스피 시장에서 대우건설은 전 거래일 대비 22.05% 오른...", "date": "2026.06.16", "score": 30, "is_today": true, "source": "naver"}], "best_url": "https://www.dailian.co.kr/news/view/1656427/?sc=Naver"}, {"name": "광전자", "code": "017900", "ctrt": 19.0, "vol_eok": 1377, "theme": "개별주", "memo": "137,778", "candidates": [{"title": "[특징주] 젠슨 황 방한에 광통신주 강세…광전자 22%대 급등", "url": "https://www.tokenpost.kr/news/economy/367289", "desc": "광전자가 엔비디아 최고경영자(CEO) 젠슨 황의 방한을 계기로 다시 불붙은 광통신주 투자심리에 힘입어... 한국거래소에 따르면 광전자는 장중 1만80원까지 치솟으며 상한가를 기록한 뒤 현재 9510원으로 전 거래일 대비...", "date": "2026.06.09", "score": 20, "is_today": false, "source": "naver"}, {"title": "[특징주] 젠슨 황 방한에 다시 살아난 광통신株 투심…광전자 장중 '상...", "url": "https://www.etoday.co.kr/news/view/2591768", "desc": "9일 한국거래소에 따르면 오전 9시55분 광소재 전문 기업인 광전자는 전 거래일 대비 29.90% 폭등한 1만80원에 거래되며 상한가를 기록 중이다. 광통신 케이블 대표 종목인 대한광통신 역시 전 거래일 대비 14.17% 급등한...", "date": "2026.06.09", "score": 20, "is_today": false, "source": "naver"}, {"title": "마이크로 LED 국산화 주도…광전자, 독보적 기술력으로 시장 정조준", "url": "https://www.pinpointnews.co.kr/news/articleView.html?idxno=460473", "desc": "개별 종목 가운데 광전자가 가장 강한 상승세를 보이고 있다. 한국거래소에 따르면 이날 오전 10시 30분 현재 광전자는 12.44% 상승한 1만120원에 거래중이다. 광전자는 LED 및 광반도체 부품 기술력을 기반으로 차세대...", "date": "2026.06.16", "score": 15, "is_today": true, "source": "naver"}, {"title": "[속보] 광전자 VI 잇따라 발동, 주가 20%대 급등흐름…장초반 투자심리...", "url": "https://www.cbci.co.kr/news/articleView.html?idxno=582269", "desc": "광전자(017900)가 장 초반 두 차례 변동성완화장치(VI)가 발동되는 등 강한 상승세를 나타내고 있다. 한국거래소(KRX)에 따르면 광전자는 16일 오전 9시 4분 40초 첫 번째 VI가 발동돼 오전 9시 6분 52초 해제됐다. 이어...", "date": "2026.06.16", "score": 15, "is_today": true, "source": "naver"}, {"title": "[오늘의 세계] 튀르키예, '로미오와 줄리엣' 무대 오른 고양이", "url": "https://www.obsnews.co.kr/news/articleView.html?idxno=1527724", "desc": "중국 지린성 창춘 국제 광전자 박람회에서 로봇 지휘자와 함께하는 특별한 공연이 펼쳐졌습니다. 연주자들은 기타나 드럼 같은 악기 대신 공중에 쏘아진 레이저 빔을 손이나 드럼 스틱으로 가로막아 음악을...", "date": "2026.06.16", "score": 10, "is_today": true, "source": "naver"}, {"title": "[주식마감] 트럼프 풍력 규제 후퇴에 씨에스윈드 상한가… 씨에스베어링...", "url": "https://www.ggilbo.com/news/articleView.html?idxno=1164049", "desc": "삼화전자, 광전자, RISE 삼성전자SK하이닉스채권혼합50, KODEX 레버리지다. 코스닥 시장 거래 상위종목 30위는 JW신약, 유니슨, 세미티에스, 빛과전자, 화신정공, TS트릴리온, 대한광통신, CSA 코스믹, HPSP...", "date": "2026.06.16", "score": 10, "is_today": true, "source": "naver"}, {"title": "\"대학, 지역혁신 중심축\" 中 산업도시·日 생태계·韓 과기특성화대는?", "url": "http://www.hellodd.com/news/articleView.html?idxno=112134", "desc": "장강중류 도시군에서는 우한대와 화중과학기술대가 광전자정보와 바이오산업 발전을 지원하고 있으며, 베이징대 우한인공지능연구원은 수도권 대학의 연구역량을 중부권 인공지능 산업과 연결하고 있다. 허페이를...", "date": "2026.06.16", "score": 10, "is_today": true, "source": "naver"}, {"title": "아주대 연구팀 양자기하학 기반 보편적 광전도도 법칙 발견.. '전자 무게...", "url": "https://www.veritas-a.com/news/articleView.html?idxno=615221", "desc": "이번 연구는 차세대 양자 및 광전자 산업 전반에 큰 파급효과를 미칠 것으로 전망된다. 기존에는 물질의... 이는 향후 초저전력 광전자 소자, 초정밀 양자 센서, 차세대 광통신 기술, 양자 정보 플랫폼 등에 필요한...", "date": "2026.06.16", "score": 10, "is_today": true, "source": "naver"}], "best_url": "https://www.tokenpost.kr/news/economy/367289"}, {"name": "대명에너지", "code": "389260", "ctrt": 22.0, "vol_eok": 843, "theme": "개별주", "memo": "84,310", "candidates": [{"title": "[특징주] 대명에너지, 금융위 790조 기후금융 법제화 추진에 ↑… 안마...", "url": "https://www.cstimes.com/news/articleView.html?idxno=709942", "desc": "컨슈머타임스=전은정 기자 | 대명에너지가 강세다. 대명에너지는 16일 오후 2시 28분 기준 전일보다 14.41% 오른 1만6140원에 거래중이다. 금융위원회가 2034년까지 총 790조원 규모의 기후금융 공급을 뒷받침할...", "date": "2026.06.16", "score": 30, "is_today": true, "source": "naver"}, {"title": "[16일 특징주] 美 '풍력발전 금지' 완화 기대에…재생에너지株 '강세'", "url": "https://www.newsworks.co.kr/news/articleView.html?idxno=844097", "desc": "같은 날 재생에너지 관련주로 묶이는 SK오션플랜트(26.92%), 대명에너지(16.30%), SK이터닉스(14.23%) 등도 상승 마감했다. 재생에너지주가 강세를 보인 건 미국 내 풍력발전 사업 제한이 완화될 것이라는 기대감이 커진...", "date": "2026.06.16", "score": 10, "is_today": true, "source": "naver"}, {"title": "힘 빠진 코스닥...HLB · 디앤디파마텍 · 씨에스베어링은 '급등'", "url": "http://www.choicenews.co.kr/news/articleView.html?idxno=166662", "desc": "신재생에너지 정책 주목 속에 코스닥 시장에서 씨에스베어링이 상한가를 기록했고 동국S&C(16.81%), 대명에너지(16.30%), 지투파워(7.70%) 등이 껑충 뛰었다. 코스닥 종목 중 화신정공, 파인디앤씨 등이...", "date": "2026.06.16", "score": 10, "is_today": true, "source": "naver"}, {"title": "美 풍력발전 제한 조치 효력 상실…씨에스윈드 상한가[핫종목]", "url": "https://www.news1.kr/finance/general-stock/6199130", "desc": "이외에도 SK오션플랜트(100090)(26.92%), SK이터닉스(475150)(14.23%), 대명에너지(389260)(16.30%), OCI홀딩스(010060)(12.37%) 등 주요 신재생에너지주가 상승 마감했다. 신재생에너지주 급등은 도널드 트럼프 미 행정부가...", "date": "2026.06.16", "score": 10, "is_today": true, "source": "naver"}, {"title": "[마감시황] 코스피, 2%대 상승하며 8700선 안착...반도체·에너지·방산...", "url": "https://www.pinpointnews.co.kr/news/articleView.html?idxno=460599", "desc": "이어 대명에너지 16.30%, SK이터닉스 14.23%, 한화솔루션 9.04%, 금양그린파워 8.78% 등이 강세를 보였다. 국제유가 급락과 위험자산 선호 회복 속에 에너지 전환 관련 종목들이 시장 주도주로 부상했다. 건설주도...", "date": "2026.06.16", "score": 10, "is_today": true, "source": "naver"}, {"title": "[EBN 데이터센터] 16일 상승 종목 30選…재건 기대에 건설주 강세", "url": "https://www.ebn.co.kr/news/articleView.html?idxno=1712731", "desc": "씨에스베어링이 상한가를 기록했고 동국S&C는 1925원으로 16.81%, 대명에너지는 1만6550원으로 16.30% 상승했다. 태웅도 4만1850원으로 22.37% 오르며 강한 주가 흐름을 이어갔다. 풍력 밸류체인 전반으로 매수세가...", "date": "2026.06.16", "score": 10, "is_today": true, "source": "naver"}, {"title": "美풍력발전 규제 해소 기대…씨에스윈드 30% 급등 [매경 자이앤트]", "url": "https://www.mk.co.kr/article/12075401", "desc": "같은 시각 씨에스베어링도 29.8% 뛰며 나란히 가격제한폭까지 치솟았고, 동국S&C(27.7%), SK오션플랜트(24.9%), SK이터닉스(19.8%), 대명에너지(14.8%), OCI홀딩스(12.7%) 등 풍력·신재생 테마주가 줄줄이 동반 강세를 보이고 있다....", "date": "2026.06.16", "score": 10, "is_today": true, "source": "naver"}, {"title": "'재생에너지 강자' 대명에너지, 글로벌 투자 확대 바람 타고 실적 고공...", "url": "https://www.pinpointnews.co.kr/news/articleView.html?idxno=458952", "desc": "대명에너지는 7.47% 상승한 1만3960원에 거래중이다. 풍력과 태양광 발전사업 개발 역량을 보유하고 있어 재생에너지 투자 확대 수혜 기대가 반영되고 있다. 전 세계적으로 친환경 에너지 인프라 구축 경쟁이 치열해지는...", "date": "2026.06.10", "score": 5, "is_today": false, "source": "naver"}], "best_url": "https://www.cstimes.com/news/articleView.html?idxno=709942"}, {"name": "RF시스템즈", "code": "474610", "ctrt": 15.59, "vol_eok": 174, "theme": "개별주", "memo": "17,492", "candidates": [{"title": "[증시 오늘(16일) 주요 특징주] 지정학적 리스크 완화에 삼전·닉스 쾌속...", "url": "https://www.thefairnews.co.kr/news/articleView.html?idxno=79629", "desc": "웨이브일렉트로, RF시스템즈 등이 테마 내 선두권에서 지수 상승을 견인하고 있으며 개별 대형 호재를 맞이한 위메이드맥스 등 게임 소프트웨어 업종도 두 자릿수 상승률을 기록하며 장중 변동성을 키우는 특징주로...", "date": "2026.06.16", "score": 10, "is_today": true, "source": "naver"}, {"title": "[특징주] 방산주, 미-이란 종전에도 '급등'.. \"영토 확장 기폭제\"", "url": "https://www.g-enews.com/view.php?ud=20260616092055725244093b5d4e_1", "desc": "퍼스텍 29.94%, 웨이브일렉트로 29.90%, RF시스템즈 15.71%, 한화시스템 14.17%, 한화로템 9.86%, 한화에어로스페이스 8.49% 등 방산 관련주들이 일제히 강세다. 증권가에서는 이번 종전이 오히려 K-방산에 기회가 될 것으로...", "date": "2026.06.16", "score": 10, "is_today": true, "source": "naver"}, {"title": "[마감시황] 코스피, 2%대 상승하며 8700선 안착...반도체·에너지·방산...", "url": "https://www.pinpointnews.co.kr/news/articleView.html?idxno=460599", "desc": "LIG디펜스앤에어로스페이스가 18.58% 급등했고 RF시스템즈 15.59%, 한화에어로스페이스 9.13%, 퍼스텍 9.81%, 한화시스템 6.93%, 현대로템 6.34%, 한국항공우주 4.95% 상승했다. 글로벌 우주산업 투자 확대 기대와 방산...", "date": "2026.06.16", "score": 10, "is_today": true, "source": "naver"}, {"title": "[EBN 데이터센터] 16일 상승 종목 30選…재건 기대에 건설주 강세", "url": "https://www.ebn.co.kr/news/articleView.html?idxno=1712731", "desc": "RF시스템즈는 9640원으로 15.59%, 큐리오시스는 2만9950원으로 15.19%, 한국가구는 6260원으로 15.07% 올랐다. 비트맥스도 1924원으로 16.54% 상승 마감했다. ◆거래대금보다 상한가 수에 쏠린 시선 이날 특징은 코스피와...", "date": "2026.06.16", "score": 10, "is_today": true, "source": "naver"}, {"title": "[Industry Review] K-우주항공, 글로벌 궤도 진입…외인·기관 러브콜에 ...", "url": "https://www.businesskorea.co.kr/news/articleView.html?idxno=271353", "desc": "초반 우주항공·드론 테마 주요 종목 중 웨이브일렉트로 (+29.90%) RF시스템즈 (+15.11%) 대성하이텍 (+14.71%, 케이피항공산업 (+12.34%) 등이 두자라 상승률을 보이고 있으며 그린광학 9.42%, 켄코아에어로스페이스 (+6.13%) 등도...", "date": "2026.06.16", "score": 10, "is_today": true, "source": "naver"}, {"title": "글로벌 안보 위기 속 주목…퍼스텍, 방위산업 부품 경쟁력 입증", "url": "https://www.pinpointnews.co.kr/news/articleView.html?idxno=460454", "desc": "대성하이텍과 RF시스템즈, 케이피항공산업, 한일단조는 정밀 가공 기술과 방산용 부품 생산 역량을 기반으로 성장 가능성이 부각되고 있다. 특히 한일단조는 방산 단조 부품과 특수 소재 분야에서 경쟁력을 갖추고 있으며...", "date": "2026.06.16", "score": 10, "is_today": true, "source": "naver"}, {"title": "한화에어로·퍼스텍·우리기술 등 항공·방위 산업株 급등", "url": "https://www.gukjenews.com/news/articleView.html?idxno=3609384", "desc": "LIG디펜스앤에어로스페이스 16.09%, RF시스템즈 12.95%, 한일단조 10.41%, 우리기술 8.82%, 한화에어로스페이스 6.55%, 풍산 5.96% 각각 오르고 있다. 지난 15일 DS투자증권이 방산 관련 종목에 대해 \"방위산업에 대한 전통적...", "date": "2026.06.16", "score": 10, "is_today": true, "source": "naver"}, {"title": "없어서 못 구하는 기술... RF시스템즈 딥 브레이징 기술의 위력", "url": "https://www.pinpointnews.co.kr/news/articleView.html?idxno=459814", "desc": "국내 방위산업 시장이 급성장하는 가운데 유도무기와 레이다 핵심 부품을 생산하는 RF시스템즈가 새로운 성장 국면에 진입할 수 있다는 기대감이 커지고 있다. 최근 K-방산 수출 확대와 함께 핵심 부품 국산화 기업들의...", "date": "2026.06.13", "score": 5, "is_today": false, "source": "naver"}], "best_url": "https://www.pinpointnews.co.kr/news/articleView.html?idxno=459814"}, {"name": "SK이터닉스", "code": "475150", "ctrt": 14.23, "vol_eok": 12512, "theme": "개별주", "memo": "1,251,217", "candidates": [{"title": "[특징주] SK이터닉스, \"SK그룹 1.8조 신재생 사업 재편\" 기대감에 연일 ...", "url": "https://www.widedaily.com/news/articleView.html?idxno=295868", "desc": "SK이터닉스(475150)의 주가가 급등하며 시장의 주목을 받고 있다. 16일 한국거래소에 따르면 SK이터닉스의 주가는 오후 2시 1분 기준 전일 대비 20.78% 상승한 5만9000원에 거래되고 있다. 이는 SK그룹이 글로벌...", "date": "2026.06.16", "score": 30, "is_today": true, "source": "naver"}, {"title": "[특징주] SK이터닉스, SK그룹 신재생 매각 이슈.. 2거래일 '강세'", "url": "https://www.g-enews.com/view.php?ud=202606110921389944093b5d4e_1", "desc": "SK이터닉스가 이틀 연속 강세다. SK그룹이 신재생에너지 사업 일부를 글로벌 투자기업에 매각하고 합작법인을 세운다는 언론 보도가 나오면서 투심을 자극하고 있는 것으로 보인다. 11일 한국거래소에 따르면...", "date": "2026.06.11", "score": 20, "is_today": false, "source": "naver"}, {"title": "신재생사업 재편 기대감에 이틀째 급등…SK이터닉스 15%↑[특징주]", "url": "https://www.edaily.co.kr/news/newspath.asp?newsid=03070086645480736", "desc": "SK이터닉스(475150)의 주가가 이틀 연속 급등하고 있다. SK그룹이 신재생에너지 사업 일부를 글로벌 투자기업에 매각하고 합작법인을 세운다는 일부 언론 보도가 나오면서 매수세가 이어지는 분위기다. 11일...", "date": "2026.06.11", "score": 20, "is_today": false, "source": "naver"}, {"title": "[특징주] SK이터닉스, 신재생 사업 재편 기대감에 이틀째 급등", "url": "https://www.etoday.co.kr/news/view/2592535", "desc": "이투데이=정수천 기자 | SK이터닉스가 전날 상한가에 이어 장 초반 강세를 이어가고 있다. 11일 오전 9시7분 SK이터닉스는 전 거래일 대비 18.15% 오른 5만2400원에 거래되고 있다. SK이터닉스는 전날에도 가격제한폭까지...", "date": "2026.06.11", "score": 20, "is_today": false, "source": "naver"}, {"title": "[특징주] SK이터닉스, 상한가 마감…신재생에너지주 동반 상승(종합)", "url": "https://www.yna.co.kr/view/AKR20260610053451008?input=1195m", "desc": "이날 국내 유가증권시장에서 SK이터닉스는 상한가인 29.87% 오른 4만4천350원에 거래를 마쳤다. 점심시간 직전 한때 상승률이 19%로 떨어지기도 했지만, 1시간 뒤 다시 상한가를 유지했다. SK그룹이 글로벌 투자기업...", "date": "2026.06.10", "score": 20, "is_today": false, "source": "naver"}, {"title": "[특징주] SK이터닉스, \"SK그룹 1.8조 에너지 사업 재편\"에 수혜주로 부각...", "url": "https://www.widedaily.com/news/articleView.html?idxno=295498", "desc": "SK이터닉스(475150)의 주가가 상한가를 기록하며 시장의 주목을 받고 있다. 10일 한국거래소에 따르면 SK이터닉스의 주가는 오후 3시 19분 기준 전일 대비 29.87% 상승한 44350원에 거래되고 있다. 이는 SK그룹이 글로벌...", "date": "2026.06.10", "score": 20, "is_today": false, "source": "naver"}, {"title": "[특징주] SK이터닉스, KKR 거래설에 상한가…거래대금 800억 돌파", "url": "https://www.ebn.co.kr/news/articleView.html?idxno=1711983", "desc": "SK이터닉스가 SK그룹의 신재생에너지 사업 재편 기대감에 힘입어 10일 상한가를 기록했다. 한국거래소에 따르면 이날 오후 2시 29분 기준 SK이터닉스는 전 거래일 대비 1만200원(29.87%) 오른 4만4350원에 거래되고 있다....", "date": "2026.06.10", "score": 20, "is_today": false, "source": "naver"}, {"title": "[특징주] SK이터닉스, 신재생에너지 사업 재편 기대감에 '上'", "url": "http://www.metroseoul.co.kr/article/20260610500275", "desc": "/SK이터닉스 SK이터닉스가 SK그룹의 신재생에너지 사업 재편 기대감에 상한가로 직행했다. 10일 한국거래소에 따르면 SK이터닉스는 이날 오후 2시 15분 기준 전 거래일 대비 29.87% 오른 4만4350원에 거래되고 있다....", "date": "2026.06.10", "score": 20, "is_today": false, "source": "naver"}], "best_url": "https://www.widedaily.com/news/articleView.html?idxno=295868"}, {"name": "DL이앤씨", "code": "375500", "ctrt": 14.81, "vol_eok": 4285, "theme": "개별주", "memo": "428,503", "candidates": [{"title": "[특징주] DL이앤씨, 美 \"이란 재건사업 3000억달러 추진\" 건설주 특수 기...", "url": "https://www.widedaily.com/news/articleView.html?idxno=295830", "desc": "DL이앤씨(375500)의 주가가 급등하며 시장의 주목을 받고 있다. 16일 한국거래소에 따르면 DL이앤씨의 주가는 오전 11시 9분 기준 전일 대비 11.39% 상승한 8만8000원에 거래되고 있다. 이는 트럼프 미국 행정부가...", "date": "2026.06.16", "score": 30, "is_today": true, "source": "naver"}, {"title": "[특징주] DL이앤씨, 이란 재건 기대에 5500억 수주까지…15%대 급등", "url": "https://www.tokenpost.kr/news/economy/369708", "desc": "DL이앤씨가 중동 재건 기대와 국내 대형 수주 소식에 힘입어 장 초반 강세다. 한국거래소에 따르면 DL이앤씨는 전일 대비 15.44% 오른 9만1200원에 거래되고 있다. 주가 상승 배경으로는 미국·이란 관계 정상화 기대에 따른...", "date": "2026.06.16", "score": 30, "is_today": true, "source": "naver"}, {"title": "[특징주] DL이앤씨 이란 재건 수혜 기대감…DL이앤씨, 9%대 강세", "url": "https://www.etoday.co.kr/news/view/2593949", "desc": "이투데이=서청석 기자 | DL이앤씨가 대규모 해외 재건 사업 수혜 기대감과 대형 국내 수주 소식이 겹치며 장 초반 급등세를 기록하고 있다. 16일 한국거래소에 따르면 오전 9시16분 DL이앤씨는 전일 대비 9.11% 오른...", "date": "2026.06.16", "score": 30, "is_today": true, "source": "naver"}, {"title": "압구정 고배 DL이앤씨, 목동서 하반기 마수걸이 노린다", "url": "https://www.sentv.co.kr/article/view/sentv202606160097", "desc": "올해 상반기 1조원대 대형 사업지에서 연달아 고배를 마시며 아직까지 정비사업 수주 실적을 올리지 못한 DL이앤씨가 하반기 반격을 준비하고 있습니다. 목동6단지에서 하반기 첫 수주에 도전하는데, 이번 결과가...", "date": "2026.06.16", "score": 15, "is_today": true, "source": "naver"}, {"title": "서울 목동에 '아크로 타운' 꿈꾸는 DL이앤씨", "url": "https://www.newsway.co.kr/news/view?ud=2026061615240935715", "desc": "DL이앤씨가 서울 목동 재건축 시장에 '아크로 벨트' 구축 전략을 꺼내 들었다. 목동신시가지6단지 시공권 확보를 목표로 14단지와 1~3단지까지 사업 영역을 넓혀 서울 서남권에 대규모 아크로 타운을 조성하겠다는...", "date": "2026.06.16", "score": 15, "is_today": true, "source": "naver"}, {"title": "DL이앤씨, '아크로 목동리젠시' 공개…목동 첫 하이엔드 승부수", "url": "https://www.newsway.co.kr/news/view?ud=2026061614544586517", "desc": "DL이앤씨가 서울 양천구 목동신시가지6단지 재건축 사업에 하이엔드 브랜드 '아크로(ACRO)'를 전면에 내세우며 시공권 확보에 나섰다. 단지명으로는 '아크로 목동 리젠시(ACRO MOKDONG REGENCY)'를 제안하고 차별화된 설계와...", "date": "2026.06.16", "score": 15, "is_today": true, "source": "naver"}, {"title": "DL이앤씨, 목동6단지 '아크로 리젠시' 짓는다", "url": "https://www.hankyung.com/article/2026061699551", "desc": "입지적 강점을 키워 목동 대표 단지로 만들겠습니다.” 심재석 DL이앤씨 도시정비사업팀 부장은 목동에 마련된 ‘아크로 목동리젠시’ 공식 홍보관(사진)에서 16일 이같이 강조했다. 이날 오전부터 조합원은 홍보관...", "date": "2026.06.16", "score": 15, "is_today": true, "source": "naver"}, {"title": "이란 재건, 450조 시장 열리나…DL이앤씨 주목 \"경쟁 우위\"", "url": "https://www.straightnews.co.kr/news/articleView.html?idxno=304906", "desc": "지난해 7월 DL이앤씨는 국내 석유화학 최대 투자 규모인 에쓰오일의 '샤힌 프로젝트' 건설 현장에 구조물 모듈을 설치했다. 대형 모듈을 실은 바지선이 울산신항 부두에 접안하는 작업을 하고 있다. [사진=DL이앤씨]...", "date": "2026.06.16", "score": 15, "is_today": true, "source": "naver"}], "best_url": "https://www.widedaily.com/news/articleView.html?idxno=295830"}, {"name": "상지건설", "code": "042940", "ctrt": 13.02, "vol_eok": 301, "theme": "개별주", "memo": "30,172", "candidates": [{"title": "[특징주] 상지건설, \"트럼프 3000억달러 이란 재건 논의\"에 국내 건설株...", "url": "https://www.widedaily.com/news/articleView.html?idxno=295791", "desc": "상지건설(042940)의 주가가 급등하며 시장의 주목을 받고 있다. 16일 한국거래소에 따르면 상지건설의 주가는 오전 10시 28분 기준 전일 대비 28.72% 상승한 9590원에 거래되고 있다. 이는 트럼프 미국 행정부가 민간기업을...", "date": "2026.06.16", "score": 30, "is_today": true, "source": "naver"}, {"title": "방산·건설·항공주 강세…퍼스텍·상지건설 上 이탈에 투자자 관심 집...", "url": "https://www.cbci.co.kr/news/articleView.html?idxno=582291", "desc": "상지건설도 26.58% 급등한 9430원을 기록했다. 거래 증가율이 900%를 웃돌며 시장의 주목을 받았고 장중 상한가에 근접하는 흐름을 나타냈다. 방산 대표주로 꼽히는 LIG디펜스앤에어로스페이스는 21.42% 상승한...", "date": "2026.06.16", "score": 15, "is_today": true, "source": "naver"}, {"title": "[줌업] 상지건설, 적자에도 187억 증자… 자회사 대여로", "url": "https://www.startuptoday.co.kr/news/articleView.html?idxno=803434", "desc": "상지건설이 3년 연속 적자가 이어지는 가운데 187억원 규모 유상증자를 추진한다. 조달자금은 전액 자본잠식 상태인 종속회사 카일룸도산에 대여돼 서울 강남 하이엔드 주택사업의 운영자금으로 투입된다. 해마다...", "date": "2026.06.16", "score": 15, "is_today": true, "source": "naver"}, {"title": "미·이란 종전 합의에 건설주 강세…대우건설 23%↑[특징주]", "url": "https://www.dailian.co.kr/news/view/1656427/?sc=Naver", "desc": "이밖에 일성건설은 가격제한폭(30.00%)까지 치솟았고 상지건설도 23.09% 급등하는 등 중소형 건설주 전반으로 매수세가 확산되고 있다. 이날 건설주 강세는 미국과 이란의 종전 합의에 따른 중동 재건 수혜...", "date": "2026.06.16", "score": 10, "is_today": true, "source": "naver"}, {"title": "[특징주] DL이앤씨, 美 \"이란 재건사업 3000억달러 추진\" 건설주 특수 기...", "url": "https://www.widedaily.com/news/articleView.html?idxno=295830", "desc": "일성건설 30.00%, 서산 29.84%, 상지건설 21.34%, 대우건설 19.65%, 동신건설 14.31%, 금호건설 6.35%, GS건설 5.12% 등도 오름세를 보이고 있다. DL이앤씨는 2021년 DL㈜에서 건설사업부문이 인적 분할돼 출범한 종합건설기업으로...", "date": "2026.06.16", "score": 10, "is_today": true, "source": "naver"}, {"title": "[특징주] 이란 재건 기대에 건설주 강세...대우건설 20% 급등", "url": "https://www.newspim.com/news/view/20260616000442", "desc": "상지건설은 2050원(27.52%) 상승한 9500원, 대우건설은 4600원(20.09%) 오른 2만7500원에 거래되고 있다. 미국 성조기와 이란 국기. [사진=로이터 뉴스핌] DL이앤씨는 9000원(11.39%) 오른 8만8000원, 삼성E&A는 3500원(6.72%) 상승한...", "date": "2026.06.16", "score": 10, "is_today": true, "source": "naver"}, {"title": "[주식마감] 트럼프 풍력 규제 후퇴에 씨에스윈드 상한가… 씨에스베어링...", "url": "https://www.ggilbo.com/news/articleView.html?idxno=1164049", "desc": "한일단조, 상지건설, 희림, 나무기술, 서산, HLB, 성호전자, 미래에셋벤처투자다. 이날 코스피는 180.62포인트(2.11%) 오른 8,726.60으로 장을 마쳤다. 4거래일 연속 상승 마감이다. 지수는 150.57포인트(1.76%) 오른 8,696....", "date": "2026.06.16", "score": 10, "is_today": true, "source": "naver"}, {"title": "[마감시황] 코스피, 2%대 상승하며 8700선 안착...반도체·에너지·방산...", "url": "https://www.pinpointnews.co.kr/news/articleView.html?idxno=460599", "desc": "DL이앤씨는 13.16%, DL이앤씨2우(전환)는 13.65% 상승했고 상지건설 13.02%, 삼성E&A 8.83%, 금호건설 8.47%, GS건설 5.29%, HDC 4.66% 등 업종 전반으로 매수세가 확산됐다. 특히 대우건설과 DL이앤씨, 삼성E&A 등 대형...", "date": "2026.06.16", "score": 10, "is_today": true, "source": "naver"}], "best_url": "https://www.widedaily.com/news/articleView.html?idxno=295791"}, {"name": "미래에셋생명", "code": "085620", "ctrt": 10.99, "vol_eok": 5152, "theme": "개별주", "memo": "515,298", "candidates": [{"title": "[특징주] 미래에셋생명, 자사주 소각·밸류업 기대에 12%대 강세", "url": "https://www.tokenpost.kr/news/economy/365332", "desc": "미래에셋생명이 장 초반 12%대 강세를 나타내고 있다. 자사주 소각을 앞세운 주주환원 기대와 보험업종 전반의 밸류업 기대, 실적 개선 흐름이 주가를 밀어 올리는 배경으로 꼽힌다. 현재 미래에셋생명은 전일 대비 12.96...", "date": "2026.06.02", "score": 20, "is_today": false, "source": "naver"}, {"title": "[특징주] 미래에셋생명, 장 초반 12% 강세", "url": "https://www.etoday.co.kr/news/view/2589900", "desc": "이투데이=정수천 기자 | 미래에셋생명이 장 초반 강세를 보이고 있다. 2일 오전 10시6분 미래에셋생명은 전 거래일 대비 11.76% 오른 1만6820원에 거래되고 있다. 보험주 밸류업 기대감이 이어지는 가운데 자사주 소각에...", "date": "2026.06.02", "score": 20, "is_today": false, "source": "naver"}, {"title": "미래에셋생명, 투자주의 경고 지정예고→주가 급등에 따른 주목", "url": "https://www.topstarnews.net/news/articleView.html?idxno=16096960", "desc": "미래에셋생명(085620)이 투자주의종목으로 지정된다. 이번 지정은 2026년 06월 16일의 종가가 15일 전일의 종가보다 100% 이상 상승한 데 따른 것이다. 지정예고일은 2026년 06월 17일로, 해당일에 투자주의종목으로...", "date": "2026.06.16", "score": 15, "is_today": true, "source": "naver"}, {"title": "미래에셋생명 주가 장중 22%대 상승, 그룹 지배구조 개선에 '자진 상폐'...", "url": "https://www.businesspost.co.kr/BP?command=article_view&num=440062", "desc": "미래에셋생명 주가가 장중 크게 오르고 있다. 16일 오전 10시54분 기준 코스피 시장에서 미래에셋생명 주식은 전날 정규거래 종가 2만8650원보다 22.34%(6400원) 오른 3만5050원에 거래되고 있다. 16일 오전 장중...", "date": "2026.06.16", "score": 15, "is_today": true, "source": "naver"}, {"title": "미래에셋생명 보험 전략 효과… 올 1분기 세전이익 72% 급증", "url": "https://www.munhwa.com/article/11595877?ref=naver", "desc": "미래에셋생명이 아프거나 다쳤을 때 보장해주는 ‘보장성 보험’ 중심의 영업전략으로 수익성과 재무건전성을 동시에 끌어올렸다는 평가를 받고 있다. 16일 보험업계에 따르면, 미래에셋생명의 올 1분기 보장성...", "date": "2026.06.16", "score": 15, "is_today": true, "source": "naver"}, {"title": "생명보험주 동반 강세…미래에셋생명 14% 급등에 업종 주목", "url": "https://www.cbci.co.kr/news/articleView.html?idxno=582294", "desc": "보험업종을 중심으로 매수세가 유입되면서 주요 종목들이 상승 흐름을 보인 가운데 미래에셋생명이 두 자릿수 상승률을 기록하며 시장의 주목을 받았다. 16일 오전 장중 미래에셋생명은 전 거래일 대비 14.31% 오른...", "date": "2026.06.16", "score": 15, "is_today": true, "source": "naver"}, {"title": "미래에셋생명, 건강·상해보험 판매 확대…수익성·건전성 동반 강화", "url": "https://www.industrynews.co.kr/news/articleView.html?idxno=82159", "desc": "인더스트리뉴스 이주엽 기자 미래에셋생명이 건강·상해보험 중심의 보장성 보험 판매 확대에 힘입어 수익성과 재무건전성을 동시에 강화하고 있다. 16일 금융권에 따르면 미래에셋생명의 올해 3월 말 기준...", "date": "2026.06.16", "score": 15, "is_today": true, "source": "naver"}, {"title": "[EBN 데이터센터] 16일 상승 종목 30選…재건 기대에 건설주 강세", "url": "https://www.ebn.co.kr/news/articleView.html?idxno=1712731", "desc": "미래에셋생명은 3만2250원으로 12.57%, 동양은 624원으로 11.83% 상승 마감했다. ◆코스닥은 6종목 상한가…중소형주 매기 확산 코스닥 시장에서는 유진테크놀로지가 3560원으로 29.93% 올라 상승률 1위를 차지했다....", "date": "2026.06.16", "score": 10, "is_today": true, "source": "naver"}], "best_url": "https://www.tokenpost.kr/news/economy/365332"}, {"name": "OCI홀딩스", "code": "010060", "ctrt": 13.07, "vol_eok": 3242, "theme": "개별주", "memo": "324,205", "candidates": [{"title": "[특징주] OCI홀딩스, 美 탈중국 수혜·스페이스X 공급망 기대에 8%대 강...", "url": "https://www.tokenpost.kr/news/economy/363570", "desc": "OCI홀딩스가 미국의 탈중국 공급망 재편 수혜 기대와 증권가의 낙관론에 힘입어 강세다. 장중 8% 넘게 오르며 52주 신고가도 경신했다. 한국거래소에 따르면 OCI홀딩스는 전일 대비 8.33% 오른 39만원에 거래되고 있다....", "date": "2026.05.27", "score": 20, "is_today": false, "source": "naver"}, {"title": "[특징주] OCI홀딩스, 美 탈중국 수혜·스페이스X 공급 기대감에 장중 8%...", "url": "https://www.etoday.co.kr/news/view/2588260", "desc": "이투데이=서청석 기자 | OCI홀딩스가 미국의 탈중국 공급망 재편에 따른 수혜 기대감과 증권가의 낙관적인 전망에 힘입어 장중 8% 넘게 급등했다. 27일 한국거래소에 따르면 OCI홀딩스는 오후 2시35분 전일 대비 8.47...", "date": "2026.05.27", "score": 20, "is_today": false, "source": "naver"}, {"title": "[특징주] OCI홀딩스, 비중국산 폴리실리콘 가치 재평가에 강세…우주 태...", "url": "https://www.bizwork.co.kr/news/articleView.html?idxno=415855", "desc": "OCI홀딩스가 비중국산 폴리실리콘의 전략적 가치 재평가 기대감에 주목받고 있다. 22일 한국거래소에서 OCI홀딩스의 주가는 이날 오전 9시 54분 현재 전 거래일 대비 14.44%(4만500원) 오른 32만1000원에 거래중이다....", "date": "2026.05.22", "score": 20, "is_today": false, "source": "naver"}, {"title": "스페이스X 공급 논의 부각... OCI홀딩스, 태양광 재도약 기대감 커진다", "url": "https://www.e-science.co.kr/news/articleView.html?idxno=130673", "desc": "| 이코노미사이언스 홍승환 기자 | 수년간 중국발 공급 과잉과 가격 경쟁에 시달려온 OCI홀딩스가 최근 글로벌 에너지 공급망 재편의 핵심 기업으로 다시 주목받고 있다. 시장의 관심은 단순한 실적 개선을 넘어 OCI홀딩스가...", "date": "2026.06.16", "score": 15, "is_today": true, "source": "naver"}, {"title": "OCI홀딩스, 시각장애인 마라톤 봉사활동 18년째 동행", "url": "http://amenews.kr/news/view.php?idx=67098", "desc": "OCI홀딩스가 지속적인 사회공헌 활동을 통해 나눔 문화를 확산시키고 있다. OCI홀딩스는 지난 13일 오전 상암월드컵공원 평화광장에서 개최된 ‘제12회 시각장애인과 함께하는 어울림 마라톤 대회’에서 계열사...", "date": "2026.06.16", "score": 15, "is_today": true, "source": "naver"}, {"title": "中 태양광 업체들 1분기 수천억 적자…韓 기업들에는 기회", "url": "https://biz.heraldcorp.com/article/10772920?ref=naver", "desc": "태양광 제품을 생산하는 한화솔루션과 제품 원재료인 폴리실리콘을 양산하는 OCI홀딩스는 중국발 공급 과잉 여파로 한동안 실적 부진에 시달렸다. 지난해에는 각각 영업손실 3648억원, 576억원에 머물렀다. 하지만 중국의...", "date": "2026.06.16", "score": 10, "is_today": true, "source": "naver"}, {"title": "美 풍력발전 제한 조치 효력 상실…씨에스윈드 상한가[핫종목]", "url": "https://www.news1.kr/finance/general-stock/6199130", "desc": "이외에도 SK오션플랜트(100090)(26.92%), SK이터닉스(475150)(14.23%), 대명에너지(389260)(16.30%), OCI홀딩스(010060)(12.37%) 등 주요 신재생에너지주가 상승 마감했다. 신재생에너지주 급등은 도널드 트럼프 미 행정부가...", "date": "2026.06.16", "score": 10, "is_today": true, "source": "naver"}, {"title": "종전·美 반도체 훈풍, 코스피 '급등'...건설·방산주 '껑충'", "url": "http://www.choicenews.co.kr/news/articleView.html?idxno=166661", "desc": "태양광주 중 한화솔루션(9.04%), OCI홀딩스(12.37%) 등이 급등했다. 코스피 지수는 전일 대비 180.62포인트(2.11%) 급등한 8726.60을 기록했다. 외국인과 기관이 각각 1조5374억원과 7058억원을 순매수한 반면 개인은...", "date": "2026.06.16", "score": 10, "is_today": true, "source": "naver"}], "best_url": "https://www.tokenpost.kr/news/economy/363570"}, {"name": "폴레드", "code": "487580", "ctrt": 10.87, "vol_eok": 176, "theme": "개별주", "memo": "17,611", "candidates": [{"title": "[주식마감] 트럼프 풍력 규제 후퇴에 씨에스윈드 상한가… 씨에스베어링...", "url": "https://www.ggilbo.com/news/articleView.html?idxno=1164049", "desc": "코데즈컴바인, 폴레드, 시지메드텍, 아이로보틱스, 빅텍, 위더스제약, 한일단조, 상지건설, 희림, 나무기술, 서산, HLB, 성호전자, 미래에셋벤처투자다. 이날 코스피는 180.62포인트(2.11%) 오른 8,726.60으로 장을...", "date": "2026.06.16", "score": 10, "is_today": true, "source": "naver"}, {"title": "'삼전닉스'만 '훨훨'…팔천피에도 IPO 시장 '찬바람'", "url": "https://news.mtn.co.kr/news-detail/2026061615383756031", "desc": "피스피스스튜디오는 공모가 대비 53.3% 하락했고, 한패스(-56.1%), 에스팀(-42.1%), 인벤테라(-32.0%), 채비(-26.7%), 폴레드(-21.8%), 케이뱅크(-15.9%), 메쥬(-12.2%) 등도 공모가를 밑돌고 있다. 최근 코스닥에 입성한 세미티에스...", "date": "2026.06.16", "score": 10, "is_today": true, "source": "naver"}, {"title": "[서울데이터랩]코스닥 거래상위 종목 혼조…서산 상한가, 화신정공·JW신...", "url": "https://www.seoul.co.kr/news/economy/securities/2026/06/16/20260616500152?wlog_tag3=naver", "desc": "화신정공(126640)도 28.52% 급등한 6760원에 거래됐고, JW신약은 19.44% 상승, 폴레드(487580)는 12.40% 상승, TS트릴리온은 11.11% 상승, 시지메드텍(056090)은 10.02% 상승으로 두 자릿수 오름세를 나타냈다. 유니슨...", "date": "2026.06.16", "score": 10, "is_today": true, "source": "naver"}, {"title": "현대차그룹, 제로원 스타트업 3곳 분사…오토앤·폴레드 잇는다", "url": "http://www.joseilbo.com/news/news_read.php?uid=569845&class=17&grp=", "desc": "앞서 분사한 기업 가운데 오토앤과 폴레드는 코스닥 상장에 성공했고, 전기차 폐배터리 재제조 기업 포엔은 대규모 투자 유치를 통해 사업성을 인정받았다. 시공간 빅데이터 기업 디토닉도 AI 데이터 플랫폼 분야에서...", "date": "2026.06.11", "score": 5, "is_today": false, "source": "naver"}, {"title": "[IPO 뜯어보기] [폴레드] ‘따따블’이 3주만에 1/4 토막…오버행 우려도...", "url": "https://news.dealsitetv.com/articles/171360", "desc": "기록했던 폴레드가 이후 급락세를 면치 못하고 있다. 상장 후 불과 3주 만에 공모가 마저 하회한 가운데... 4일 한국거래소에 따르면, 폴레드 주가는 전날(2일) 4500원에 마감됐다. IPO(기업공개) 당시 공모가인 5000원보다...", "date": "2026.06.08", "score": 5, "is_today": false, "source": "naver"}, {"title": "[특징주] 마키나락스, 코스닥 상장 첫날 '따따블'(종합)", "url": "https://www.yna.co.kr/view/AKR20260520036351008?input=1195m", "desc": "이에 따라 마키나락스를 포함해 코스모로보틱스와 폴레드 등 이달 상장한 '새내기주'는 모두 첫날 따따블을 기록하게 됐다. 마키나락스는 산업 현장에서 AI를 실행하는 엔터프라이즈 AI 운영 체제 '런웨이'를...", "date": "2026.05.20", "score": 0, "is_today": false, "source": "naver"}, {"title": "마키나락스 상장 첫날 '따따블' 달성…연이은 IPO 새내기주 흥행 속 이익...", "url": "http://www.newsworker.co.kr/news/articleView.html?idxno=427619", "desc": "급등이 곧바로 중장기 주가 유지력으로 이어진다고 단정하기 어렵다. 마키나락스,IPO,신규상장,공모주,특징주,따따상,의무보유 확약,코스모로보틱스,폴레드,에스팀,런웨이,인공지능,파운데이션,급등,주식,코스닥", "date": "2026.05.20", "score": 0, "is_today": false, "source": "naver"}, {"title": "공모가 하회 새내기주 속출에도…'AI·로봇'은 살았다", "url": "https://www.edaily.co.kr/news/newspath.asp?newsid=04408326645482048", "desc": "에스팀(458350), 카나프테라퓨틱스(0082N0), 한패스(408470), 메쥬(0088M0), 인벤테라(0007J0), 채비(0011T0), 폴레드(487580), 피스피스스튜디오(0117P0) 등 8개사는 공모가의 약 3~56%대 하락한 수준에서 거래되고 있다. 공모가를...", "date": "2026.06.15", "score": 0, "is_today": false, "source": "naver"}], "best_url": "http://www.joseilbo.com/news/news_read.php?uid=569845&class=17&grp="}];
+
+let state = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+
+function saveState() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+
+function ensureState(name) {
+  if (!state[name]) state[name] = { chosen_idx: 0, decision: null };
+  return state[name];
+}
+
+function decide(name, decision) {
+  const st = ensureState(name);
+  st.decision = (st.decision === decision) ? null : decision;  // 같은 버튼 다시 누르면 해제
+  saveState();
+  render();
+}
+
+function navCandidate(name, delta) {
+  const st = ensureState(name);
+  const stock = DATA.find(s => s.name === name);
+  const max = (stock.candidates || []).length - 1;
+  let idx = (st.chosen_idx || 0) + delta;
+  if (idx < 0) idx = 0;
+  if (idx > max) idx = max;
+  st.chosen_idx = idx;
+  saveState();
+  render();
+}
+
+function _buildPayload() {
+  const results = DATA.map(s => {
+    const st = state[s.name] || {};
+    const idx = st.chosen_idx || 0;
+    const cands = s.candidates || [];
+    const cand = cands[idx] || null;
+    // recent_articles: 대표 1건(chosen) + 나머지 후보들 (URL dedup)
+    const seen = new Set();
+    const recent = [];
+    const tryAdd = (a) => {
+      if (!a || !a.url || seen.has(a.url)) return;
+      seen.add(a.url);
+      recent.push(a);
+    };
+    tryAdd(cand);
+    cands.forEach(tryAdd);
+    return {
+      name: s.name, code: s.code, ctrt: s.ctrt, vol_eok: s.vol_eok, theme: s.theme,
+      decision: st.decision || null,
+      chosen_article: (st.decision === "approved" && cand) ? cand : null,
+      recent_articles: recent.slice(0, 5),
+      candidates_seen: (st.chosen_idx || 0) + 1,
+      total_candidates: cands.length
+    };
+  });
+  return {
+    date: REVIEW_DATE,
+    exported_at: new Date().toISOString(),
+    summary: {
+      total: DATA.length,
+      approved: results.filter(r => r.decision === "approved").length,
+      rejected: results.filter(r => r.decision === "rejected").length,
+      skipped:  results.filter(r => r.decision === "skipped").length,
+      pending:  results.filter(r => !r.decision).length
+    },
+    results
+  };
+}
+
+function _showPushResult(html, color) {
+  const div = document.getElementById("pushResult");
+  div.style.display = "block";
+  div.style.background = color || "#f1f8f3";
+  div.innerHTML = html;
+}
+
+async function pushToNotion() {
+  const payload = _buildPayload();
+  const approved = payload.summary.approved;
+  if (approved === 0) {
+    _showPushResult("⚠️ 승인된 종목이 없습니다. ✅ 승인 버튼을 먼저 누르세요.", "#fff3e0");
+    return;
+  }
+  if (!PUSH_ENDPOINT) {
+    _showPushResult("⚠️ 푸시 서버가 비활성화 — JSON 다운로드로 폴백합니다.", "#fff3e0");
+    _downloadJson(payload);
+    return;
+  }
+  const btn = document.getElementById("btnPush");
+  btn.disabled = true;
+  btn.textContent = "⏳ 푸시 중...";
+  _showPushResult("⏳ 노션에 " + approved + "건 푸시 중...", "#e3f2fd");
+  try {
+    const res = await fetch(PUSH_ENDPOINT + "/push", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify(payload)
+    });
+    const ack = await res.json();
+    if (!res.ok) throw new Error(ack.error || ("HTTP " + res.status));
+    // 서버가 백그라운드로 푸시 진행 → /status 폴링으로 완료 대기
+    let st, elapsed = 0;
+    for (;;) {
+      await new Promise(r => setTimeout(r, 1500));
+      elapsed += 1.5;
+      const sr = await fetch(PUSH_ENDPOINT + "/status");
+      st = await sr.json();
+      if (st.status === "done" || st.status === "error") break;
+      _showPushResult("⏳ 노션에 " + approved + "건 푸시 중... (" + Math.round(elapsed) + "초 경과)", "#e3f2fd");
+    }
+    if (st.status === "error") throw new Error(st.error || "unknown");
+    const data = st.result || {};
+    let msg = "✅ 노션 푸시 완료 — 총 " + data.total + "건 / 신규 " + data.created + ", 업데이트 " + data.updated;
+    let color = "#e8f5e9";
+    if (data.errors && data.errors.length) {
+      msg += "<br>⚠️ 실패 " + data.errors.length + "건: ";
+      msg += data.errors.map(e => e.name + " (" + e.error + ")").join(", ");
+      color = "#fff3e0";
+    }
+    msg += "<br>🖥️ cmd 창은 남은 단계(아웃컴·패턴·동기화)를 마친 뒤 자동으로 닫힙니다.";
+    _showPushResult(msg, color);
+  } catch (e) {
+    _showPushResult("❌ 푸시 실패: " + e.message + "<br>JSON 다운로드로 폴백합니다.", "#ffebee");
+    _downloadJson(payload);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "📤 노션에 푸시";
+  }
+}
+
+function _downloadJson(payload) {
+  const blob = new Blob([JSON.stringify(payload, null, 2)], {type: "application/json"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "reviewed_" + REVIEW_DATE + ".json";
+  document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
+}
+
+function resetAll() {
+  if (!confirm("모든 검수 결과를 초기화합니다.")) return;
+  state = {}; saveState(); render();
+}
+
+function escapeHtml(s) {
+  return String(s == null ? "" : s)
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+}
+
+function decisionLabel(d) {
+  return ({ approved: "✅ 승인", rejected: "❌ 거부", skipped: "⏭️ 스킵" })[d] || "";
+}
+
+function render() {
+  const cards = document.getElementById("cards");
+  cards.innerHTML = "";
+  let done = 0;
+
+  DATA.forEach((s, sIdx) => {
+    const st = state[s.name] || { chosen_idx: 0, decision: null };
+    if (st.decision) done++;
+
+    const card = document.createElement("div");
+    card.className = "stock-card" + (st.decision ? " " + st.decision : "");
+    card.dataset.name = s.name;
+
+    const ctrtClass = s.ctrt >= 0 ? "ctrt-up" : "ctrt-down";
+    const ctrtSign  = s.ctrt >= 0 ? "+" : "";
+
+    let html = "";
+    html += '<div class="stock-header">';
+    html += '<span class="stock-name">' + escapeHtml(s.name) + '</span>';
+    html += '<span class="' + ctrtClass + '">' + ctrtSign + s.ctrt.toFixed(2) + '%</span>';
+    html += '<span class="stock-meta">' + s.vol_eok.toLocaleString() + '억</span>';
+    html += '<span class="theme-tag">' + escapeHtml(s.theme) + '</span>';
+    if (s.memo) html += '<span class="memo">' + escapeHtml(s.memo) + '</span>';
+    if (st.decision) html += '<span class="decision-tag">→ ' + decisionLabel(st.decision) + '</span>';
+    html += '</div>';
+
+    const candidates = s.candidates || [];
+    if (candidates.length === 0) {
+      html += '<div class="empty">관련 기사 없음</div>';
+    } else {
+      const idx = st.chosen_idx || 0;
+      const cand = candidates[idx];
+      html += '<div class="nav-bar">';
+      html += '<button class="btn-nav" data-act="prev" data-name="' + escapeHtml(s.name) + '"' + (idx === 0 ? ' disabled' : '') + '>⬅️ 이전</button>';
+      html += '<span style="font-size:13px;color:#666;">후보 ' + (idx+1) + ' / ' + candidates.length + '</span>';
+      html += '<button class="btn-nav" data-act="next" data-name="' + escapeHtml(s.name) + '"' + (idx >= candidates.length-1 ? ' disabled' : '') + '>다음 ➡️</button>';
+      html += '<span style="margin-left:auto;font-size:12px;color:#999;">점수 ' + cand.score + '</span>';
+      html += '</div>';
+      html += '<div class="article">';
+      html += '<div class="article-meta">';
+      if (cand.date) html += '<span>' + escapeHtml(cand.date) + '</span> ';
+      if (cand.is_today) html += '<span class="badge-today">오늘</span>';
+      else if (cand.date) html += '<span class="badge-old">이전</span>';
+      html += '<span class="badge-source">' + escapeHtml(cand.source || "naver") + '</span>';
+      html += '</div>';
+      html += '<div class="article-title"><a href="' + escapeHtml(cand.url) + '" target="_blank" rel="noopener">' + escapeHtml(cand.title) + '</a></div>';
+      if (cand.desc) html += '<div class="article-desc">' + escapeHtml(cand.desc) + '</div>';
+      html += '</div>';
+    }
+
+    html += '<div class="actions">';
+    html += '<button class="btn-approve" data-act="approved" data-name="' + escapeHtml(s.name) + '">✅ 승인</button>';
+    html += '<button class="btn-reject"  data-act="rejected" data-name="' + escapeHtml(s.name) + '">❌ 거부</button>';
+    html += '<button class="btn-skip"    data-act="skipped"  data-name="' + escapeHtml(s.name) + '">⏭️ 스킵</button>';
+    html += '</div>';
+
+    card.innerHTML = html;
+    cards.appendChild(card);
+  });
+
+  document.getElementById("progressBar").style.width = (done / DATA.length * 100) + "%";
+  document.getElementById("progressText").textContent = done + " / " + DATA.length + " 검토";
+}
+
+document.addEventListener("click", (e) => {
+  const btn = e.target.closest("button[data-act]");
+  if (!btn) return;
+  const name = btn.dataset.name;
+  const act  = btn.dataset.act;
+  if (act === "prev")      navCandidate(name, -1);
+  else if (act === "next") navCandidate(name, 1);
+  else                     decide(name, act);
+});
+
+render();
+</script>
+</body>
+</html>

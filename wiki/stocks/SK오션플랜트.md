@@ -1,13 +1,12 @@
 ---
 tags: [에너지, 조선/해운, 정부정책, 조선기자재, 해양플랜트, 풍력-발전, 대왕고래]
 sector: 에너지
-last_updated: 2026-05-04
-rate_updated: 2026-05-04
-close_price: 23500
-change_rate: -4.28%
-notion_last_edited: 2026-03-29T02:08:00.000Z
+last_updated: 2026-06-16
+notion_last_edited: 2026-06-16T13:44:00.000Z
 theme: ["#조선기자재", "#해양플랜트", "#풍력-발전", "#대왕고래"]
 stock_code: 100090
+is_leader: 
+recent_breakout: 
 ---
 
 # SK오션플랜트
@@ -35,7 +34,7 @@ stock_code: 100090
 
 > 출처: Notion `추가 중요내용` 섹션 | 등락률은 Notion DB `등락률(%)` 컬럼 기준
 
-- [2026-03-26] [(25.09.03)태웅로직스 홈페이지 공고문](https://www.e-tgl.com:8443/index.jsp) / 등락률: +14.57% / [등급 미분류]
+- [2026-06-16] [(25.09.03)태웅로직스 홈페이지 공고문](https://www.e-tgl.com:8443/index.jsp) / 등락률: +29.88%% / [등급 미분류]
 
 ---
 
@@ -45,17 +44,17 @@ stock_code: 100090
 
 - [[특징주] 에너지 안보 위기에 신재생에너지株 재부각…SK오션플랜트 등 급등](https://www.etoday.co.kr/news/view/2567454?trc=main_market_lnews)
 - [SK오션플랜트, `Corporate day 후기: 매각 노이즈 해소 이후 빛날 본업` 증권사 발표에 강세](https://www.mk.co.kr/news/stock/11993401)
-- [(26.01.07)SK오션플랜트, 美 함정정비협약(MSRA) 취득 초읽기](https://n.news.naver.com/mnews/article/003/0013698494?sid=102) / 2026-01-07 / 등락률: -2.0%
+- [(26.01.07)SK오션플랜트, 美 함정정비협약(MSRA) 취득 초읽기](https://n.news.naver.com/mnews/article/003/0013698494?sid=102)
 - [오성첨단소재, 현금성자산 2000억 활용..SK오션플랜트 지분 인수 참여 소식에↑ [특징주]](https://www.fnnews.com/news/202509031333261139)
 - [[특징주] 실망 매물에 급락했던 SK오션플랜트, 11%대 반등](https://biz.chosun.com/stock/market_trend/2025/09/03/FPUKNLLWLRGPRPSACK3CU4Q45Q/?utm_source=naver&utm_medium=original&utm_campaign=biz)
 - [SK오션플랜트, 美 해군 함정 MRO 진출 가속…MSRA 체결 눈앞](https://www.smarttoday.co.kr/news/articleView.html?idxno=90934)
-- [(25.10.20)내년부터 가동하는 ‘K-조선 얼라이언스’…자율운항 기술 주도권 확보 기대](https://n.news.naver.com/mnews/article/009/0005575938?sid=101) / 2025-10-20 / 등락률: -2.3%
+- [(25.10.20)내년부터 가동하는 ‘K-조선 얼라이언스’…자율운항 기술 주도권 확보 기대](https://n.news.naver.com/mnews/article/009/0005575938?sid=101)
 - [고부가 선박 수확기… 조선업 실적 '순항'](https://n.news.naver.com/mnews/article/008/0005265595?sid=101)
-- [美 무역 수장, 한화오션 제재에 "中강압 맞서 대미 투자 계속 장려"](https://www.chosun.com/international/us/2025/10/21/XIHAF2AL5VABTPTLYLGCI3IGTE/) / 2025-10-21 / 등락률: +5.7%
-- [(25.02.11)"SK오션플랜트, 수주 모멘텀 가시권"-DS](https://www.hankyung.com/article/2025021167556) / 2025-02-11 / 등락률: +1.8%
+- [美 무역 수장, 한화오션 제재에 "中강압 맞서 대미 투자 계속 장려"](https://www.chosun.com/international/us/2025/10/21/XIHAF2AL5VABTPTLYLGCI3IGTE/)
+- [(25.02.11)"SK오션플랜트, 수주 모멘텀 가시권"-DS](https://www.hankyung.com/article/2025021167556)
 - [美법원, 트럼프 풍력발전 개발 금지 '무효화'...글로벌 풍력발전업계 '숨통'](https://www.mediapen.com/news/view/1064933)
 - [미 연방법원, 트럼프의 풍력발전소 금지 행정명령 부결](https://n.news.naver.com/mnews/article/003/0013646603?sid=104)
-- [(25.09.03)태웅로직스 홈페이지 공고문](https://www.e-tgl.com:8443/index.jsp) / 2025-09-03 / 등락률: +6.3%
+- [(25.09.03)태웅로직스 홈페이지 공고문](https://www.e-tgl.com:8443/index.jsp)
 
 ---
 
@@ -71,36 +70,9 @@ stock_code: 100090
 
 ## 재무 현황
 
-> 출처: DART OpenAPI + FDR(주가) | 기준: 2026-05-04 | 종목코드: 100090
-> 회계연도: 2025년 (연결 기준) | 주가: 24550원 (2026-04-30)
+[⏳ fetch_finance.py 실행 필요]
 
-### 밸류에이션
-
-| 항목 | 수치 |
-|------|------|
-| 시가총액 | 1.5조 |
-| PER | 39.3배 |
-| PBR | 1.81배 |
-| EPS | 625원 |
-| BPS | 13571원 |
-
-### 2025년 연간 실적 (DART 연결)
-
-| 항목 | 수치 |
-|------|------|
-| 매출액 | 9,654억 |
-| 영업이익 | 595억 |
-| 순이익 | 375억 |
-| 부채비율 | 41.0% |
-
-### 분기 실적 (DART 연결)
-
-| 분기 | 매출 | 영업이익 | 순이익 | 부채비율 |
-|------|------|----------|--------|----------|
-| 2025.Q1 | 2,571억 | 110억 | 43억 | 93.9% |
-| 2025.Q2 | 2,406억 | 156억 | 85억 | 77.8% |
-| 2025.Q3 | 2,932억 | 193억 | 111억 | 49.1% |
-| 2025.Q4 | 1,745억 | 137억 | 137억 | 41.0% |
+---
 
 ## 차트·거래량 메모
 
@@ -114,6 +86,16 @@ _직접 추가 또는 LLM이 분석 시 기록_
 
 ---
 
+---
+
+## 등락률 누적 로그
+
+<!-- ingest 자동 기록 -->
+
+| 날짜 | 등락률 | 재료 요약 |
+|------|--------|-----------|
+| 2026-06-16 | +29.9% | [[특징주] 에너지 안보 위기에 신재생에너지株 재부각…SK오션플랜트 등 급등](https://www.etoday.co.kr/news/view/2 |
+
 ## 마지막 업데이트
 
-2026-05-04 | Notion ingest (ingest_all.py 자동 생성)
+2026-06-16 | Notion ingest (ingest_all.py 자동 생성)

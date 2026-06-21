@@ -65,6 +65,10 @@ if errorlevel 1 echo   [WARN] aidc_crosscheck failed.
 if errorlevel 1 echo   [WARN] aidc_rotation failed.
 echo   결과: wiki\analysis\AIDC_매매교차검증_(날짜).md + AIDC_순환트래킹.md
 echo.
+echo [일정] 주식 일정 후보 스캔 (노션 기존 + 오늘 뉴스 + 네이버 캘린더)...
+%PYTHON% schedule_scan.py --out reports\schedule_todo.json
+if errorlevel 1 (echo   [WARN] 일정 스캔 실패 - 건너뜀.) else (echo   - 후보는 reports\schedule_todo.json. Claude에게 "일정 업데이트해줘" 하면 판단·태그·중복제거 후 노션+wiki\일정.md 입력.)
+echo.
 echo [클라우드 동기화] 관심종목 CSV + 보유종목 - GitHub (가격알림용)...
 %PYTHON% sync_watchlist_github.py
 if errorlevel 1 echo   [WARN] watchlist sync failed - cloud alert uses stale list.

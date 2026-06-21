@@ -1,8 +1,8 @@
 ---
 tags: [전력, 원자재, 해저케이블, 전선, 구리]
 sector: 전력
-last_updated: 2026-05-17
-notion_last_edited: 2026-05-06T09:56:00.000Z
+last_updated: 2026-06-17
+notion_last_edited: 2026-06-17T10:51:00.000Z
 theme: ["#해저케이블", "#전선", "#구리"]
 stock_code: 024840
 is_leader: 
@@ -34,8 +34,8 @@ recent_breakout:
 
 > 출처: Notion `추가 중요내용` 섹션 | 등락률은 Notion DB `등락률(%)` 컬럼 기준
 
-- [2026-05-06] [[특징주]KBI메탈, AI 데이터센터 확산과 전력 인프라 수요 증가 기대감에...](https://www.widedaily.com/news/articleView.html?idxno=293480) / 등락률: +29.86% / [등급 미분류]
-- [2026-05-06] [KBI메탈, 변압기 사업 진출 기대감에 '4연상'[특징주]](http://www.edaily.co.kr/news/newspath.asp?newsid=03929446645446296) / 등락률: +29.86% / [등급 미분류]
+- [2026-05-06] [[특징주]KBI메탈, AI 데이터센터 확산과 전력 인프라 수요 증가 기대감에...](https://www.widedaily.com/news/articleView.html?idxno=293480) / 등락률 미기재 / [등급 미분류]
+- [2026-05-06] [KBI메탈, 변압기 사업 진출 기대감에 '4연상'[특징주]](http://www.edaily.co.kr/news/newspath.asp?newsid=03929446645446296) / 등락률 미기재 / [등급 미분류]
 - [2026-04-27] [[특징주] KBI메탈, AI 데이터센터發 전력인프라 수요 기대에 급등](https://www.tokenpost.kr/news/economy/353655) / 등락률 미기재 / [등급 미분류]
 - [2025-09-15] [[특징주] KBI메탈, 美 BESS 진출에 상승…구글·애플 전력 공급 기대](https://www.cstimes.com/news/articleView.html?idxno=667130) / 등락률 미기재 / [등급 미분류]
 - [2025-09-15] [[특징주] KBI메탈, 美 BESS 사업 참여 소식에 주가 급등](https://www.widedaily.com/news/articleView.html?idxno=277969) / 등락률 미기재 / [등급 미분류]
@@ -62,15 +62,15 @@ recent_breakout:
 - [[특징주] KBI메탈, 올 여름 전력수요 또 최고치 갈아치웠다…태풍 영향](https://www.widedaily.com/news/articleView.html?idxno=242890)
 - [[특징주] KBI메탈, 연이은 폭염에 따른 전력 소요 '역대 최고치' 기록 소...](https://www.widedaily.com/news/articleView.html?idxno=242478)
 - [JP모간 "올해 리튬·구리 포함 희귀금속 수요 증가 전망, 에너지 전환과 재무장 영향"](https://www.businesspost.co.kr/BP?command=article_view&num=430967)
-- [구리 가격 2배 올려야 필요량 확보...현 1만 3천→2만 2천 달러 필요](https://www.g-enews.com/view.php?ud=2026022407584067540c8c1c064d_1) / 2026-02-24 / 등락률: +9.1%
+- [구리 가격 2배 올려야 필요량 확보...현 1만 3천→2만 2천 달러 필요](https://www.g-enews.com/view.php?ud=2026022407584067540c8c1c064d_1)
 - [[리포트 브리핑]효성중공업, '반덤핑 관세율 영향 점검' 목표가 3,600,000원 - 한국투자증권](https://www.newspim.com/news/view/20260223000113)
 - [美 전력수요에 AI 모멘텀까지…슈퍼사이클 올라탄 전기株 '덩실'](https://n.news.naver.com/mnews/article/008/0005320868?sid=101)
-- [(26.02.21)‘에너지 하이재킹’ 나선 빅테크… 美 대륙 가로지르는 70GW ‘그림자 전력망’의 실체](https://www.g-enews.com/view.php?ud=202602201922353562fbbec65dfb_1) / 2026-02-21 / 등락률: +1.1%
+- [(26.02.21)‘에너지 하이재킹’ 나선 빅테크… 美 대륙 가로지르는 70GW ‘그림자 전력망’의 실체](https://www.g-enews.com/view.php?ud=202602201922353562fbbec65dfb_1)
 - [“구글·애플에 전력 공급”…KBI그룹, 美에너지 저장장치 사업 본격 추진](https://n.news.naver.com/mnews/article/029/0002982117?sid=101&from=naver)
-- [(26.04.14)역대급 호황 맞은 K전력기기… '37조 중동 특수'도 노린다](https://n.news.naver.com/mnews/article/014/0005507714?sid=101) / 2026-04-14 / 등락률: +0.4%
+- [(26.04.14)역대급 호황 맞은 K전력기기… '37조 중동 특수'도 노린다](https://n.news.naver.com/mnews/article/014/0005507714?sid=101)
 - [[특징주] 대한전선, AI 전력 인프라 수혜 기대에 25% 급등](https://www.newsdream.kr/news/articleView.html?idxno=111324)
 - [아마존, 루이지애나 120억 달러 투자…AI 데이터센터 경쟁 가속](https://n.news.naver.com/mnews/article/092/0002411541?sid=105)
-- [(26.04.14)칠레 코델코 1.4억 과태료... '구리값 6달러 시대' 공급망 리스크 비상](https://www.g-enews.com/view.php?ud=2026041407041417262bd56fbc3c_1) / 2026-04-14 / 등락률: +0.4%
+- [(26.04.14)칠레 코델코 1.4억 과태료... '구리값 6달러 시대' 공급망 리스크 비상](https://www.g-enews.com/view.php?ud=2026041407041417262bd56fbc3c_1)
 - [NH證 “LS일렉트릭, 높은 이익 성장으로 밸류에이션 부담 덜 것…목표가 25%↑”](https://n.news.naver.com/mnews/article/366/0001159947?sid=101)
 - [NH證 “HD현대일렉트릭, 북미 초고압 변압기 수주 확대 기대 …목표가 150만원"](https://n.news.naver.com/mnews/article/366/0001159945?sid=101)
 
@@ -112,8 +112,8 @@ _직접 추가 또는 LLM이 분석 시 기록_
 
 | 날짜 | 등락률 | 재료 요약 |
 |------|--------|-----------|
-| 2026-05-06 | +29.9% | [[특징주] KBI메탈, AI 데이터센터發 전력인프라 수요 기대에 급등](https://www.tokenpost.kr/news/economy/3 |
+| 2026-06-17 | +16.4% | [[특징주] KBI메탈, AI 데이터센터發 전력인프라 수요 기대에 급등](https://www.tokenpost.kr/news/economy/3 |
 
 ## 마지막 업데이트
 
-2026-05-17 | Notion ingest (ingest_all.py 자동 생성)
+2026-06-17 | Notion ingest (ingest_all.py 자동 생성)

@@ -1,8 +1,8 @@
 ---
 tags: [에너지, 빅테크, 아마존, ESS, 블룸에너지, 태양광-발전, 고체산화물-연료전지, 풍력-발전]
 sector: 에너지
-last_updated: 2026-06-15
-notion_last_edited: 2026-06-15T14:14:00.000Z
+last_updated: 2026-06-16
+notion_last_edited: 2026-06-16T13:48:00.000Z
 theme: ["#아마존(AWS)", "#ESS(전력저장장치)", "#블룸에너지", "#태양광-발전", "#고체산화물-연료전지(SOFC)", "#풍력-발전"]
 stock_code: 475150
 is_leader: 
@@ -34,10 +34,11 @@ recent_breakout:
 
 > 출처: Notion `추가 중요내용` 섹션 | 등락률은 Notion DB `등락률(%)` 컬럼 기준
 
-- [2026-06-15] [李대통령 “신재생에너지로 신속전환” 주문](https://n.news.naver.com/mnews/article/018/0006245563?sid=100) / 등락률: +13.60%% / [등급 미분류]
-- [2026-06-15] [(26.03.19)이란 전쟁에 태양광·풍력株 '날개'](https://n.news.naver.com/mnews/article/009/0005652985?sid=101) / 등락률: +13.60%% / [등급 미분류]
-- [2026-06-15] [[특징주] 에너지 안보 위기에 신재생에너지株 재부각…SK오션플랜트 등 급등](https://www.etoday.co.kr/news/view/2567454?trc=main_market_lnews) / 등락률: +13.60%% / [등급 미분류]
-- [2026-06-15] [고유가 리스크에 ‘재생에너지’ 급부상…SK이터닉스 26% 급등 ‘신고가’](https://n.news.naver.com/mnews/article/011/0004601179?sid=101) / 등락률: +13.60%% / [등급 미분류]
+- [2026-06-16] [2026.06.11] [[특징주] SK이터닉스, 신재생 사업 재편 기대감에 이틀째 급등](https://www.etoday.co.kr/news/view/2592535) / 등락률: +14.23%% / [등급 미분류]
+- [2026-06-16] [2026.06.11] [[특징주] SK이터닉스, SK그룹 신재생 매각 이슈.. 2거래일 '강세'](https://www.g-enews.com/view.php?ud=202606110921389944093b5d4e_1) / 등락률: +14.23%% / [등급 미분류]
+- [2026-06-16] [2026.06.11] [신재생사업 재편 기대감에 이틀째 급등…SK이터닉스 15%↑[특징주]](https://www.edaily.co.kr/news/newspath.asp?newsid=03070086645480736) / 등락률: +14.23%% / [등급 미분류]
+- [2026-06-16] [2026.06.10] [[특징주] SK이터닉스, 상한가 마감…신재생에너지주 동반 상승(종합)](https://www.yna.co.kr/view/AKR20260610053451008?input=1195m) / 등락률: +14.23%% / [등급 미분류]
+- [2026-06-16] [2026.06.10] [[특징주] SK이터닉스, "SK그룹 1.8조 에너지 사업 재편"에 수혜주로 부각...](https://www.widedaily.com/news/articleView.html?idxno=295498) / 등락률: +14.23%% / [등급 미분류]
 
 ---
 
@@ -45,6 +46,10 @@ recent_breakout:
 
 > 출처: Notion `지난기사 아카이브 + 링크` 100% 전수 복사 (요약·누락 금지)
 
+- [李대통령 “신재생에너지로 신속전환” 주문](https://n.news.naver.com/mnews/article/018/0006245563?sid=100)
+- [(26.03.19)이란 전쟁에 태양광·풍력株 '날개'](https://n.news.naver.com/mnews/article/009/0005652985?sid=101)
+- [[특징주] 에너지 안보 위기에 신재생에너지株 재부각…SK오션플랜트 등 급등](https://www.etoday.co.kr/news/view/2567454?trc=main_market_lnews)
+- [고유가 리스크에 ‘재생에너지’ 급부상…SK이터닉스 26% 급등 ‘신고가’](https://n.news.naver.com/mnews/article/011/0004601179?sid=101)
 - [SK오션플랜트, `Corporate day 후기: 매각 노이즈 해소 이후 빛날 본업` 증권사 발표에 강세](https://www.mk.co.kr/news/stock/11993401)
 - [(26.03.11)SK이터닉스, 재생에너지 정책 수혜 기대…목표가 4.3만원↑-DS](https://n.news.naver.com/mnews/article/018/0006232285?sid=101)
 - [[특징주]SK이터닉스, 글로벌 투자사 KKR 인수 소식에 10%↑](https://n.news.naver.com/mnews/article/277/0005730323?sid=101)
@@ -61,19 +66,18 @@ recent_breakout:
 - [(25.12.05)매출 신기록 행진 LS마린솔루션, 국민성장펀드 수혜 기대감 '쑥'](https://n.news.naver.com/mnews/article/011/0004563913?sid=101)
 - [(25.12.11)이재명표 ‘해상풍력’ 인프라 확 늘린다](https://n.news.naver.com/mnews/article/022/0004089341?sid=101)
 - [153조 투자 수요 '국민성장펀드'…SK 등 반도체 기업 투자 요청 쇄도](https://n.news.naver.com/mnews/article/277/0005692860?sid=101)
-- [李대통령 “신재생에너지로 신속전환” 주문](https://n.news.naver.com/mnews/article/018/0006245563?sid=100)
-- [(26.03.19)이란 전쟁에 태양광·풍력株 '날개'](https://n.news.naver.com/mnews/article/009/0005652985?sid=101)
-- [[특징주] 에너지 안보 위기에 신재생에너지株 재부각…SK오션플랜트 등 급등](https://www.etoday.co.kr/news/view/2567454?trc=main_market_lnews)
-- [고유가 리스크에 ‘재생에너지’ 급부상…SK이터닉스 26% 급등 ‘신고가’](https://n.news.naver.com/mnews/article/011/0004601179?sid=101)
+- [[특징주] SK이터닉스, 신재생 사업 재편 기대감에 이틀째 급등](https://www.etoday.co.kr/news/view/2592535)
+- [[특징주] SK이터닉스, SK그룹 신재생 매각 이슈.. 2거래일 '강세'](https://www.g-enews.com/view.php?ud=202606110921389944093b5d4e_1)
+- [신재생사업 재편 기대감에 이틀째 급등…SK이터닉스 15%↑[특징주]](https://www.edaily.co.kr/news/newspath.asp?newsid=03070086645480736)
+- [[특징주] SK이터닉스, 상한가 마감…신재생에너지주 동반 상승(종합)](https://www.yna.co.kr/view/AKR20260610053451008?input=1195m)
+- [[특징주] SK이터닉스, "SK그룹 1.8조 에너지 사업 재편"에 수혜주로 부각...](https://www.widedaily.com/news/articleView.html?idxno=295498)
 
 ---
 
 ## 기업 기본 정보
 
 - **홈페이지**: [http://www.sketernix.com/](http://www.sketernix.com/)
-- **사업 구조**: 동사는 2008년 남원태양광발전소로 시작해 신재생에너지 개발 및 운영사업자로 설립되어 국내 시장 선도 기업으로 자리잡고 있음.
-태양광, 풍력, 연료전지 등 신재생에너지사업과 ESS 부문 포트폴리오를 보유, 재생에너지 사업의 전 가치 사슬에 걸쳐 가치를 창출하고 있음.
-신안우이 해상풍력 사업 착공을 앞두고 플랫폼 기반 전력중개 시장으로 확장하며 글로벌 시장 ...
+- **사업 구조**: 동사는 2008년 남원태양광발전소로 시작해 신재생에너지 개발 및 운영사업자로 설립되어 국내 시장 선도 기업으로 자리잡고 있음. 태양광, 풍력, 연료전지 등 신재생에너지사업과 ESS 부문 포트폴리오를 보유, 재생에너지 사업의 전 가치 사슬에 걸쳐 가치를 창출하고 있음. 신안우이 해상풍력 사업 착공을 앞두고 플랫폼 기반 전력중개 시장으로 확장하며 글로벌 시장 ...
 - **유통가능주식 비율**: 56.76%
 
 ---
@@ -104,8 +108,8 @@ _직접 추가 또는 LLM이 분석 시 기록_
 
 | 날짜 | 등락률 | 재료 요약 |
 |------|--------|-----------|
-| 2026-06-15 | +13.6% | [SK오션플랜트, `Corporate day 후기: 매각 노이즈 해소 이후 빛날 본업` 증권사 발표에 강세](https://www.mk.co.k |
+| 2026-06-16 | +14.2% | [李대통령 “신재생에너지로 신속전환” 주문](https://n.news.naver.com/mnews/article/018/0006245563?s |
 
 ## 마지막 업데이트
 
-2026-06-15 | Notion ingest (ingest_all.py 자동 생성)
+2026-06-16 | Notion ingest (ingest_all.py 자동 생성)

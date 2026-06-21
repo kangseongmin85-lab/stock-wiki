@@ -145,5 +145,27 @@
       "chg": 0.48
     },
     "supply": null
+  },
+  "2026-06-16": {
+    "kospi": {
+      "close": 8726.6,
+      "chg": 2.11
+    },
+    "kosdaq": {
+      "close": 1018.68,
+      "chg": -1.48
+    },
+    "supply": null
+  },
+  "2026-06-17": {
+    "kospi": {
+      "close": 8864.24,
+      "chg": 1.58
+    },
+    "kosdaq": {
+      "close": 1031.96,
+      "chg": 1.3
+    },
+    "supply": null
   }
 }
