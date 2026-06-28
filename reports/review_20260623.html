@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>기사 검수 - 20260623</title>
+<style>
+* { box-sizing: border-box; }
+body { font-family: -apple-system, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; max-width: 1100px; margin: 0 auto; padding: 20px; background: #f5f5f7; color: #222; }
+.topbar { position: sticky; top: 10px; background: white; padding: 14px 18px; border-radius: 12px; display: flex; align-items: center; gap: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 16px; z-index: 10; }
+.topbar h2 { margin: 0; font-size: 17px; }
+.progress { flex: 1; height: 8px; background: #eee; border-radius: 4px; overflow: hidden; }
+.progress-bar { height: 100%; background: #4CAF50; transition: width 0.2s; }
+.stock-card { background: white; padding: 18px; border-radius: 10px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); border-left: 4px solid transparent; }
+.stock-card.approved { border-left-color: #4CAF50; background: #f1f8f3; }
+.stock-card.rejected { border-left-color: #f44336; background: #fdecea; }
+.stock-card.skipped  { border-left-color: #999; background: #f5f5f5; }
+.stock-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
+.stock-name { font-size: 17px; font-weight: 700; }
+.stock-meta { color: #666; font-size: 13px; }
+.ctrt-up   { color: #d32f2f; font-weight: 600; }
+.ctrt-down { color: #1976d2; font-weight: 600; }
+.theme-tag { background: #e3f2fd; color: #1976d2; padding: 2px 8px; border-radius: 4px; font-size: 12px; }
+.memo { color: #888; font-size: 12px; margin-left: 4px; }
+.article { background: #fafafa; padding: 12px; border-radius: 8px; margin: 8px 0; }
+.article-meta { color: #666; font-size: 12px; margin-bottom: 4px; }
+.article-title { font-weight: 600; margin: 4px 0; line-height: 1.4; }
+.article-title a { color: #1565c0; text-decoration: none; }
+.article-title a:hover { text-decoration: underline; }
+.article-desc { color: #444; font-size: 13px; line-height: 1.5; }
+.nav-bar { display: flex; align-items: center; gap: 8px; margin: 8px 0 4px; }
+.actions { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+button { padding: 8px 14px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 13px; }
+button:disabled { opacity: 0.4; cursor: default; }
+.btn-approve { background: #4CAF50; color: white; }
+.btn-reject  { background: #f44336; color: white; }
+.btn-skip    { background: #9e9e9e; color: white; }
+.btn-nav     { background: #e0e0e0; color: #333; padding: 6px 10px; }
+.btn-export  { background: #1976d2; color: white; }
+.btn-reset   { background: white; color: #888; border: 1px solid #ddd; }
+.badge-today { background: #4CAF50; color: white; font-size: 11px; padding: 2px 6px; border-radius: 3px; margin-right: 4px; }
+.badge-old   { background: #ff9800; color: white; font-size: 11px; padding: 2px 6px; border-radius: 3px; margin-right: 4px; }
+.badge-source { background: #7e57c2; color: white; font-size: 11px; padding: 2px 6px; border-radius: 3px; }
+.empty { color: #aaa; font-style: italic; padding: 18px; text-align: center; background: #fafafa; border-radius: 8px; }
+.decision-tag { margin-left: auto; font-size: 13px; font-weight: 600; }
+</style>
+</head>
+<body>
+<div class="topbar">
+  <h2>기사 검수 - 20260623</h2>
+  <div class="progress"><div class="progress-bar" id="progressBar"></div></div>
+  <span id="progressText" style="font-size:13px;color:#666;"></span>
+  <button class="btn-export" onclick="pushToNotion()" id="btnPush">📤 노션에 푸시</button>
+  <button class="btn-reset" onclick="resetAll()">초기화</button>
+</div>
+
+<div id="pushResult" style="margin:12px 0;padding:10px;border-radius:6px;display:none;font-size:14px;"></div>
+
+<div id="cards"></div>
+
+<script>
+const REVIEW_DATE     = "20260623";
+const STORAGE_KEY     = "review_" + REVIEW_DATE;
+const PUSH_ENDPOINT   = "http://127.0.0.1:8765";  // 비어있으면 푸시 비활성, 다운로드만
+const DATA            = [{"name": "부국철강", "code": "026940", "ctrt": 29.93, "vol_eok": 819, "theme": "개별주", "memo": "81,945", "candidates": [{"title": "[속보] 부국철강 주가 상한가 도달, 양대지수 급락속…VI 발동되기도", "url": "https://www.cbci.co.kr/news/articleView.html?idxno=583960", "desc": "23일 코스피 시장에서 부국철강(026940)이 상한가에 도달하며 강세를 나타냈다. 부국철강은 오전 11시 37분 현재 전 거래일 대비 865원(29.93%) 오른 3755원에 거래되며 가격제한폭까지 상승했다. 장중 변동성완화장치...", "date": "2026.06.23", "score": 15, "is_today": true, "source": "naver"}, {"title": "[23일 특징주] SK하이닉스·삼성전자, 12% 동반 급락…17년 만에 하락률...", "url": "https://www.newsworks.co.kr/news/articleView.html?idxno=844836", "desc": "한편 이날 코스피에서는 ▲차AI헬스케어 ▲보해양조 ▲부국철강 ▲비비안 등이 상한가를 기록했다. 코스닥에서는 ▲미래나노텍 ▲서산 ▲위지트 ▲모헨즈 ▲경남제약 ▲조아제약 ▲지니틱스 ▲헝셩그룹 등이...", "date": "2026.06.23", "score": 10, "is_today": true, "source": "naver"}, {"title": "[마감시황] '악몽 같은 하루'…코스피 9.9% 급락에 8200선으로 추락", "url": "https://www.joongangenews.com/news/articleView.html?idxno=527704", "desc": "다만 양대 시장에서 △차AI헬스케어 △보해양조 △부국철강 △비비안 △미래나노텍 △서산 △위지트 △모헨즈 △경남제약 △조아제약 △지니틱스 △헝셩그룹 등이 상한가를 달성했다.", "date": "2026.06.23", "score": 10, "is_today": true, "source": "naver"}, {"title": "[마감시황] 코스피, 9.99% 급락한 8203.84 마감…서킷브레이커 올해 4번째...", "url": "https://www.seoul.co.kr/news/economy/securities/2026/06/23/20260623500189?wlog_tag3=naver", "desc": "개별 종목별로는 차AI헬스케어가 29.98% 오른 7500원으로 상한가를 기록했고, 비비안은 29.94% 오른 1만 980원, 부국철강은 29.93% 오른 3755원, 보해양조는 29.91% 오른 3040원으로 거래를 마쳤다. 동양고속도 18....", "date": "2026.06.23", "score": 10, "is_today": true, "source": "naver"}, {"title": "자사주 꼼수 차단, 결제 주기 단축, 거래시간 연장… '대만'과 다른 꼴?...", "url": "http://www.newswell.co.kr/news/articleView.html?idxno=19723", "desc": "/자료=네이버 증권정보 이날 ▲차AI헬스케어 ▲보해양조 ▲부국철강 ▲비비안 ▲미래나노텍 ▲서산 ▲위지트 ▲모헨즈 ▲경남제약 ▲조아제약 ▲지니틱스 ▲헝셩그룹은 상한가를 기록했다. 이 가운데 부국철강과...", "date": "2026.06.23", "score": 10, "is_today": true, "source": "naver"}, {"title": "원자재 가격 불안에 흔들리는 철강주...반등 열쇠는 수요 회복", "url": "https://www.pinpointnews.co.kr/news/articleView.html?idxno=462362", "desc": "한국거래소에 따르면 이날 오후 1시 부국철강은 29.93% 상승한 3,755원에 거래중이다. 시장에서는 정책 기대감과 철강 관련 테마 수급이 집중되면서 상한가를 기록하고 있다. 금강철강은 9.93% 상승한 6,310원에 거래중이다....", "date": "2026.06.23", "score": 10, "is_today": true, "source": "naver"}, {"title": "[개장 시황] 코스피,상승 출발…미국 증시 혼조세 속 개인·기관 매수", "url": "http://www.fieldnews.kr/news/articleView.html?idxno=29446", "desc": "코스피에서는 부국철강(+12.11%), HLB글로벌(+1.71%)이 올랐고 프리티(-13.95%), 차AI헬스케어(-18.54%)가 내렸다. 코스닥에서는 조아제약(+26.71%), 지니틱스(+24.10%)가 급등한 반면 에이테크솔루션(-15.18%), 베셀(-10.72%)은...", "date": "2026.06.23", "score": 10, "is_today": true, "source": "naver"}, {"title": "[서울데이터랩]코스피, 장 초반 낙폭 만회하고 상승 전환…9,148.90 기록", "url": "https://www.seoul.co.kr/news/economy/securities/2026/06/23/20260623500026?wlog_tag3=naver", "desc": "대원전선우는 17.88%, 대원전선은 13.51%, 부국철강은 11.76% 상승했다. 반면 프리티는 11.63% 내린 266원, SHD는 10.88% 내린 6960원, 깨끗한나라우는 9.69% 내린 8850원, DL이앤씨는 9.46% 내린 6만 7000원으로...", "date": "2026.06.23", "score": 10, "is_today": true, "source": "naver"}], "best_url": "https://www.cbci.co.kr/news/articleView.html?idxno=583960"}, {"name": "보해양조", "code": "000890", "ctrt": 29.91, "vol_eok": 483, "theme": "개별주", "memo": "48,318", "candidates": [{"title": "[특징주] 보해양조, 투자주의 지정에도…상한가 마감(종합)", "url": "https://www.yna.co.kr/view/AKR20260623050351008?input=1195m", "desc": "코스피 상장사인 주류업체 보해양조가 반도체 공장의 호남권 유치 현실화 시 수혜 입을 것이라는 기대감에 23일 상한가 마감했다. 가파른 상승에 투자주의 종목으로 지정됐다. 이날 유가증권시장에서 보해양조는 29.91...", "date": "2026.06.23", "score": 30, "is_today": true, "source": "naver"}, {"title": "[특징주] 보해양조, 반도체 호남 유치설 영향 '상승'", "url": "https://www.jeonmae.co.kr/news/articleView.html?idxno=1267691", "desc": "보해양조 주가가 상승세를 보이고 있다. 23일 오전 10시 4분 기준 현재 전 거래일 대비 +18.38% 오른 2,770원에 거래되고 있다. 거래량은 1,190만 3,515주다. 이는 코스피 상장사인 주류업체 보해양조가 반도체 공장의 호남권...", "date": "2026.06.23", "score": 30, "is_today": true, "source": "naver"}, {"title": "[특징주] 보해양조, '반도체 호남 유치설'에 강세…투자주의 지정", "url": "https://www.yna.co.kr/view/AKR20260623050300008?input=1195m", "desc": "코스피 상장사인 주류업체 보해양조가 반도체 공장의 호남권 유치로 수혜 입을 것이라는 기대감에 23일 장 초반 강세다. 가파른 상승에 투자주의 종목으로 지정됐다. 이날 유가증권시장에서 9시 38분 기준 보해양조는...", "date": "2026.06.23", "score": 30, "is_today": true, "source": "naver"}, {"title": "보해양조, '반도체 유치설' 수혜 기대감에 상한가…거래소 투자주의 지...", "url": "https://www.newsway.co.kr/news/view?ud=2026062310361833307", "desc": "보해양조가 호남권 반도체 후공정(패키징) 공장 유치 투자 기대감과 맞물려 상한가를 기록했다. 최근 단기 급등세가 이어지면서 한국거래소는 투자주의 종목으로 지정했다. 23일 한국거래소에 따르면 오전 10시 30분...", "date": "2026.06.23", "score": 15, "is_today": true, "source": "naver"}, {"title": "\"소주 회사가 반도체 수혜주?\"…보해양조, 장성 유치설에 급등", "url": "https://www.jnilbo.com/news/articleView.html?idxno=90000044528", "desc": "보해양조가 호남권 반도체 후공정 공장 유치 기대감에 상한가를 기록했다. 전남 장성군이 후보지 중 하나로 거론되면서, 해당 지역에 공장과 부동산을 보유한 보해양조가 관련 수혜주로 부각된 영향이다. 23일...", "date": "2026.06.23", "score": 15, "is_today": true, "source": "naver"}, {"title": "[N2 증시 풍향계] SK스퀘어·보해양조·차AI헬스케어 급등…프로브잇은...", "url": "https://www.news2day.co.kr/article/20260623500091", "desc": "■ 보해양조, 반도체 공장 유치 기대감에 상한가 보해양조가 호남권 반도체 공장 유치 기대감에 상한가를 기록했다. 보해양조는 같은 시각 코스피 시장에서 전 거래일 대비 29.91% 오른 3040원에 거래되며 상한가를...", "date": "2026.06.23", "score": 15, "is_today": true, "source": "naver"}, {"title": "[23일 특징주] SK하이닉스·삼성전자, 12% 동반 급락…17년 만에 하락률...", "url": "https://www.newsworks.co.kr/news/articleView.html?idxno=844836", "desc": "한편 이날 코스피에서는 ▲차AI헬스케어 ▲보해양조 ▲부국철강 ▲비비안 등이 상한가를 기록했다. 코스닥에서는 ▲미래나노텍 ▲서산 ▲위지트 ▲모헨즈 ▲경남제약 ▲조아제약 ▲지니틱스 ▲헝셩그룹 등이...", "date": "2026.06.23", "score": 10, "is_today": true, "source": "naver"}, {"title": "[특징주] \"삼전닉스 호남 오나\" 포럼 앞두고 들썩… 장성 부지 부각 보해...", "url": "https://www.ggilbo.com/news/articleView.html?idxno=1165133", "desc": "보해양조 주가가 상한가를 기록하며 강세를 보이고 있다. 23일 오전 10시 27분 KRX 기준 보해양조는 전 거래일 대비 29.91%(700원) 오른 3040원에 거래되고 있다. 이는 호남권 반도체 후공정(패키징) 공장 유치에 따른 수혜...", "date": "2026.06.23", "score": 10, "is_today": true, "source": "naver"}], "best_url": "https://www.yna.co.kr/view/AKR20260623050351008?input=1195m"}, {"name": "SOL SK하이닉스선물단일종목인버스2X", "code": "0197X0", "ctrt": 27.04, "vol_eok": 18885, "theme": "개별주", "memo": "1,888,519", "candidates": [{"title": "[ETF 시황] SK하이닉스 레버리지 '25% 폭락'...고수익 좇던 개미 '손실 부...", "url": "https://www.newspim.com/news/view/20260623000823", "desc": "이날 코스콤 ETF CHECK에 따르면 수익률 상위 ETF는 SOL SK하이닉스선물단일종목인버스2X(27.04%), PLUS 삼성전자선물단일종목인버스2X(24.84%), KODEX 200선물인버스2X(22.58%), RISE 200선물인버스2X(18.18%), TIGER...", "date": "2026.06.23", "score": 10, "is_today": true, "source": "naver"}, {"title": "\"출시 막아야 했는데\"…하이닉스 곱버스 급락에 투자자보호 공백", "url": "https://news.einfomax.co.kr/news/articleView.html?idxno=4421320", "desc": "23일 금융투자업계에 따르면 전일 'SOL SK하이닉스선물단일종목인버스2X' 상품은 전장 대비 12.08% 하락한 6천805원에 마감했다. 같은 날 기초자산인 SK하이닉스 주식선물은 295만원으로 5.81% 상승했다. 이를 역방향으로...", "date": "2026.06.23", "score": 10, "is_today": true, "source": "naver"}, {"title": "\"삼전닉스 믿었는데\" 레버리지 '비명'...인버스 개미들만 웃는다", "url": "https://www.mt.co.kr/stock/2026/06/08/2026060809421421263", "desc": "PLUS 삼성전자선물단일종목인버스2X(11.55%), TIGER 인버스(6.27%), SOL SK하이닉스선물단일종목인버스2X(5.30%), KODEX 인버스(5.22%) 등이 강세다. 이날 코스피는 지수가 8% 넘게 폭락하면서 서킷브레이커가 발동됐다....", "date": "2026.06.08", "score": 0, "is_today": false, "source": "naver"}, {"title": "브로드컴 쇼크에 반도체 투톱 급락…단일종목 레버리지도 약세[특징주]", "url": "https://www.newsway.co.kr/news/view?ud=2026060511132614448", "desc": "반면 주가 하락에 베팅하는 인버스 2배(곱버스) 상품인 SOL SK하이닉스선물단일종목인버스2X(11.11%)와 PLUS 삼성전자선물단일종목인버스2X(8.13%)는 강세를 보이고 있다. 레버리지 상품의 변동성 확대는 기초자산인...", "date": "2026.06.05", "score": 0, "is_today": false, "source": "naver"}, {"title": "\"한때 55% 폭등\" 개미들 깜짝...삼전닉스 레버리지 첫날 '불기둥'", "url": "https://www.mt.co.kr/stock/2026/05/27/2026052709281579401", "desc": "SOL SK하이닉스선물단일종목인버스2X는 상장 기준가격 대비 4005원(20.02%) 하락한 1만6000원, PLUS 삼성전자선물단일종목인버스2X는 2785원(13.92%) 내린 1만7215원을 나타낸다.", "date": "2026.05.27", "score": 0, "is_today": false, "source": "naver"}, {"title": "[ETF 시황] SK하이닉스 시총 1위…레버리지 ETF가 밀었다", "url": "https://www.newspim.com/news/view/20260622000987", "desc": "반면 수익률 하위 ETF는 SOL SK하이닉스선물단일종목인버스2X(-12.08%), SOL 조선TOP3플러스레버리지(-9.87%), KODEX 보험(-6.01%), SOL 조선TOP3플러스(-5.36%), TIGER 조선TOP10(-5.29%) 등으로 나타났다. 보험과 조선 업종...", "date": "2026.06.22", "score": 0, "is_today": false, "source": "naver"}, {"title": "6월 셋째 주 ETF 시장, 반도체 쏠림 현상 심화", "url": "http://www.newsmaker.or.kr/news/articleView.html?idxno=178251", "desc": "수익률 하위 1위는 신한자산운용의 'SOL SK하이닉스선물단일종목인버스2X' ETF로 주간 수익률 -43.07%를 기록했다. 해당 상품은 KRX SK하이닉스 선물 인버스 -2배 지수를 추종하는 구조로, SK하이닉스 주가 급등의...", "date": "2026.06.22", "score": 0, "is_today": false, "source": "naver"}, {"title": "ETF도 '반도체 쏠림'...수익률 상위 14개 휩쓸었다", "url": "https://magazine.hankyung.com/business/article/202606229679b", "desc": "'TIGER 미국우주테크'의 이달 손실률은 39.18%로, 'SOL SK하이닉스선물단일종목인버스2X'(47.88%) 다음으로 하락 폭이 컸다. 'SOL 미국우주항공 TOP10'(-30.97%), 'KODEX 미국우주항공'(-24.38%) 등은 스페이스X 관련...", "date": "2026.06.22", "score": 0, "is_today": false, "source": "naver"}], "best_url": "https://www.newspim.com/news/view/20260623000823"}, {"name": "PLUS 삼성전자선물단일종목인버스2X", "code": "0193L0", "ctrt": 24.84, "vol_eok": 2164, "theme": "개별주", "memo": "216,487", "candidates": [{"title": "[ETF 시황] SK하이닉스 레버리지 '25% 폭락'...고수익 좇던 개미 '손실 부...", "url": "https://www.newspim.com/news/view/20260623000823", "desc": "이날 코스콤 ETF CHECK에 따르면 수익률 상위 ETF는 SOL SK하이닉스선물단일종목인버스2X(27.04%), PLUS 삼성전자선물단일종목인버스2X(24.84%), KODEX 200선물인버스2X(22.58%), RISE 200선물인버스2X(18.18%), TIGER...", "date": "2026.06.23", "score": 10, "is_today": true, "source": "naver"}, {"title": "\"삼전닉스 믿었는데\" 레버리지 '비명'...인버스 개미들만 웃는다", "url": "https://www.mt.co.kr/stock/2026/06/08/2026060809421421263", "desc": "PLUS 삼성전자선물단일종목인버스2X(11.55%), TIGER 인버스(6.27%), SOL SK하이닉스선물단일종목인버스2X(5.30%), KODEX 인버스(5.22%) 등이 강세다. 이날 코스피는 지수가 8% 넘게 폭락하면서 서킷브레이커가 발동됐다....", "date": "2026.06.08", "score": 0, "is_today": false, "source": "naver"}, {"title": "브로드컴 쇼크에 반도체 투톱 급락…단일종목 레버리지도 약세[특징주]", "url": "https://www.newsway.co.kr/news/view?ud=2026060511132614448", "desc": "반면 주가 하락에 베팅하는 인버스 2배(곱버스) 상품인 SOL SK하이닉스선물단일종목인버스2X(11.11%)와 PLUS 삼성전자선물단일종목인버스2X(8.13%)는 강세를 보이고 있다. 레버리지 상품의 변동성 확대는 기초자산인...", "date": "2026.06.05", "score": 0, "is_today": false, "source": "naver"}, {"title": "\"한때 55% 폭등\" 개미들 깜짝...삼전닉스 레버리지 첫날 '불기둥'", "url": "https://www.mt.co.kr/stock/2026/05/27/2026052709281579401", "desc": "SOL SK하이닉스선물단일종목인버스2X는 상장 기준가격 대비 4005원(20.02%) 하락한 1만6000원, PLUS 삼성전자선물단일종목인버스2X는 2785원(13.92%) 내린 1만7215원을 나타낸다.", "date": "2026.05.27", "score": 0, "is_today": false, "source": "naver"}, {"title": "6월 셋째 주 ETF 시장, 반도체 쏠림 현상 심화", "url": "http://www.newsmaker.or.kr/news/articleView.html?idxno=178251", "desc": "44% 급등했고, 삼성전자도 9.77% 상승하며 반도체와 대형 기술주 중심의 상승세가 이어졌다. 이어 'PLUS... 수익률 하위 1위는 신한자산운용의 'SOL SK하이닉스선물단일종목인버스2X' ETF로 주간 수익률 -43.07%를...", "date": "2026.06.22", "score": 0, "is_today": false, "source": "naver"}, {"title": "ETF도 '반도체 쏠림'...수익률 상위 14개 휩쓸었다", "url": "https://magazine.hankyung.com/business/article/202606229679b", "desc": "'TIGER 미국우주테크'의 이달 손실률은 39.18%로, 'SOL SK하이닉스선물단일종목인버스2X'(47.88... 키움증권 한지영 연구원은 \"최근 주식시장은 삼성전자와 SK하이닉스, 삼성전기 등 대장주 중심으로 이동하고...", "date": "2026.06.22", "score": 0, "is_today": false, "source": "naver"}, {"title": "반도체 쏠림 심화 … ETF도 독식하며 수익률 상위 휩쓸었다", "url": "https://biz.newdaily.co.kr/site/data/html/2026/06/21/2026062100025.html", "desc": "'SOL SK하이닉스선물단일종목인버스2X'(47.88%) 다음으로 하락 폭이 컸다. 'SOL 미국우주항공 TOP10... 키움증권 한지영 연구원은 \"최근 주식시장은 삼성전자와 SK하이닉스, 삼성전기 등 대장주 내 대장주...", "date": "2026.06.21", "score": 0, "is_today": false, "source": "naver"}, {"title": "\"대장주 따라 줄줄이\"…ETF 수익률 '톱15' 봤더니", "url": "http://www.wowtv.co.kr/NewsCenter/News/Read?articleId=A202606210041&t=NN", "desc": "'KODEX 삼성전자단일종목레버리지'와 'PLUS 글로벌HBM반도체'에도 각각 1,644억원(6위), 1,020억원(10위)의... 'TIGER 미국우주테크'는 이달(1∼19일) 손실률이 39.18%에 달해 'SOL SK하이닉스선물단일종목인버스2X'(47....", "date": "2026.06.21", "score": 0, "is_today": false, "source": "naver"}], "best_url": "https://www.newspim.com/news/view/20260623000823"}, {"name": "KODEX 200선물인버스2X", "code": "252670", "ctrt": 22.58, "vol_eok": 9761, "theme": "개별주", "memo": "976,188", "candidates": [{"title": "[ETF 시황] SK하이닉스 레버리지 '25% 폭락'...고수익 좇던 개미 '손실 부...", "url": "https://www.newspim.com/news/view/20260623000823", "desc": "이날 코스콤 ETF CHECK에 따르면 수익률 상위 ETF는 SOL SK하이닉스선물단일종목인버스2X(27.04%), PLUS 삼성전자선물단일종목인버스2X(24.84%), KODEX 200선물인버스2X(22.58%), RISE 200선물인버스2X(18.18%), TIGER...", "date": "2026.06.23", "score": 10, "is_today": true, "source": "naver"}, {"title": "\"출시 막아야 했는데\"…하이닉스 곱버스 급락에 투자자보호 공백", "url": "https://news.einfomax.co.kr/news/articleView.html?idxno=4421320", "desc": "'KODEX 200선물인버스2X'(순자산 7천891억 원) 현재가가 62원이다. 'KIWOOM 200선물인버스 2X'(62원)와 'TIGER 200선물인버스2X'(66원), 'RISE 200선물인버스2X'(66원)도 액면가가 100원 미만이다. 기초자산인 코스피200 선물의 최소...", "date": "2026.06.23", "score": 10, "is_today": true, "source": "naver"}, {"title": "[ETF 시황] SK하이닉스 시총 1위…레버리지 ETF가 밀었다", "url": "https://www.newspim.com/news/view/20260622000987", "desc": "SK하이닉스선물단일종목인버스2X(-12.08%), SOL 조선TOP3플러스레버리지(-9.87%), KODEX 보험(-6.01%), SOL... 반면 자금 유출 상위 ETF는 KODEX 200(-3010억원), KODEX KOFR금리액티브(합성)(-1301억원), RISE 머니마켓액티브...", "date": "2026.06.22", "score": 0, "is_today": false, "source": "naver"}, {"title": "6월 셋째 주 ETF 시장, 반도체 쏠림 현상 심화", "url": "http://www.newsmaker.or.kr/news/articleView.html?idxno=178251", "desc": "이어 'KODEX 200선물인버스2X'가 -25.00%, 'KIWOOM 200선물인버스2X'가 -23.81%, 'TIGER 200선물인버스2X'가 -23.33%, 'RISE 200선물인버스2X'가 -23.26%를 기록하며 코스피 상승에 베팅한 레버리지 상품과 정반대의 성과를 나타냈다....", "date": "2026.06.22", "score": 0, "is_today": false, "source": "naver"}, {"title": "불장이 삼킨 곱버스…상폐 위기에 괴리율도 비상", "url": "https://www.newsway.co.kr/news/view?ud=2026062211270223456", "desc": "가장 가격이 낮은 KODEX 200선물인버스2X는 주당 62원 수준이다. KIWOOM 200선물인버스와 RISE 200선물인버스2X, TIGER 200선물인버스2X 등도 모두 60원 대에 거래되고 있다. 지난해부터 코스피 상승세가 이어지면서 곱버스 ETF...", "date": "2026.06.22", "score": 0, "is_today": false, "source": "naver"}, {"title": "ETF도 '반도체 쏠림'...수익률 상위 14개 휩쓸었다", "url": "https://magazine.hankyung.com/business/article/202606229679b", "desc": "나아가 15위 종목 ‘KODEX 200롱코스닥150숏선물’(18.18%)을 제외하면 21위까지 전부 반도체 관련 ETF로... 선물단일종목인버스2X'(47.88%) 다음으로 하락 폭이 컸다. 'SOL 미국우주항공 TOP10'(-30.97%), 'KODEX...", "date": "2026.06.22", "score": 0, "is_today": false, "source": "naver"}, {"title": "반도체 레버리지 ETF 받치던 개인들···인버스로 '발길'", "url": "https://www.seoulfn.com/news/articleView.html?idxno=631572", "desc": "KODEX 인버스'에 대한 개인 순매수는 6월 둘째 주(8∼12일) 143억원 순매도를 기록했지만, 지난주(15∼19일)는 1158억원 순매수로 돌아섰다. 반도체 약세에 두 배로 베팅하는 'SOL SK하이닉스선물단일종목인버스2X'에는...", "date": "2026.06.21", "score": 0, "is_today": false, "source": "naver"}, {"title": "반도체 쏠림 심화 … ETF도 독식하며 수익률 상위 휩쓸었다", "url": "https://biz.newdaily.co.kr/site/data/html/2026/06/21/2026062100025.html", "desc": "'SOL SK하이닉스선물단일종목인버스2X'(47.88%) 다음으로 하락 폭이 컸다. 'SOL 미국우주항공 TOP10'(하락률 6위·-30.97%), 'KODEX 미국우주항공'(9위·-24.38%) 등도 낙폭이 컸다. 해당 ETF는 스페이스X를 30% 안팎으로...", "date": "2026.06.21", "score": 0, "is_today": false, "source": "naver"}], "best_url": "https://www.newspim.com/news/view/20260623000823"}, {"name": "미래에셋 인버스 2X 코스피200 선물 ETN B", "code": "520102", "ctrt": 21.51, "vol_eok": 238, "theme": "개별주", "memo": "23,894", "candidates": [], "best_url": ""}, {"name": "국순당", "code": "043650", "ctrt": 20.85, "vol_eok": 171, "theme": "개별주", "memo": "17,136", "candidates": [{"title": "구테로이테·국순당 협업… 막걸리 활용 음료·디저트 출시", "url": "https://www.gokorea.kr/news/articleView.html?idxno=870117", "desc": "Leute)가 국순당과 협업해 '1000억 프리바이오 막걸리'를 활용한 시즌 한정 메뉴를 운영한다고 밝혔다. 양사는 이번 협업을 통해 막걸리를 활용한 음료 및 디저트 메뉴를 선보인다. 구테로이테는 국순당의 막걸리와 자사...", "date": "2026.06.23", "score": 15, "is_today": true, "source": "naver"}, {"title": "[인터뷰] '국순당 생막걸리 아버지' 박선영 생산본부장…\"막걸리 세계화...", "url": "https://theviewers.co.kr/View.aspx?No=4121720", "desc": "\"박선영 국순당 생산본부장의 말이다. 한국에서 역사가 가장 오래된 전통주 중 하나로, '방금 막 걸러낸 술... 박선영 국순당 생산본부장은 \"일례로 수출관리 부처와 원료 관리 부처가 각각 달라 주도적으로 수출을...", "date": "2026.06.23", "score": 15, "is_today": true, "source": "naver"}, {"title": "'우리나라 명주(名酒) 한눈에' 중부국세청, 전통주 판로 확대 돕는다", "url": "https://www.taxtimes.co.kr/news/article.html?no=275655", "desc": "중부지방국세청은 23일 청사 1층 현관에 관내 소규모 양조장의 제품을 알리는 주류 전시 공간을 개관했다.<왼쪽부터 (주)지평주조 김기환 대표, (주)국순당 배상민 대표, (주)화요 조희경 대표, 이승수 중부지방국세청장...", "date": "2026.06.23", "score": 10, "is_today": true, "source": "naver"}, {"title": "대왕님표 여주쌀, ‘밥상’ 넘어 ‘술 산업’으로…가공용 벼 재배 본격...", "url": "https://www.kyeonggi.com/article/20260623580519", "desc": "여주 지역과 수도권을 중심으로 활동하는 전통주 제조업체인 추연당과 술아원은 물론, 국내 대표 주류기업인 국순당, 화요 등과의 원료 공급 가능성도 점쳐지고 있다. 특히 여주시는 기존 ‘대왕님표 여주쌀’ 브랜드가...", "date": "2026.06.23", "score": 10, "is_today": true, "source": "naver"}, {"title": "[현장] 횡성 '국순당 양조장'에서 만난 전통주의 현재와 미래", "url": "http://www.thebigdata.co.kr/view.php?ud=202606190900369870a79b9f00ab_23", "desc": "지난 17일 찾은 강원도 횡성군 둔내면 국순당 횡성양조장. 해발 500m 청정지역에 자리한 이곳은 국내 최대... 국순당에 따르면 이곳에서는 탁주, 약주, 과실주, 일반증류주 등 60여 품목이 생산되고 있다. 발효탱크 한 기의...", "date": "2026.06.19", "score": 5, "is_today": false, "source": "naver"}, {"title": "국순당여주명주, ‘려 2013 本’·‘려 2026 병오년 에디션’ 서울국제주...", "url": "https://www.megaeconomy.co.kr/news/newsview.php?ncode=1065605753132715", "desc": "농업법인 국순당여주명주가 장기간 옹기 숙성으로 차별화한 고구마 증류소주 ‘려 2013 本’과 ‘려驪 2026... ‘고구마 증류소주 려’는 농업회사법인 국순당여주명주와 국순당이 협력해 조선시대 문헌에 기록된 감저...", "date": "2026.06.18", "score": 5, "is_today": false, "source": "naver"}, {"title": "10년 옹기 숙성 원액 담았다…국순당여주명주, 증류소주 ‘려’ 박람회...", "url": "https://www.ekn.kr/web/view.php?key=20260618021404553", "desc": "농업법인 국순당여주명주가 18일부터 3일간 서울 코엑스에서 열리는 2026 서울국제주류&와인박람회에 참가해 옹기에서 장기 숙성한 고구마 증류소주 '려'를 선보인다. 국순당여주명주는 18일부터 20일까지 서울 강남구...", "date": "2026.06.18", "score": 5, "is_today": false, "source": "naver"}, {"title": "[오늘의 먹거리] 오리온·연세생활건강·리미니·농심·풀무원·국순당", "url": "http://www.financialreview.co.kr/news/articleView.html?idxno=42978", "desc": "국순당여주명주는 장기간 옹기 숙성한 고구마 증류소주 '려'를 앞세워 전통주의 프리미엄 가치를 알리는 데... /사진=국순당 #국순당여주명주, 장기간 옹기숙성한 '고구마 증류소주 려' 알리기 나서 '농업법인...", "date": "2026.06.18", "score": 5, "is_today": false, "source": "naver"}], "best_url": "https://www.gokorea.kr/news/articleView.html?idxno=870117"}, {"name": "동양고속", "code": "084670", "ctrt": 18.52, "vol_eok": 492, "theme": "개별주", "memo": "49,272", "candidates": [{"title": "[특징주] 동양고속·천일고속, 서울고속버스터미널 재개발 기대감에 강...", "url": "https://www.ajunews.com/view/20260604141554262", "desc": "아주경제=양보연 기자 byeony@ajunews.com 동양고속과 천일고속이 서울고속버스터미널 재개발 기대감에 장중 급등세를 나타내고 있다. 4일 한국거래소에 따르면 오후 2시 16분 기준 동양고속은 전 거래일 대비 4700원(12....", "date": "2026.06.04", "score": 20, "is_today": false, "source": "naver"}, {"title": "[특징주] 천일·동양고속, 장 초반 상한가…고터 재개발 기대감↑", "url": "http://www.hansbiz.co.kr/news/articleView.html?idxno=842396", "desc": "| 서울=한스경제 김유진 기자 | 천일고속과 동양고속이 4일 장 초반 상한가를 기록했다. 6·3 지방선거 전후로 서울 고속버스터미널 재개발에 대한 기대감이 커진 영향으로 보인다. 한국거래소에 따르면 이날 오전...", "date": "2026.06.04", "score": 20, "is_today": false, "source": "naver"}, {"title": "[특징주] 동양고속·천일고속, '서울고터' 재개발 기대감에 ↑", "url": "https://www.cstimes.com/news/articleView.html?idxno=708415", "desc": "서울고속버스터미널 컨슈머타임스=김예령 기자 | 6·3 지방선거 이후 서울고속버스터미널 재개발 기대감이 커지면서 관련주로 꼽히는 동양고속과 천일고속이 강세다. 4일 오전 9시 15분 기준 동양고속은 전 거래일...", "date": "2026.06.04", "score": 20, "is_today": false, "source": "naver"}, {"title": "[특징주] 동양고속, 서울고속버스터미널 재개발 기대 재부각에 강세", "url": "https://www.tokenpost.kr/news/economy/366056", "desc": "동양고속이 서울고속버스터미널 재개발 기대감이 재부각되면서 장 초반 강세다. 한국거래소에 따르면 동양고속은 장중 4만5000원까지 오르며 급등세를 나타낸 뒤 오전 현재 4만3000원대에서 거래되고 있다. 장 초반에는...", "date": "2026.06.04", "score": 20, "is_today": false, "source": "naver"}, {"title": "동양고속, 장중 28% 급등…상한가 근접하며 투자자 관심 집중", "url": "https://www.job-post.co.kr/news/articleView.html?idxno=218949", "desc": "동양고속이 장중 28% 넘는 급등세를 기록하며 상한가에 근접했다. 강한 매수세가 유입되면서 주가는 4만 원선을 돌파했고, 거래량과 거래대금도 큰 폭으로 증가하며 시장의 주목을 받고 있다. 23일 오후 2시 24분 기준...", "date": "2026.06.23", "score": 15, "is_today": true, "source": "naver"}, {"title": "고속버스부문 브랜드가치 1위는 동양고속… 금호고속·중앙고속 順", "url": "https://www.s-journal.co.kr/news/articleView.html?idxno=41942", "desc": "동양고속이 고속버스부문 일간순위 브랜드가치 1위에 올랐다. 23일 브랜드가치 전문회사인 브랜드스탁이 조사한 바에 따르면 동양고속은 이달 22일 기준 브랜드가치평가지수(BSTI, Brandstock Top Index, 1000점...", "date": "2026.06.23", "score": 15, "is_today": true, "source": "naver"}, {"title": "[마감시황] 코스피, 910.71포인트 내린 8203.84 마감", "url": "https://www.lcnews.co.kr/news/articleView.html?idxno=203880", "desc": "동양고속(+18.52%), 천일고속(+12.91%) 등이 두자릿수 상승률을 기록했다. 코스닥도 급락하면서 900선이 붕괴됐다. 전 거래일 대비 76.88포인트(-7.94%) 떨어진 891.52를 기록하며 올해 최저치를 기록했다. 한편, 원·달러...", "date": "2026.06.23", "score": 10, "is_today": true, "source": "naver"}, {"title": "[마감시황] 코스피, 9.99% 급락한 8203.84 마감…서킷브레이커 올해 4번째...", "url": "https://www.seoul.co.kr/news/economy/securities/2026/06/23/20260623500189?wlog_tag3=naver", "desc": "동양고속도 18.52% 상승한 3만 7750원을 기록했다. 반면 DL이앤씨2우(전환)는 21.50% 하락한 3만 8700원, DL이앤씨는 20.14% 내린 5만 9100원, 미래에셋생명은 19.01% 떨어진 1만 9600원에 마감했다. 깨끗한나라우는...", "date": "2026.06.23", "score": 10, "is_today": true, "source": "naver"}], "best_url": "https://www.ajunews.com/view/20260604141554262"}, {"name": "삼성 인버스 2X 코스닥150 선물 ETN", "code": "530107", "ctrt": 16.35, "vol_eok": 425, "theme": "개별주", "memo": "42,595", "candidates": [{"title": "[주식마감] 코스피 하락·코스닥 1000선 붕괴… 제이앤티씨·씨피시스템...", "url": "https://www.ggilbo.com/news/articleView.html?idxno=1164611", "desc": "삼성전자선물단일종목인버스2X, 삼성 인버스 2X 코스닥150 선물 ETN, KODEX 레버리지, N2 인버스 레버리지 WTI원유 선물 ETN(H), KODEX AI반도체TOP2플러스, 현대약품, 대원전선, 한온시스템이다. 코스닥 시장 거래 상위종목...", "date": "2026.06.19", "score": 0, "is_today": false, "source": "naver"}, {"title": "[주식마감] 코스피 사상 첫 '9천피' 시대 열었다… 삼화전기·우리로·한...", "url": "https://www.ggilbo.com/news/articleView.html?idxno=1164518", "desc": "200선물인버스2X, KODEX 인버스, 삼성 인버스 2X WTI원유 선물 ETN, KODEX SK하이닉스단일종목레버리지, TIGER... 200선물인버스2X, KODEX 2차전지산업레버리지, KODEX 코스닥150레버리지, KODEX 미국S&P500, 삼성전자, 현대약품...", "date": "2026.06.18", "score": 0, "is_today": false, "source": "naver"}, {"title": "[주식마감] 무상증자 기대감에 가온전선 상한가... 효성화학·JW신약 등...", "url": "https://www.ggilbo.com/news/articleView.html?idxno=1164291", "desc": "KBI동양철관, 삼성 인버스 2X 코스닥150 선물 ETN, 대우건설, KODEX 코스닥150, 삼성전자, 포스코스틸리온, 한온시스템, 일성건설, KODEX 200, TIGER 미국우주테크다. 코스닥 시장 거래 상위종목 30위는 JW신약, KBI메탈...", "date": "2026.06.17", "score": 0, "is_today": false, "source": "naver"}, {"title": "[주식마감] 트럼프 풍력 규제 후퇴에 씨에스윈드 상한가… 씨에스베어링...", "url": "https://www.ggilbo.com/news/articleView.html?idxno=1164049", "desc": "삼성전자, 삼성 인버스 2X 코스닥150 선물 ETN, KODEX 200, TIGER 반도체TOP10, 삼화전자, 광전자, RISE 삼성전자SK하이닉스채권혼합50, KODEX 레버리지다. 코스닥 시장 거래 상위종목 30위는 JW신약, 유니슨, 세미티에스...", "date": "2026.06.16", "score": 0, "is_today": false, "source": "naver"}, {"title": "[주식마감] 월드컵 특수 기대감에 '치킨주' 마니커 상한가... 미래에셋생...", "url": "https://www.ggilbo.com/news/articleView.html?idxno=1163243", "desc": "ETN, 삼성 인버스 2X 코스닥150 선물 ETN, KODEX 코스닥150, SK네트웍스, TIGER 반도체TOP10, RISE 삼성전자SK하이닉스채권혼합50, KODEX 레버리지, 후성, KODEX 200, 케이뱅크, PLUS 삼성전자선물단일종목인버스2X, 유니켐, TIGER...", "date": "2026.06.11", "score": 0, "is_today": false, "source": "naver"}, {"title": "[주식마감] 신재생에너지 '빅딜' 기대감에 SK이너틱스 상한가... 티엠씨...", "url": "https://www.ggilbo.com/news/articleView.html?idxno=1162967", "desc": "AI반도체TOP2플러스, 삼성 인버스 2X 코스닥150 선물 ETN, KODEX 코스닥150, 삼성전자, SK네트웍스, KODEX 200, KODEX 레버리지, 제주은행, KODEX 미국나스닥100, TIGER 미국우주테크, PLUS 삼성전자선물단일종목인버스2X, RISE...", "date": "2026.06.10", "score": 0, "is_today": false, "source": "naver"}, {"title": "[주식마감] 코스피 800 붕괴에도 SK네트웍스 상한가... 아이로보틱스, 팸...", "url": "https://www.ggilbo.com/news/articleView.html?idxno=1162492", "desc": "KODEX 코스닥150레버리지, KODEX 2차전지산업레버리지, SK네트웍스, 삼성 인버스 2X WTI원유 선물 ETN, SOL SK하이닉스선물단일종목인버스2X, TIGER 삼성전자단일종목레버리지, SOL AI반도체TOP2플러스, KODEX 코스닥150...", "date": "2026.06.08", "score": 0, "is_today": false, "source": "naver"}, {"title": "[주식마감] 美 당뇨학회서 '4중 작용 비만약' 발표 소식에 대원제약 상...", "url": "https://www.ggilbo.com/news/articleView.html?idxno=1162038", "desc": "삼성전자, 삼성 인버스 2X 코스닥150 선물 ETN, SOL SK하이닉스선물단일종목인버스2X, KODEX 코스닥150, KODEX 200, 티웨이홀딩스, TIGER 반도체TOP10, RISE 삼성전자SK하이닉스채권혼합50, KODEX 레버리지, KODEX 미국나스닥100, TIGER...", "date": "2026.06.05", "score": 0, "is_today": false, "source": "naver"}], "best_url": "https://www.ggilbo.com/news/articleView.html?idxno=1164291"}, {"name": "미래에셋 인버스 2X 코스닥150 선물 ETN", "code": "520057", "ctrt": 15.94, "vol_eok": 207, "theme": "개별주", "memo": "20,706", "candidates": [{"title": "[주식마감] 무상증자 기대감에 가온전선 상한가... 효성화학·JW신약 등...", "url": "https://www.ggilbo.com/news/articleView.html?idxno=1164291", "desc": "삼성 인버스 2X 코스닥150 선물 ETN, 대우건설, KODEX 코스닥150, 삼성전자, 포스코스틸리온, 한온시스템... 테크윙, 미래에셋벤처투자, 큐라티스다. 이날 코스피는 전 거래일 대비 1.58% 오른 8,864.24에 장을 마감했다....", "date": "2026.06.17", "score": 0, "is_today": false, "source": "naver"}, {"title": "[주식마감] 트럼프 풍력 규제 후퇴에 씨에스윈드 상한가… 씨에스베어링...", "url": "https://www.ggilbo.com/news/articleView.html?idxno=1164049", "desc": "삼성 인버스 2X 코스닥150 선물 ETN, KODEX 200, TIGER 반도체TOP10, 삼화전자, 광전자, RISE... 성호전자, 미래에셋벤처투자다. 이날 코스피는 180.62포인트(2.11%) 오른 8,726.60으로 장을 마쳤다. 4거래일 연속 상승 마감이다....", "date": "2026.06.16", "score": 0, "is_today": false, "source": "naver"}, {"title": "[주식마감] 월드컵 특수 기대감에 '치킨주' 마니커 상한가... 미래에셋생...", "url": "https://www.ggilbo.com/news/articleView.html?idxno=1163243", "desc": "주식마감 11일 미래에셋생명, 마니커, STX그린로지스, 스피어, 코미코, 오텍, 윈팩, 엑스큐어... 삼성 인버스 2X 코스닥150 선물 ETN, KODEX 코스닥150, SK네트웍스, TIGER 반도체TOP10, RISE 삼성전자SK하이닉스채권혼합50, KODEX...", "date": "2026.06.11", "score": 0, "is_today": false, "source": "naver"}, {"title": "[주식마감] 신재생에너지 '빅딜' 기대감에 SK이너틱스 상한가... 티엠씨...", "url": "https://www.ggilbo.com/news/articleView.html?idxno=1162967", "desc": "이날 미래에셋증권은 티엠씨에 대해 일반 상선 부문을 넘어 해양 플랜트, 원전, 데이터센터용... 삼성 인버스 2X 코스닥150 선물 ETN, KODEX 코스닥150, 삼성전자, SK네트웍스, KODEX 200, KODEX 레버리지, 제주은행, KODEX...", "date": "2026.06.10", "score": 0, "is_today": false, "source": "naver"}, {"title": "[주식마감] '주식 병합' 효과? 나노캠텍·조이웍스앤코 상한가... 삼성에...", "url": "https://www.ggilbo.com/news/articleView.html?idxno=1160584", "desc": "임희석 미래에셋증권 연구원은 \"AI 시대의 개화는 GPU·전력·네트워크 중심의 AI 데이터센터 수요... 삼성 인버스 2X 코스닥150 선물 ETN, KODEX 레버리지, 삼화전자, KODEX 미국S&P500, TIGER 미국S&P500, 삼성 인버스 2X...", "date": "2026.05.27", "score": 0, "is_today": false, "source": "naver"}, {"title": "[위클리 ETF] 5月 3주차, ‘SOL 반도체전공정’ 17.07%...삼성전자·SK하이...", "url": "http://www.thevaluenews.co.kr/news/view.php?idx=198962", "desc": "200선물인버스2X 등 하락 베팅 상품의 거래가 집중됐다. 다만 후반부 코스닥 급등 영향으로 KODEX 코스닥150... 삼성전자 기반 ETF는 삼성자산운용, 미래에셋자산운용, 한국투자신탁운용, KB자산운용, 한화자산운용...", "date": "2026.05.26", "score": 0, "is_today": false, "source": "naver"}, {"title": "코스피 8천선 흔든 변동성 장세…'삼전·닉스 레버리지 ETF' 변수로 부상", "url": "https://www.econovill.com/news/articleView.html?idxno=740753", "desc": "ETN 2종을 상장한다. 전체 상장 규모는 4조3227억원 수준이다. 삼성·미래에셋·한국투자·KB·한화·키움·하나·신한자산운용 등 8개 운용사가 관련 상품을 내놓는다. 일부 상품은 선물을 활용한 구조이며 인버스2X...", "date": "2026.05.24", "score": 0, "is_today": false, "source": "naver"}], "best_url": ""}, {"name": "JW신약", "code": "067290", "ctrt": 13.74, "vol_eok": 2176, "theme": "개별주", "memo": "217,661", "candidates": [{"title": "[특징주] JW신약, 탈모 건보 적용 검토 기대에 12%대 급등", "url": "https://www.tokenpost.kr/news/economy/371561", "desc": "JW신약이 탈모 치료의 건강보험 적용 검토 소식에 강세를 보이고 있다. 한국거래소에 따르면 JW신약은 전일 대비 300원(12.85%) 오른 2635원에 거래되고 있다. 보건복지부가 탈모 치료에 대한 건강보험 적용 검토 방침을...", "date": "2026.06.22", "score": 20, "is_today": false, "source": "naver"}, {"title": "[특징주] JW신약, 탈모 건보 적용 검토…정부 정책 수혜 기대감에 7%대↑", "url": "https://www.etoday.co.kr/news/view/2595799", "desc": "이투데이=서청석 기자 | JW신약 주가가 정부의 탈모 치료 건강보험 적용 검토 소식에 힘입어 장 초반 가파른 상승세를 나타냈다. 22일 한국거래소에 따르면 오전 9시17분 JW신약은 전장보다 7.28% 오른 2505원에 거래되고...", "date": "2026.06.22", "score": 20, "is_today": false, "source": "naver"}, {"title": "[특징주] JW신약, 탈모 급여화 기대감에 급등", "url": "https://www.biotimes.co.kr/news/articleView.html?idxno=32574", "desc": "JW신약이 19일 코스닥 시장에서 급등세를 기록하며 투자자들의 관심을 집중시켰다. JW신약의 주가는 직전 거래일보다 13.08%(270원) 상승한 2,335원에 장을 마감했다. 시장에서는 정부가 하반기 중점 보건의료 정책으로 탈모...", "date": "2026.06.19", "score": 20, "is_today": false, "source": "naver"}, {"title": "단순 클리닉 강자 아니다… JW신약, 바이오 원천기술로 메가트렌드 '정...", "url": "https://www.pinpointnews.co.kr/news/articleView.html?idxno=462309", "desc": "JW신약 역시 24.36% 오른 3395원에 거래중이다. 시장에서는 신약 후보물질 개발과 바이오 산업 성장 기대가 재차 부각되면서 높은 성장성을 가진 종목들에 투자자들의 관심이 집중되는 것으로 보고 있다. 국내 제약·바이오...", "date": "2026.06.23", "score": 15, "is_today": true, "source": "naver"}, {"title": "시지메드텍, 최대주주 PE 인수에 ‘上’…탈모주 삼익제약·JW신약도↑[...", "url": "https://www.edaily.co.kr/news/newspath.asp?newsid=02689606645484672", "desc": "19일 국내 제약·바이오 종목 중에는 시지메드텍(056090)과 삼익제약(014950), JW신약(067290)의 주가가 크게 상승했다. 시지메드텍은 최대주주 시지바이오의 경영권 매각 소식에 힘입어 상한가를 기록했고, ‘탈모주’로...", "date": "2026.06.23", "score": 15, "is_today": true, "source": "naver"}, {"title": "[특징주] 시지메드텍, 외국인 장중 순매수 1위 부각에 강세", "url": "https://www.tokenpost.kr/news/economy/371965", "desc": "외국인은 장 초반 시지메드텍과 JW신약, 우리금융지주, LG디스플레이, 두산에너빌리티 등을 순매수 상위에 올렸다. 이후에는 두산에너빌리티와 미래에셋증권이 상위권에 진입했고, 대우건설과 빛과전자도 새로 순매수...", "date": "2026.06.23", "score": 10, "is_today": true, "source": "naver"}, {"title": "[특징주] 외국인 '시지메드텍·두산에너빌'…기관 'BNK금융·삼성중공업...", "url": "https://www.newstnt.com/news/articleView.html?idxno=707412", "desc": "◆ 외인, 시지메드텍·JW신약 '매수'...드림시큐리티·이노인스트루먼트 '매도' 이날 키움증권 장중 외국인 매매상위 종목 집계에 따르면, 장 초반 외국인 투자자는 의료기기 및 제약, 금융 관련 종목을 중심으로...", "date": "2026.06.23", "score": 10, "is_today": true, "source": "naver"}, {"title": "[증시 오늘(23일) 핵심 특징주] 코스피 9000선 하회속 차익실현 매물 출...", "url": "https://www.thefairnews.co.kr/news/articleView.html?idxno=80217", "desc": "이 외에도 JW신약이 25%대, 아미코젠이 16%대 강세를 나타내는 등 그동안 소외됐던 바이오 중소형주들이 전반적으로 들썩이는 모양새다. 전력 인프라 확충에 따른 수혜가 지속되고 있는 전선주도 사상 최고 수준의 수주...", "date": "2026.06.23", "score": 10, "is_today": true, "source": "naver"}], "best_url": "https://www.tokenpost.kr/news/economy/371561"}, {"name": "해태제과식품", "code": "101530", "ctrt": 13.71, "vol_eok": 180, "theme": "개별주", "memo": "18,020", "candidates": [{"title": "쿠팡, 인기 과자 묶은 ‘스낵박스’ 선보여…22종 구성으로 판매", "url": "http://www.lawissue.co.kr/view.php?ud=202606231820118646204ead0791_12", "desc": "이번 상품은 농심, 오리온, 롯데웰푸드, 크라운제과, 해태제과, 빙그레 등 식품 업체 제품을 한 박스에 담은 구성으로 마련됐다. 전체 구성은 22종으로 나뉘며 선택 가능한 세트 형태로 운영된다. 제품 유형은 스낵 8입 세트...", "date": "2026.06.23", "score": 10, "is_today": true, "source": "naver"}, {"title": "[오늘의 언박싱] 풀무원 ‘특등급 국산콩물 서리태’·해태제과 ‘쿨 에...", "url": "https://www.mediapen.com/news/view/1106058", "desc": "풀무원 ‘특등급 국산콩물 서리태’(왼쪽)와 해태제과 ‘쿨 에디션’ 5종(오른쪽)./사진=각 사 제공 풀무원식품이 특등급 서리태의 담백함과 영양을 담은 ‘특등급 국산콩물 서리태’를 출시한다. 신제품은 콩의 크기...", "date": "2026.06.23", "score": 10, "is_today": true, "source": "naver"}, {"title": "쿠팡, 농심 등 인기 과자 담은 '스낵박스' 선봬…할인 기획전 진행", "url": "https://sports.hankooki.com/news/articleView.html?idxno=6935246", "desc": "이번에 선보인 스낵박스는 농심, 오리온, 롯데웰푸드, 크라운제과, 해태제과, 빙그레 등 주요 식품업체의 대표 과자로 구성됐다. 총 22종의 상품으로 운영되며, 여러 브랜드 제품을 한 번에 구매할 수 있도록 꾸린 것이...", "date": "2026.06.23", "score": 10, "is_today": true, "source": "naver"}, {"title": "쿠팡표 과자 종합선물세트 나왔다…스낵박스 할인전 진행", "url": "https://www.joongangenews.com/news/articleView.html?idxno=527645", "desc": "스낵박스는 농심과 오리온, 롯데웰푸드, 크라운제과, 해태제과, 빙그레 등 주요 식품기업의 대표 과자를 한데 모아 구성한 상품이다. 총 22종으로 출시돼 소비자가 취향에 따라 선택할 수 있도록 했다. 이번 상품은 여러...", "date": "2026.06.23", "score": 10, "is_today": true, "source": "naver"}, {"title": "[POP!신제품] 해태제과, 얼려 먹는 '쿨 에디션' 여름 한정판 5종 출시 外", "url": "http://www.popcornnews.net/news/articleView.html?idxno=124515", "desc": "해태제과가 여름철을 맞아 시원하게 얼려 먹는 '쿨 에디션' 5종을 한정 출시한다. 이번 라인업은 냉동실에... 풀무원식품이 특등급 서리태를 활용한 '특등급 국산콩물 서리태'를 출시하고 여름 시장 공략에 나선다. 이번...", "date": "2026.06.23", "score": 10, "is_today": true, "source": "naver"}, {"title": "\"과자도 얼려 먹는다\"... 해태제과, 여름 한정 '쿨 에디션' 선봬", "url": "http://www.thefirstmedia.net/news/articleView.html?idxno=202050", "desc": "사진=해태제과 무더위가 일찍 찾아오면서 식품업계가 '얼먹(얼려 먹기)' 트렌드 공략에 나서고 있다. 빙과류를 넘어 과자와 젤리, 양갱까지 냉동실에 넣어 즐기는 소비문화가 확산되면서 식품업체들도 여름 한정 제품을...", "date": "2026.06.23", "score": 10, "is_today": true, "source": "naver"}, {"title": "[신상품] 해태제과 '홈런볼 옥수수소프트콧맛' 외", "url": "https://www.seoulfn.com/news/articleView.html?idxno=631722", "desc": "해태제과는 여름 시즌을 겨냥해 냉동해 먹는 '쿨 에디션' 5종을 출시한다고 23일 밝혔다. 제품은 홈런볼... 풀무원식품, '특등급 국산콩물 서리태' 출시 풀무원식품은 콩물 제품군을 확대하며 여름 성수기 수요를 겨냥해...", "date": "2026.06.23", "score": 10, "is_today": true, "source": "naver"}, {"title": "과자도 묶음형으로 산다…쿠팡, 브랜드 스낵박스 22종 출시", "url": "https://www.thepowernews.co.kr/view.php?ud=202606231603549003de3f0aa1be_7", "desc": "쿠팡은 농심, 오리온, 롯데웰푸드, 크라운제과, 해태제과, 빙그레 등 주요 식품 브랜드 제품으로 구성한 스낵박스를 출시했다고 23일 밝혔다. 스낵박스는 여러 브랜드의 과자를 한 상자에 담은 구성 상품이다. 쿠팡은 총...", "date": "2026.06.23", "score": 10, "is_today": true, "source": "naver"}], "best_url": ""}, {"name": "천일고속", "code": "000650", "ctrt": 12.91, "vol_eok": 297, "theme": "개별주", "memo": "29,771", "candidates": [{"title": "[특징주] 천일고속, 서울고속버스터미널 재개발 기대 재점화에 급등", "url": "https://www.tokenpost.kr/news/economy/366186", "desc": "천일고속이 서울고속버스터미널 재개발 기대감에 장중 급등세를 나타냈다. 4일 한국거래소에 따르면 천일고속은 오후 3시 6분 기준 전 거래일보다 3000원(1.38%) 오른 22만500원에 거래됐다. 장중에는 28만2500원까지 오르며...", "date": "2026.06.04", "score": 20, "is_today": false, "source": "naver"}, {"title": "[특징주] 동양고속·천일고속, 서울고속버스터미널 재개발 기대감에 강...", "url": "https://www.ajunews.com/view/20260604141554262", "desc": "아주경제=양보연 기자 byeony@ajunews.com 동양고속과 천일고속이 서울고속버스터미널 재개발 기대감에 장중 급등세를 나타내고 있다. 4일 한국거래소에 따르면 오후 2시 16분 기준 동양고속은 전 거래일 대비 4700원(12....", "date": "2026.06.04", "score": 20, "is_today": false, "source": "naver"}, {"title": "[ET특징주] '서울 고터' 재개발 기대감… 동양·천일고속 강세", "url": "https://www.etnews.com/20260604000213", "desc": "대부분 지역에서 6·3 지방선거 개표가 마무리된 가운데, 서울고속버스터미널 재개발에 대한 기대감이 다시 고개를 들면서 동양고속과 천일고속이 강세다. 4일 오후 12시 44분 기준 동양고속(084670) 주가는 전 거래일...", "date": "2026.06.04", "score": 20, "is_today": false, "source": "naver"}, {"title": "(특징주)고속터미널 재개발 기대감에 들썩…동양·천일고속 장중 상한가", "url": "http://www.newstomato.com/ReadNews.aspx?no=1302936&inflow=N", "desc": "같은 시각 천일고속(000650)도 1만3000원(5.98%) 상승한 23만500원에 거래 중입니다. 천일고속 역시 장중 28만2500원까지 오르며 가격제한폭에 근접했습니다. 앞서 지난 2일에도 두 종목은 장중 상한가를 기록하는 등...", "date": "2026.06.04", "score": 20, "is_today": false, "source": "naver"}, {"title": "[특징주] 천일고속, 서울고속터미널 재개발 기대감 '상승'", "url": "https://www.jeonmae.co.kr/news/articleView.html?idxno=1262166", "desc": "천일고속 주가가 상승세를 보이고 있다. 4일 오전 10시 44분 기준 현재 전 거래일 대비 +5.75% 오른 23만 1,000원에 거래되고 있다. 거래량은 11만 7,817주다. 6·3 지방선거 테마주 중 하나인 천일고속이 이날 국내...", "date": "2026.06.04", "score": 20, "is_today": false, "source": "naver"}, {"title": "[특징주] 동양·천일고속, '고터 재개발' 기대감에 동반 강세", "url": "http://www.metroseoul.co.kr/article/20260604500110", "desc": "같은 시각 천일고속도 전일보다 5.52% 오른 22만9500원을 나타내고 있다. 두 종목은 개장 직후 각각 상한가를 기록하기도 했다. 직전 거래일이었던 지난 2일에도 두 종목은 장중 상한가를 기록하는 등 투자자들의 관심이...", "date": "2026.06.04", "score": 20, "is_today": false, "source": "naver"}, {"title": "[특징주] 동양고속·천일고속, '서울고터' 재개발 기대감에 ↑", "url": "https://www.cstimes.com/news/articleView.html?idxno=708415", "desc": "서울고속버스터미널 컨슈머타임스=김예령 기자 | 6·3 지방선거 이후 서울고속버스터미널 재개발 기대감이 커지면서 관련주로 꼽히는 동양고속과 천일고속이 강세다. 4일 오전 9시 15분 기준 동양고속은 전 거래일...", "date": "2026.06.04", "score": 20, "is_today": false, "source": "naver"}, {"title": "[특징주] 서울고속버스터미널 재개발 기대 재조명…동양·천일고속 장초...", "url": "https://www.etoday.co.kr/news/view/2590409", "desc": "이투데이=서청석 기자 | 동양고속과 천일고속이 서울시장 개표 진행과 고속버스터미널 재개발 기대감에 힘입어 장 초반 급등세를 보이고 있다. 4일 한국거래소에 따르면 오전 9시47분 동양고속은 전 거래일 대비 15.68...", "date": "2026.06.04", "score": 20, "is_today": false, "source": "naver"}], "best_url": "https://www.tokenpost.kr/news/economy/366186"}, {"name": "강동씨앤엘", "code": "198440", "ctrt": 8.96, "vol_eok": 818, "theme": "개별주", "memo": "81,877", "candidates": [{"title": "반도체 기대감 반영…들썩이는 광주·전남 자산시장", "url": "http://www.kwangju.co.kr/article.php?aid=1782207900800458005", "desc": "강동씨앤엘과 보해양조 등 지역 기반 기업 역시 최근 반도체 산업 기대감이 확산하는 과정에서 투자자들의 관심사다. 직접적인 반도체 관련 기업은 아니지만 향후 산업단지 조성과 기업 유치, 기반시설 확충 등에 따른...", "date": "2026.06.23", "score": 10, "is_today": true, "source": "naver"}, {"title": "[서울데이터랩]코스닥 거래상위 종목 강세 우위…바이온·프로브잇 급등...", "url": "https://www.seoul.co.kr/news/economy/securities/2026/06/23/20260623500103?wlog_tag3=naver", "desc": "강동씨앤엘(198440)은 2345만 5647주로 17.92% 상승한 2500원을 기록했다. 바이온(032980)은 1859만 4177주가 거래되며 34원으로 78.95% 급등했고, 키스트론(475430)은 1771만 6900주로 6390원, 4.58% 상승했다. 시지메드텍...", "date": "2026.06.23", "score": 10, "is_today": true, "source": "naver"}, {"title": "건설 경기 회복 기대감에 시멘트주 강세… 서산 모헨즈 주가 파죽지세", "url": "https://www.pinpointnews.co.kr/news/articleView.html?idxno=462284", "desc": "강동씨앤엘은 5.19% 상승한 2230원에 거래중이다. 이들 기업은 건설 자재 수요 확대 기대와 수급 개선 전망이 주가 강세로 이어지는 모습이다. 시멘트 업계 대표 기업인 한일시멘트와 아세아시멘트, 성신양회는 건설 경기...", "date": "2026.06.23", "score": 10, "is_today": true, "source": "naver"}, {"title": "[박정식의 국내 주식시황] 미·이란 긴장 완화에도 빅테크 불안…상승 ...", "url": "https://www.newsquest.co.kr/news/articleView.html?idxno=268331", "desc": "거래량 상위 종목으로는 보해양조, 강동씨앤엘, JW신약, 하나마이크론, 제주반도체 등이 이름을 올렸다. 22일 대체거래소(NXT) 애프터마켓에서는 SK하이닉스의 시가총액 1위 등극 속에 SK스퀘어, SK 등 일부 SK그룹주가...", "date": "2026.06.23", "score": 10, "is_today": true, "source": "naver"}, {"title": "[19일 특징주] 한울반도체, 日 무라타와 협력 소식에 연이틀 '상한가'", "url": "https://www.newsworks.co.kr/news/articleView.html?idxno=844525", "desc": "코스닥에서는 ▲제이앤티씨 ▲시지메드텍 ▲강동씨앤엘 ▲씨피시스템 ▲삼익제약 ▲형지I&C 등이 상한가를 찍었다. 제이앤티씨는 3.0mm 두께의 유리관통전극(TGV)유리기판 제품 개발에 착수했다는 소식에 매수세가...", "date": "2026.06.19", "score": 0, "is_today": false, "source": "naver"}, {"title": "[18일 특징주] MLCC株, 업황 호조 기대에 '강세'…삼성전기 '신고가'", "url": "https://www.newsworks.co.kr/news/articleView.html?idxno=844375", "desc": "코스닥에서는 ▲우리로 ▲강동씨앤엘 ▲와이즈넛 ▲서산 ▲선바이오 ▲서전기전 ▲비엘팜텍 ▲남화토건 ▲삼화네트웍스 ▲파라택시스이더리움 ▲삼보산업 등이 상한가를 찍었다. 우리로는 광검출기 자체 시제품...", "date": "2026.06.18", "score": 0, "is_today": false, "source": "naver"}, {"title": "사상 첫 9천피 밟았는데… '특징주 기사'도 못 믿을 K-증시 [뉴스톡 웰스...", "url": "http://www.newswell.co.kr/news/articleView.html?idxno=19588", "desc": "'특징주' 기사 보도 직전 주식을 선매수했다가 보도 후 주가가 오르면 매도하는 수법이다. 지난해 6월까지... /자료=네이버 증권정보 이날 ▲삼화전기 ▲삼화전자 ▲대원화성 ▲우리로 ▲강동씨앤엘 ▲와이즈넛...", "date": "2026.06.18", "score": 0, "is_today": false, "source": "naver"}, {"title": "[특징주] 외국인 '글로벌텍스프리·삼성전자' 사고, 기관 '대한해운' 담...", "url": "https://www.newstnt.com/news/articleView.html?idxno=706905", "desc": "오전 9시 36분 집계 기준 외국인 순매수 상위권에는 대한광통신(010170)이 1위에 올랐으며 한솔테크닉스(004710), 포스코스틸리온(058650), 강동씨앤엘(049600), 티웨이홀딩스(004870)가 그 뒤를 이었다. 반면 순매도 상위...", "date": "2026.06.18", "score": 0, "is_today": false, "source": "naver"}], "best_url": "http://www.kwangju.co.kr/article.php?aid=1782207900800458005"}];
+
+let state = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+
+function saveState() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+
+function ensureState(name) {
+  if (!state[name]) state[name] = { chosen_idx: 0, decision: null };
+  return state[name];
+}
+
+function decide(name, decision) {
+  const st = ensureState(name);
+  st.decision = (st.decision === decision) ? null : decision;  // 같은 버튼 다시 누르면 해제
+  saveState();
+  render();
+}
+
+function navCandidate(name, delta) {
+  const st = ensureState(name);
+  const stock = DATA.find(s => s.name === name);
+  const max = (stock.candidates || []).length - 1;
+  let idx = (st.chosen_idx || 0) + delta;
+  if (idx < 0) idx = 0;
+  if (idx > max) idx = max;
+  st.chosen_idx = idx;
+  saveState();
+  render();
+}
+
+function _buildPayload() {
+  const results = DATA.map(s => {
+    const st = state[s.name] || {};
+    const idx = st.chosen_idx || 0;
+    const cands = s.candidates || [];
+    const cand = cands[idx] || null;
+    // recent_articles: 대표 1건(chosen) + 나머지 후보들 (URL dedup)
+    const seen = new Set();
+    const recent = [];
+    const tryAdd = (a) => {
+      if (!a || !a.url || seen.has(a.url)) return;
+      seen.add(a.url);
+      recent.push(a);
+    };
+    tryAdd(cand);
+    cands.forEach(tryAdd);
+    return {
+      name: s.name, code: s.code, ctrt: s.ctrt, vol_eok: s.vol_eok, theme: s.theme,
+      decision: st.decision || null,
+      chosen_article: (st.decision === "approved" && cand) ? cand : null,
+      recent_articles: recent.slice(0, 5),
+      candidates_seen: (st.chosen_idx || 0) + 1,
+      total_candidates: cands.length
+    };
+  });
+  return {
+    date: REVIEW_DATE,
+    exported_at: new Date().toISOString(),
+    summary: {
+      total: DATA.length,
+      approved: results.filter(r => r.decision === "approved").length,
+      rejected: results.filter(r => r.decision === "rejected").length,
+      skipped:  results.filter(r => r.decision === "skipped").length,
+      pending:  results.filter(r => !r.decision).length
+    },
+    results
+  };
+}
+
+function _showPushResult(html, color) {
+  const div = document.getElementById("pushResult");
+  div.style.display = "block";
+  div.style.background = color || "#f1f8f3";
+  div.innerHTML = html;
+}
+
+async function pushToNotion() {
+  const payload = _buildPayload();
+  const approved = payload.summary.approved;
+  if (approved === 0) {
+    _showPushResult("⚠️ 승인된 종목이 없습니다. ✅ 승인 버튼을 먼저 누르세요.", "#fff3e0");
+    return;
+  }
+  if (!PUSH_ENDPOINT) {
+    _showPushResult("⚠️ 푸시 서버가 비활성화 — JSON 다운로드로 폴백합니다.", "#fff3e0");
+    _downloadJson(payload);
+    return;
+  }
+  const btn = document.getElementById("btnPush");
+  btn.disabled = true;
+  btn.textContent = "⏳ 푸시 중...";
+  _showPushResult("⏳ 노션에 " + approved + "건 푸시 중...", "#e3f2fd");
+  try {
+    const res = await fetch(PUSH_ENDPOINT + "/push", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify(payload)
+    });
+    const ack = await res.json();
+    if (!res.ok) throw new Error(ack.error || ("HTTP " + res.status));
+    // 서버가 백그라운드로 푸시 진행 → /status 폴링으로 완료 대기
+    let st, elapsed = 0;
+    for (;;) {
+      await new Promise(r => setTimeout(r, 1500));
+      elapsed += 1.5;
+      const sr = await fetch(PUSH_ENDPOINT + "/status");
+      st = await sr.json();
+      if (st.status === "done" || st.status === "error") break;
+      _showPushResult("⏳ 노션에 " + approved + "건 푸시 중... (" + Math.round(elapsed) + "초 경과)", "#e3f2fd");
+    }
+    if (st.status === "error") throw new Error(st.error || "unknown");
+    const data = st.result || {};
+    let msg = "✅ 노션 푸시 완료 — 총 " + data.total + "건 / 신규 " + data.created + ", 업데이트 " + data.updated;
+    let color = "#e8f5e9";
+    if (data.errors && data.errors.length) {
+      msg += "<br>⚠️ 실패 " + data.errors.length + "건: ";
+      msg += data.errors.map(e => e.name + " (" + e.error + ")").join(", ");
+      color = "#fff3e0";
+    }
+    msg += "<br>🖥️ cmd 창은 남은 단계(아웃컴·패턴·동기화)를 마친 뒤 자동으로 닫힙니다.";
+    _showPushResult(msg, color);
+  } catch (e) {
+    _showPushResult("❌ 푸시 실패: " + e.message + "<br>JSON 다운로드로 폴백합니다.", "#ffebee");
+    _downloadJson(payload);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "📤 노션에 푸시";
+  }
+}
+
+function _downloadJson(payload) {
+  const blob = new Blob([JSON.stringify(payload, null, 2)], {type: "application/json"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "reviewed_" + REVIEW_DATE + ".json";
+  document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
+}
+
+function resetAll() {
+  if (!confirm("모든 검수 결과를 초기화합니다.")) return;
+  state = {}; saveState(); render();
+}
+
+function escapeHtml(s) {
+  return String(s == null ? "" : s)
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+}
+
+function decisionLabel(d) {
+  return ({ approved: "✅ 승인", rejected: "❌ 거부", skipped: "⏭️ 스킵" })[d] || "";
+}
+
+function render() {
+  const cards = document.getElementById("cards");
+  cards.innerHTML = "";
+  let done = 0;
+
+  DATA.forEach((s, sIdx) => {
+    const st = state[s.name] || { chosen_idx: 0, decision: null };
+    if (st.decision) done++;
+
+    const card = document.createElement("div");
+    card.className = "stock-card" + (st.decision ? " " + st.decision : "");
+    card.dataset.name = s.name;
+
+    const ctrtClass = s.ctrt >= 0 ? "ctrt-up" : "ctrt-down";
+    const ctrtSign  = s.ctrt >= 0 ? "+" : "";
+
+    let html = "";
+    html += '<div class="stock-header">';
+    html += '<span class="stock-name">' + escapeHtml(s.name) + '</span>';
+    html += '<span class="' + ctrtClass + '">' + ctrtSign + s.ctrt.toFixed(2) + '%</span>';
+    html += '<span class="stock-meta">' + s.vol_eok.toLocaleString() + '억</span>';
+    html += '<span class="theme-tag">' + escapeHtml(s.theme) + '</span>';
+    if (s.memo) html += '<span class="memo">' + escapeHtml(s.memo) + '</span>';
+    if (st.decision) html += '<span class="decision-tag">→ ' + decisionLabel(st.decision) + '</span>';
+    html += '</div>';
+
+    const candidates = s.candidates || [];
+    if (candidates.length === 0) {
+      html += '<div class="empty">관련 기사 없음</div>';
+    } else {
+      const idx = st.chosen_idx || 0;
+      const cand = candidates[idx];
+      html += '<div class="nav-bar">';
+      html += '<button class="btn-nav" data-act="prev" data-name="' + escapeHtml(s.name) + '"' + (idx === 0 ? ' disabled' : '') + '>⬅️ 이전</button>';
+      html += '<span style="font-size:13px;color:#666;">후보 ' + (idx+1) + ' / ' + candidates.length + '</span>';
+      html += '<button class="btn-nav" data-act="next" data-name="' + escapeHtml(s.name) + '"' + (idx >= candidates.length-1 ? ' disabled' : '') + '>다음 ➡️</button>';
+      html += '<span style="margin-left:auto;font-size:12px;color:#999;">점수 ' + cand.score + '</span>';
+      html += '</div>';
+      html += '<div class="article">';
+      html += '<div class="article-meta">';
+      if (cand.date) html += '<span>' + escapeHtml(cand.date) + '</span> ';
+      if (cand.is_today) html += '<span class="badge-today">오늘</span>';
+      else if (cand.date) html += '<span class="badge-old">이전</span>';
+      html += '<span class="badge-source">' + escapeHtml(cand.source || "naver") + '</span>';
+      html += '</div>';
+      html += '<div class="article-title"><a href="' + escapeHtml(cand.url) + '" target="_blank" rel="noopener">' + escapeHtml(cand.title) + '</a></div>';
+      if (cand.desc) html += '<div class="article-desc">' + escapeHtml(cand.desc) + '</div>';
+      html += '</div>';
+    }
+
+    html += '<div class="actions">';
+    html += '<button class="btn-approve" data-act="approved" data-name="' + escapeHtml(s.name) + '">✅ 승인</button>';
+    html += '<button class="btn-reject"  data-act="rejected" data-name="' + escapeHtml(s.name) + '">❌ 거부</button>';
+    html += '<button class="btn-skip"    data-act="skipped"  data-name="' + escapeHtml(s.name) + '">⏭️ 스킵</button>';
+    html += '</div>';
+
+    card.innerHTML = html;
+    cards.appendChild(card);
+  });
+
+  document.getElementById("progressBar").style.width = (done / DATA.length * 100) + "%";
+  document.getElementById("progressText").textContent = done + " / " + DATA.length + " 검토";
+}
+
+document.addEventListener("click", (e) => {
+  const btn = e.target.closest("button[data-act]");
+  if (!btn) return;
+  const name = btn.dataset.name;
+  const act  = btn.dataset.act;
+  if (act === "prev")      navCandidate(name, -1);
+  else if (act === "next") navCandidate(name, 1);
+  else                     decide(name, act);
+});
+
+render();
+</script>
+</body>
+</html>

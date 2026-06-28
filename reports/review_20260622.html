@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>기사 검수 - 20260622</title>
+<style>
+* { box-sizing: border-box; }
+body { font-family: -apple-system, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; max-width: 1100px; margin: 0 auto; padding: 20px; background: #f5f5f7; color: #222; }
+.topbar { position: sticky; top: 10px; background: white; padding: 14px 18px; border-radius: 12px; display: flex; align-items: center; gap: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 16px; z-index: 10; }
+.topbar h2 { margin: 0; font-size: 17px; }
+.progress { flex: 1; height: 8px; background: #eee; border-radius: 4px; overflow: hidden; }
+.progress-bar { height: 100%; background: #4CAF50; transition: width 0.2s; }
+.stock-card { background: white; padding: 18px; border-radius: 10px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); border-left: 4px solid transparent; }
+.stock-card.approved { border-left-color: #4CAF50; background: #f1f8f3; }
+.stock-card.rejected { border-left-color: #f44336; background: #fdecea; }
+.stock-card.skipped  { border-left-color: #999; background: #f5f5f5; }
+.stock-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
+.stock-name { font-size: 17px; font-weight: 700; }
+.stock-meta { color: #666; font-size: 13px; }
+.ctrt-up   { color: #d32f2f; font-weight: 600; }
+.ctrt-down { color: #1976d2; font-weight: 600; }
+.theme-tag { background: #e3f2fd; color: #1976d2; padding: 2px 8px; border-radius: 4px; font-size: 12px; }
+.memo { color: #888; font-size: 12px; margin-left: 4px; }
+.article { background: #fafafa; padding: 12px; border-radius: 8px; margin: 8px 0; }
+.article-meta { color: #666; font-size: 12px; margin-bottom: 4px; }
+.article-title { font-weight: 600; margin: 4px 0; line-height: 1.4; }
+.article-title a { color: #1565c0; text-decoration: none; }
+.article-title a:hover { text-decoration: underline; }
+.article-desc { color: #444; font-size: 13px; line-height: 1.5; }
+.nav-bar { display: flex; align-items: center; gap: 8px; margin: 8px 0 4px; }
+.actions { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+button { padding: 8px 14px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 13px; }
+button:disabled { opacity: 0.4; cursor: default; }
+.btn-approve { background: #4CAF50; color: white; }
+.btn-reject  { background: #f44336; color: white; }
+.btn-skip    { background: #9e9e9e; color: white; }
+.btn-nav     { background: #e0e0e0; color: #333; padding: 6px 10px; }
+.btn-export  { background: #1976d2; color: white; }
+.btn-reset   { background: white; color: #888; border: 1px solid #ddd; }
+.badge-today { background: #4CAF50; color: white; font-size: 11px; padding: 2px 6px; border-radius: 3px; margin-right: 4px; }
+.badge-old   { background: #ff9800; color: white; font-size: 11px; padding: 2px 6px; border-radius: 3px; margin-right: 4px; }
+.badge-source { background: #7e57c2; color: white; font-size: 11px; padding: 2px 6px; border-radius: 3px; }
+.empty { color: #aaa; font-style: italic; padding: 18px; text-align: center; background: #fafafa; border-radius: 8px; }
+.decision-tag { margin-left: auto; font-size: 13px; font-weight: 600; }
+</style>
+</head>
+<body>
+<div class="topbar">
+  <h2>기사 검수 - 20260622</h2>
+  <div class="progress"><div class="progress-bar" id="progressBar"></div></div>
+  <span id="progressText" style="font-size:13px;color:#666;"></span>
+  <button class="btn-export" onclick="pushToNotion()" id="btnPush">📤 노션에 푸시</button>
+  <button class="btn-reset" onclick="resetAll()">초기화</button>
+</div>
+
+<div id="pushResult" style="margin:12px 0;padding:10px;border-radius:6px;display:none;font-size:14px;"></div>
+
+<div id="cards"></div>
+
+<script>
+const REVIEW_DATE     = "20260622";
+const STORAGE_KEY     = "review_" + REVIEW_DATE;
+const PUSH_ENDPOINT   = "http://127.0.0.1:8765";  // 비어있으면 푸시 비활성, 다운로드만
+const DATA            = [{"name": "키스트론", "code": "475430", "ctrt": 30.0, "vol_eok": 410, "theme": "개별주", "memo": "41,082", "candidates": [{"title": "[특징주] 키스트론, 일 커패시터 3사에 리드와이어 공급 점유율 60% 소식...", "url": "https://www.etoday.co.kr/news/view/2595844", "desc": "이투데이=김우람 기자 | 키스트론이 일 커패시터 3사에 리드와이어 공급 점유율 60% 이상으로 파악되면서 향후 반도체 업황 호조에 따른 수혜 전망에 상승세다. 22일 오전 10시 6분 현재 키스트론은 전 거래일 대비 1000원...", "date": "2026.06.22", "score": 30, "is_today": true, "source": "naver"}, {"title": "증권가 \"견조한 체력 대비 저평가\"…키스트론 7%↑[특징주]", "url": "https://www.edaily.co.kr/news/newspath.asp?newsid=02440326645484344", "desc": "키스트론(475430)의 주가가 장 초반 급등하고 있다. 증권가에서 긍정적인 전망이 나오자 매수세가 몰리는 것으로 보인다. 22일 엠피닥터에 따르면 키스트론은 오전 9시 14분 기준으로 전 거래일 대비 7.02% 오른 5030원에...", "date": "2026.06.22", "score": 30, "is_today": true, "source": "naver"}, {"title": "[특징주] 키스트론, MLCC 공급 대란에 ↑", "url": "https://www.cstimes.com/news/articleView.html?idxno=710232", "desc": "컨슈머타임스=전은정 기자 | 키스트론 주가가 상승중이다. 키스트론은 18일 오전 10시 38분 기준 전일보다 4.03% 4775원을 기록중이다. AI 데이터센터와 AI 서버 투자 확대에 따른 MLCC(적층세라믹콘덴서) 공급 부족 우려가...", "date": "2026.06.18", "score": 20, "is_today": false, "source": "naver"}, {"title": "[특징주] 한켐·코칩·키스트론, 삼성전기 FC-BGA 5조 투자 전망에 ↑......", "url": "https://www.cstimes.com/news/articleView.html?idxno=708625", "desc": "코칩, 키스트론 등 MLCC(적층 세라믹 커패시터) 관련 종목들이 상승중이다. 한켐은 5일 주식시장에서 상한가를 기록했다. 한켐은 이날 2시 15분 기준 전일보다 29.94% 오른 1만4670원을 기록중이다. 코칩(3.06%), 키스트론...", "date": "2026.06.05", "score": 20, "is_today": false, "source": "naver"}, {"title": "철강 테마 강세장 펼쳐졌다…금강철강·율촌·키스트론 줄줄이 급등", "url": "https://www.pinpointnews.co.kr/news/articleView.html?idxno=462025", "desc": "이어 율촌과 동일스틸럭스, 키스트론도 큰 폭의 상승세를 나타내며 투자자들의 관심을 끌고 있다. 문배철강과 하이스틸은 강관 및 철강 제품 수요 확대 기대감 속에서 강세를 보이고 있으며, 코메론과 넥스틸, 신스틸...", "date": "2026.06.22", "score": 15, "is_today": true, "source": "naver"}, {"title": "키스트론, 공급 물량 증가·원가 절감 지속되며 꾸준한 성장-신한", "url": "https://www.edaily.co.kr/news/newspath.asp?newsid=02017206645484344", "desc": "신한투자증권이 키스트론(475430)에 대해 “2026년 예상 P/E(주가수익비율) 8.9배로, 견조한 체력 대비 저평가... 키스트론은 리드 와이어 및 케이블 와이어 제조 업체로, 해외 매출 비중은 80% 내외로 높은 수준이다. 그는...", "date": "2026.06.22", "score": 15, "is_today": true, "source": "naver"}, {"title": "[22일 특징주] 비비안, 250억 규모 유상증자에 '상한가'", "url": "https://www.newsworks.co.kr/news/articleView.html?idxno=844705", "desc": "코스닥에서는 ▲한울반도체 ▲서산 ▲키스트론 ▲에이테크솔루션 ▲크린앤사이언스 ▲조아제약 ▲베셀 ▲듀오백 등이 상한가를 찍었다. 부국철강·키스트론 등은 미국과 이란 간 종전 협의 진전에 재건 기대감이...", "date": "2026.06.22", "score": 10, "is_today": true, "source": "naver"}, {"title": "[마감시황] 미-이란 1차 회담 종료…코스피, 9100선 마감", "url": "https://www.joongangenews.com/news/articleView.html?idxno=527369", "desc": "63%) 등이 하락세를 보였다. 양대 시장에서 △부국철강 △유니드비티플러스 △비비안 △한울반도체 △서산 △키스트론 △에이테크솔루션 △크린앤사이언스 △조아제약 △베셀 △듀오백 등이 상한가를 달성했다.", "date": "2026.06.22", "score": 10, "is_today": true, "source": "naver"}], "best_url": "https://www.etoday.co.kr/news/view/2595844"}, {"name": "한울반도체", "code": "320000", "ctrt": 29.91, "vol_eok": 2050, "theme": "개별주", "memo": "205,079", "candidates": [{"title": "한울반도체, AI 검사장비 고도화 기대감에 상한가[특징주]", "url": "https://www.newsway.co.kr/news/view?ud=2026062214280687432", "desc": "한울반도체가 인공지능(AI) 기반 검사장비 고도화와 글로벌 적층세라믹콘덴서(MLCC) 제조사 대상 설비 공급 확대 기대감에 상한가를 기록했다. 22일 한국거래소에 따르면 오후 2시 7분 기준 한울반도체는 전 거래일...", "date": "2026.06.22", "score": 30, "is_today": true, "source": "naver"}, {"title": "[특징주] 한울반도체, \"MLCC 검사장비 고도화\" 속도 2배 향상에 수요 폭...", "url": "https://www.widedaily.com/news/articleView.html?idxno=296208", "desc": "한울반도체(320000)의 주가가 급등하며 시장의 주목을 받고 있다. 22일 한국거래소에 따르면 한울반도체의 주가는 오전 11시 33분 기준 전일 대비 28.23% 상승한 5030원에 거래되고 있다. 이는 한울반도체가 국책과제를...", "date": "2026.06.22", "score": 30, "is_today": true, "source": "naver"}, {"title": "[특징주] 한울반도체, AI 검사장비 고도화·MLCC 설비 공급 확대 기대에...", "url": "https://www.ajunews.com/view/20260622110410190", "desc": "아주경제=류소현 기자 sohyun@ajunews.com 한울반도체가 인공지능(AI) 기반 검사장비 고도화와 글로벌 적층세라믹콘덴서(MLCC) 제조사 대상 설비 공급 확대 기대감에 20% 넘게 오르고 있다. 22일 한국거래소에 따르면...", "date": "2026.06.22", "score": 30, "is_today": true, "source": "naver"}, {"title": "[특징주] 한울반도체, 국책과제 MLCC 검사장비 고도화.. '급등'", "url": "https://www.g-enews.com/view.php?ud=20260622104158664544093b5d4e_1", "desc": "이틀 연속 상한가를 기록했던 한울반도체가 급등세를 이어가고 있다. 한울반도체는 중소벤처기업부 국책과제인 ‘생성형 AI 기반 온디바이스 비전 검사 기술 개발’ 사업을 수행한다고 밝히면서 투심을 자극한...", "date": "2026.06.22", "score": 30, "is_today": true, "source": "naver"}, {"title": "한울반도체, AI 기반 MLCC 검사장비 고도화 소식에 12%대 강세[특징주]", "url": "https://www.edaily.co.kr/news/newspath.asp?newsid=02397686645484344", "desc": "한울반도체(320000) 주가가 22일 장초반 강세다. 이틀 연속 상한가에 이어 이날도 10%대 강세 흐름을 보이고 있다. 엠피닥터에 따르면 이날 오전 9시8분 기준 한울반도체(320000)는 전일 대비 2280원(12.79%) 오른 2만100원에...", "date": "2026.06.22", "score": 30, "is_today": true, "source": "naver"}, {"title": "[19일 특징주] 한울반도체, 日 무라타와 협력 소식에 연이틀 '상한가'", "url": "https://www.newsworks.co.kr/news/articleView.html?idxno=844525", "desc": "한울반도체가 연일 상한가를 기록했다. 글로벌 적층세라믹콘덴서(MLCC) 기업 무라타와 협력 소식의 여파로 보인다. 19일 한국거래소에 따르면 한울반도체는 전일 대비 4110원(29.98%) 뛴 1만7820원에 거래를 마치며...", "date": "2026.06.19", "score": 20, "is_today": false, "source": "naver"}, {"title": "[특징주] 한울반도체, 무라타 MOU 효과에 이틀째 상한가…AI MLCC 수혜 기...", "url": "https://www.ebn.co.kr/news/articleView.html?idxno=1713239", "desc": "한울반도체가 글로벌 적층세라믹콘덴서(MLCC) 1위 업체인 일본 무라타와의 기술협력 소식에 이틀 연속 상한가를 기록했다. AI 서버 확산에 따른 MLCC 업황 개선 기대감까지 더해지면서 투자자들의 매수세가 집중된...", "date": "2026.06.19", "score": 20, "is_today": false, "source": "naver"}, {"title": "[특징주] 한울반도체, MLCC 초호황에 日 업체 협력 소식 '상한가'", "url": "https://www.g-enews.com/view.php?ud=20260619131959813544093b5d4e_1", "desc": "한울반도체가 이틀 연속 상한가다. 적층세라믹콘덴서(MLCC)의 초호황 분석이 나오는 가운데 글로벌 MLCC 1위 업체인 일본 무라타와의 협력 소식이 투자심리를 자극한 것으로 보인다. 19일 한국거래소에 따르면 이날...", "date": "2026.06.19", "score": 20, "is_today": false, "source": "naver"}], "best_url": "https://www.newsway.co.kr/news/view?ud=2026062214280687432"}, {"name": "부국철강", "code": "026940", "ctrt": 29.89, "vol_eok": 224, "theme": "개별주", "memo": "22,408", "candidates": [{"title": "[EBN 데이터센터] 22일 상승 종목 30選…비비안·부국철강 가격제한폭까...", "url": "https://www.ebn.co.kr/news/articleView.html?idxno=1713431", "desc": "코스피에서는 비비안과 유니드비티플러스, 부국철강이 가격제한폭까지 올랐고, 코스닥에서는 키스트론을 비롯해 조아제약, 베셀, 에이테크솔루션, 듀오백, 한울반도체, 크린앤사이언스, 서산 등 8종목이...", "date": "2026.06.22", "score": 15, "is_today": true, "source": "naver"}, {"title": "[22일 특징주] 비비안, 250억 규모 유상증자에 '상한가'", "url": "https://www.newsworks.co.kr/news/articleView.html?idxno=844705", "desc": "한편 이날 코스피에서는 ▲부국철강 ▲유니드비티플러스 등이 상한가를 기록했다. 코스닥에서는 ▲한울반도체 ▲서산 ▲키스트론 ▲에이테크솔루션 ▲크린앤사이언스 ▲조아제약 ▲베셀 ▲듀오백 등이 상한가를...", "date": "2026.06.22", "score": 10, "is_today": true, "source": "naver"}, {"title": "[마감시황] 미-이란 1차 회담 종료…코스피, 9100선 마감", "url": "https://www.joongangenews.com/news/articleView.html?idxno=527369", "desc": "63%) 등이 하락세를 보였다. 양대 시장에서 △부국철강 △유니드비티플러스 △비비안 △한울반도체 △서산 △키스트론 △에이테크솔루션 △크린앤사이언스 △조아제약 △베셀 △듀오백 등이 상한가를 달성했다.", "date": "2026.06.22", "score": 10, "is_today": true, "source": "naver"}, {"title": "[마감시황] 코스피, 0.69% 오른 9114.55 마감…사상 최고치 경신", "url": "https://www.seoul.co.kr/news/economy/securities/2026/06/22/20260622500191?wlog_tag3=naver", "desc": "개별 종목 흐름을 보면 비비안이 30.00% 올라 상한가를 기록했고 유니드비티플러스와 부국철강도 각각 29.96%, 29.89% 상승했다. 한솔테크닉스는 18.20%, 삼성물산우B는 18.13% 뛰었다. 반대로 미래에셋생명은...", "date": "2026.06.22", "score": 10, "is_today": true, "source": "naver"}, {"title": "하반기 '1만피' 간다는데… 시총 1위는 삼전일까, 하이닉스일까 [뉴스톡...", "url": "http://www.newswell.co.kr/news/articleView.html?idxno=19677", "desc": "/자료=네이버 증권정보 이날 ▲부국철강 ▲유니드비티플러스 ▲비비안 ▲한울반도체 ▲서산 ▲키스트론 ▲에이테크솔루션 ▲크린앤사이언스 ▲조아제약 ▲베셀 ▲듀오백은 상한가를 기록했다. 이 가운데...", "date": "2026.06.22", "score": 10, "is_today": true, "source": "naver"}, {"title": "철강 테마 강세장 펼쳐졌다…금강철강·율촌·키스트론 줄줄이 급등", "url": "https://www.pinpointnews.co.kr/news/articleView.html?idxno=462025", "desc": "한국거래소에 따르면 이날 오후 1시24분 현재 부국철강이 28.09% 상승한 2,850원에 거래 중이며 테마 상승을 주도하고 있다. 금강철강도 22.54% 상승한 6,090원에 거래 중이다. 철강 유통 및 가공 분야 기업들이 정책 수혜 기대와...", "date": "2026.06.22", "score": 10, "is_today": true, "source": "naver"}, {"title": "[특징주] 동일스틸럭스, \"UAE 호르무즈 우회 송유관 건설 추진\"에 철강株...", "url": "https://www.widedaily.com/news/articleView.html?idxno=295952", "desc": "포스코스틸리온 17.29%, 아주스틸 11.19%, 금강철강 9.06%, 신스틸 5.33%, 부국철강 4.41%, 대창스틸 3.69%, 동국홀딩스 3.47% 등도 오름세를 보이고 있다. 동일스틸럭스는 1967년 철강제품 제조 및 판매를 목적으로 설립된...", "date": "2026.06.17", "score": 0, "is_today": false, "source": "naver"}, {"title": "[특징주] 포스코스틸리온, \"호르무즈 해협 우회 송유관 건설 추진\" 기대...", "url": "https://www.widedaily.com/news/articleView.html?idxno=295951", "desc": "동양스틸럭스 29.95%, 아주스틸 11.19%, 금강철강 9.06%, 신스틸 5.33%, 부국철강 4.41% 등도 오름세를 보이고 있다. 포스코스틸리온은 1988년 포항철강공단에 설립된 철강 가공 전문기업으로, 1999년 포항강재공업을...", "date": "2026.06.17", "score": 0, "is_today": false, "source": "naver"}], "best_url": "https://www.ebn.co.kr/news/articleView.html?idxno=1713431"}, {"name": "서산", "code": "079650", "ctrt": 29.8, "vol_eok": 280, "theme": "개별주", "memo": "28,018", "candidates": [{"title": "이·취임식/ 이완섭 서산시장·윤희신 태안군수 취임식", "url": "http://www.dynews.co.kr/news/articleView.html?idxno=855127", "desc": "［동양일보 장인철］ 이완섭 서산시장 취임식=7월 1일(수) 오전 10시 서산시문화회관 윤희신 태안군수 취임식=7월 1일(수) 오전 10시 태안군청 대강당", "date": "2026.06.22", "score": 15, "is_today": true, "source": "naver"}, {"title": "3만6천명 몰린 서산 팔봉산 감자축제 성료…감자 판매액 3억3천만원 기록", "url": "https://www.m-i.kr/news/articleView.html?idxno=1384097", "desc": "사진=오범택 기자 매일일보 = 오범택 기자 | 충남 서산시의 대표 농특산물 축제인 '제25회 팔봉산 감자축제... 서산시에 따르면 팔봉산 어울림마당 일원에서 열린 제25회 팔봉산 감자축제가 전국 각지에서 찾은 방문객들의...", "date": "2026.06.22", "score": 15, "is_today": true, "source": "naver"}, {"title": "[로컬 비즈] “황토밭 갯바람 감자, 이 맛이야” 3억 대박…서산 ‘팔봉...", "url": "https://www.g-enews.com/view.php?ud=20260622171304572420ae620e86_1", "desc": "충남 서산시는 지난 20일부터 21일까지 양일간 팔봉산 어울림마당 일대에서 전개된 ‘제25회 팔봉산... 서산시 집계 결과, 축제 기간 동안 현장 상설 판매장 등을 통해 판매된 감자 매출액은 총 3억 3,000만 원 규모에 달하는...", "date": "2026.06.22", "score": 15, "is_today": true, "source": "naver"}, {"title": "서산경찰서 성연파출소, 경로당 방문해 어르신 대상 예방 치안 활동 전...", "url": "http://www.chungnamilbo.co.kr/news/articleView.html?idxno=894904", "desc": "서산경찰서 성연파출소, 경로당 방문해 어르신 대상 예방 치안 활동 전개 ( 사진제공= 경찰) 충남 서산경찰서성연파출소는 22일 오후 2시부터 관내 경로당을 방문해 지역 어르신들을 대상으로 폭염 대비 온열질환 예방과...", "date": "2026.06.22", "score": 15, "is_today": true, "source": "naver"}, {"title": "서산 서일중학교, '가로림만 해양 탐험' 현장 교육 실시", "url": "https://www.newstnt.com/news/articleView.html?idxno=707239", "desc": "서산 서일중학교(교장 이수종)가 교실에서 배운 생태 지식을 바다 현장에서 직접 확인하며 환경 보전의 중요성을 체감하는 체험 중심의 해양 생태 교육을 진행했다. 서일중학교는 지난 20일 가로림만 일대에서 3학년 정지우...", "date": "2026.06.22", "score": 15, "is_today": true, "source": "naver"}, {"title": "[22일 특징주] 비비안, 250억 규모 유상증자에 '상한가'", "url": "https://www.newsworks.co.kr/news/articleView.html?idxno=844705", "desc": "코스닥에서는 ▲한울반도체 ▲서산 ▲키스트론 ▲에이테크솔루션 ▲크린앤사이언스 ▲조아제약 ▲베셀 ▲듀오백 등이 상한가를 찍었다. 부국철강·키스트론 등은 미국과 이란 간 종전 협의 진전에 재건 기대감이...", "date": "2026.06.22", "score": 10, "is_today": true, "source": "naver"}, {"title": "문진석 의원, 박홍근 기획예산처장관 면담...중부권 동서횡단철도 5차 ...", "url": "https://www.newstnt.com/news/articleView.html?idxno=707343", "desc": "충남 서산·태안)·어기구(3선, 충남 당진)·강승규(재선, 충남 홍성·예산)·복기왕(충남 아산갑)·문진석·이재관(초선, 충남 천안을)·이정문(재선, 충남 천안병)·이강일(초선, 충북 청주 상당)·이광희(초선, 충북 청주 서원)...", "date": "2026.06.22", "score": 10, "is_today": true, "source": "naver"}, {"title": "인구소멸·기후재난 대응… 서부발전, 지역상생 ESG 가속", "url": "http://www.fnnews.com/news/202606221956086160", "desc": "의료 인프라가 상대적으로 부족한 태안·서산 지역 주민들의 생명과 안전을 지키기 위한 지원도 이어가고 있다. 서부발전은 심뇌혈관센터 운영비를 지원해 심근경색과 뇌졸중 등 중증 응급질환 발생 시 신속한 치료가...", "date": "2026.06.22", "score": 10, "is_today": true, "source": "naver"}], "best_url": "http://www.dynews.co.kr/news/articleView.html?idxno=855127"}, {"name": "한솔테크닉스", "code": "004710", "ctrt": 18.2, "vol_eok": 1896, "theme": "반도체/반디플", "memo": "189,680", "candidates": [{"title": "안정적 전장 부품에 에너지 신사업 가속…한솔테크닉스, 실적 턴어라운...", "url": "https://www.pinpointnews.co.kr/news/articleView.html?idxno=462035", "desc": "한솔테크닉스 역시 17.97% 오른 1만5430원에 거래되며 강세를 보이고 있다. 전자부품과 에너지 관련 사업 확대 기대감이 주가 상승을 이끌고 있다는 평가다. 삼성전기우는 13.60% 오른 91만9000원에 거래되며 우선주 특유의...", "date": "2026.06.22", "score": 15, "is_today": true, "source": "naver"}, {"title": "\"한솔테크닉스, 프로브카드 품고 반도체 기업 변신 시동\" [줌인e종목]", "url": "https://www.news1.kr/industry/sb-founded/6202518", "desc": "한솔테크닉스(004710)가 프로브카드 전문기업 윌테크놀러지 인수를 마무리하면서 반도체 부품 사업 확대에 본격적으로 나선다. 증권가에서는 비메모리 반도체 시장 성장과 향후 메모리 프로브카드 시장 진출 가능성까지...", "date": "2026.06.22", "score": 15, "is_today": true, "source": "naver"}, {"title": "한솔그룹, '2026 지속가능경영보고서' 발간…계열사별 핵심 이슈 담겨", "url": "https://www.m-i.kr/news/articleView.html?idxno=1384112", "desc": "한편, 한솔그룹은 반도체 부문 사업 역량 강화를 위해 한솔테크닉스의 윌테크놀러지 인수를 진행하고 지난 17일 자회사 편입 절차를 마무리한 바 있다. 이 과정에서 총 900억원 규모 유상증자를 결정했으며...", "date": "2026.06.22", "score": 10, "is_today": true, "source": "naver"}, {"title": "급락株 몰린 공매도…과열종목 지정, 반년 만에 작년치 추월", "url": "https://www.sedaily.com/article/20058716?ref=naver", "desc": "한화리츠(451800)·계양전기우(012205)·대원전선우(006345)도 각각 4회 이름을 올렸고 한솔테크닉스(004710)·대원제약(003220)·LG헬로비전(037560)·쏘카(403550)·한진칼(180640)·상상인증권(001290)·현대로템(064350) 등은 3회...", "date": "2026.06.22", "score": 10, "is_today": true, "source": "naver"}, {"title": "[더벨][지배구조 분석] 한솔홀딩스 조성민 부사장, '자사주 매입 러시' ...", "url": "https://www.thebell.co.kr/free/content/ArticleView.asp?key=202606181543127320108287", "desc": "제지부문 지배구조를 살펴보면 지주사인 한솔홀딩스가 최상위에서 상장사인 △한솔제지(30.49%) △한솔로지스틱스(40%) △한솔테크닉스(20.4%) △한솔홈데코(23.32%)와 비상장사 △한솔피엔에스(100%) 등을 거느리고 있다....", "date": "2026.06.22", "score": 10, "is_today": true, "source": "naver"}, {"title": "[마감시황] 코스피, 0.69% 오른 9114.55 마감…사상 최고치 경신", "url": "https://www.seoul.co.kr/news/economy/securities/2026/06/22/20260622500191?wlog_tag3=naver", "desc": "한솔테크닉스는 18.20%, 삼성물산우B는 18.13% 뛰었다. 반대로 미래에셋생명은 29.96% 하락해 하한가를 기록했고 SHD는 29.64% 내렸다. 다스코와 삼화전자, 일정실업도 두 자릿수 하락률을 나타냈다. 코스피가...", "date": "2026.06.22", "score": 10, "is_today": true, "source": "naver"}, {"title": "[EBN 데이터센터] 22일 상승 종목 30選…비비안·부국철강 가격제한폭까...", "url": "https://www.ebn.co.kr/news/articleView.html?idxno=1713431", "desc": "이어 한솔테크닉스는 1만5460원으로 18.20%, 삼성물산우B는 30만3000원으로 18.13%, 삼성전기우는 95만4000원으로 17.92% 뛰었다. 해성디에스는 8만5900원으로 17.19%, 아진전자부품은 1050원으로 15.51%, 깨끗한나라우는...", "date": "2026.06.22", "score": 10, "is_today": true, "source": "naver"}, {"title": "[서울데이터랩]코스피 거래상위, 보해양조 급등 속 삼성전자·SK하이닉스...", "url": "https://www.seoul.co.kr/news/economy/securities/2026/06/22/20260622500112?wlog_tag3=naver", "desc": "22일 오후 12시 30분 기준 코스피 시장에서는 보해양조(000890), 삼성전자(005930), 성문전자(014910), 한솔테크닉스(004710), 현대약품(004310) 등이 거래량 상위권에 올랐다. 거래량 기준으로 보해양조는...", "date": "2026.06.22", "score": 10, "is_today": true, "source": "naver"}], "best_url": "https://www.pinpointnews.co.kr/news/articleView.html?idxno=462035"}, {"name": "태성", "code": "323280", "ctrt": 17.75, "vol_eok": 590, "theme": "개별주", "memo": "59,067", "candidates": [{"title": "태성 \"JWMT에 글래스기판 핵심 장비 출하\"", "url": "https://daily.hankooki.com/news/articleView.html?idxno=1378778", "desc": "ⓒ태성 태성은 글래스기판 전문기업 JWMT를 대상으로 제조 공정에 필요한 싱귤레이션 및 하프에칭 장비 출하를 완료했다고 22일 밝혔다. 태성에 따르면 세정, 식각, 하프에칭, 싱귤레이션 등 글래스기판 핵심 공정 전반을...", "date": "2026.06.22", "score": 15, "is_today": true, "source": "naver"}, {"title": "태성, 글래스기판 핵심 장비 출하…\"천안 신공장 기반 수요 대응 강화\"", "url": "https://www.edaily.co.kr/news/newspath.asp?newsid=03401366645484344", "desc": "태성(323280)이 차세대 반도체 패키징 핵심 소재로 주목받는 글래스기판 공정장비 공급을 확대하며 시장 공략에 속도를 내고 있다. 태성은 글래스기판 전문기업 J사에 글래스기판 제조공정용 싱귤레이션(Singulation)...", "date": "2026.06.22", "score": 15, "is_today": true, "source": "naver"}, {"title": "태성, 글래스기판 장비 공급 확대…천안 신공장 기반 생산능력 강화", "url": "https://www.viva100.com/article/20260622500692", "desc": "태성이 차세대 반도체 패키징 핵심 소재로 주목받는 글래스기판 시장 공략에 속도를 내고 있다. 글래스기판... 22일 업계에 따르면 코스닥 상장사 태성은 글래스기판 전문기업 J사에 싱귤레이션 장비와 하프에칭 장비...", "date": "2026.06.22", "score": 15, "is_today": true, "source": "naver"}, {"title": "[더벨][i-point] 태성, TGV 전문기업향 글래스기판 핵심 공정 장비 출하", "url": "https://www.thebell.co.kr/free/content/ArticleView.asp?key=202606221311438320101835", "desc": "코스닥 상장사 태성은 글래스기판 전문기업 JWMT에 글래스기판 제조공정에 적용되는 싱귤레이션(Singulation) 장비와 하프에칭(Half Etching) 장비 출하를 완료했다고 22일 밝혔다. 태성은 글래스기판 제조공정에 적용되는...", "date": "2026.06.22", "score": 15, "is_today": true, "source": "naver"}, {"title": "태성, 차세대 반도체 핵심 '유리기판' 장비 공급 확대", "url": "https://news.mtn.co.kr/news-detail/2026062211374122166", "desc": "인쇄회로기판(PCB) 자동화 장비 기업 태성이 반도체 핵심 소재로 꼽히는 유리기판 시장 공략에 속도를 내고 있다.태성은 유리기판 전문기업 J사에 싱귤레이션(Singulation), 하프에칭(Half Etching) 장비 출하를 완료했다고...", "date": "2026.06.22", "score": 15, "is_today": true, "source": "naver"}, {"title": "태성, TGV 전문기업에 핵심 공정장비 출하", "url": "https://www.newsis.com/view/NISX20260622_0003678046", "desc": "태성은 글래스기판 전문기업 J사에 글래스기판 제조공정에 적용되는 싱귤레이션(Singulation) 장비와 하프에칭(Half Etching) 장비의 출하를 완료했다고 22일 밝혔다. 회사 측에 따르면 태성은 글래스기판 제조공정에...", "date": "2026.06.22", "score": 15, "is_today": true, "source": "naver"}, {"title": "태성, JWMT에 글래스기판 핵심 공정장비 출하…“공급 레퍼런스 확대”", "url": "https://www.sentv.co.kr/article/view/sentv202606220052", "desc": "태성은 글래스기판 전문기업 JWMT에 글래스기판 제조공정에 적용되는 싱귤레이션(Singulation) 장비와 하프에칭(Half Etching) 장비의 출하를 완료했다고 22일 밝혔다. 태성은 글래스기판 제조공정에 적용되는 세정(Cleaning)...", "date": "2026.06.22", "score": 15, "is_today": true, "source": "naver"}, {"title": "[애프터마켓 브리핑] SK하이닉스 시총 1위 등극…26년만 '왕좌' 교체", "url": "https://biz.sbs.co.kr/article_hub/20000318043?division=NAVER", "desc": "어 또 태성도 글래스 기판 핵심 장비 출하 소식에 급등세 보여줍니다. 정규장 마치고는 조현 외교부 장관이... 지난주 애프터 마켓에서 특징주를 짚어드렸던 조선 기자재주들이 지난 금요일에 시간 거래에서 이 트럼프...", "date": "2026.06.22", "score": 10, "is_today": true, "source": "naver"}], "best_url": "https://daily.hankooki.com/news/articleView.html?idxno=1378778"}, {"name": "제주반도체", "code": "080220", "ctrt": 17.24, "vol_eok": 14337, "theme": "개별주", "memo": "1,433,793", "candidates": [{"title": "[특징주] 제주반도체, 반도체 업황 기대·제주 수출 호조에 강세", "url": "https://www.tokenpost.kr/news/economy/371594", "desc": "제주반도체가 장 초반 강세다. 한국거래소에 따르면 제주반도체는 전 거래일보다 11.99% 오른 12만8000원에 거래되고 있다. 주가 강세는 최근 미국 기술주 랠리와 국내 반도체주 투자심리 개선 속에 중소형 팹리스로...", "date": "2026.06.22", "score": 30, "is_today": true, "source": "naver"}, {"title": "[특징주] 제주반도체, 반도체 수출 호조 속 12% 급등", "url": "https://www.etoday.co.kr/news/view/2595861", "desc": "이투데이=신혜주 기자 | 제주반도체가 장 초반 강세다. 22일 한국거래소에 따르면 제주반도체는 오전 10시 23분 기준 전 거래일 대비 12.95% 오른 12만9200원에 거래되고 있다. 이날 주가 강세는 최근 미국 기술주 상승과...", "date": "2026.06.22", "score": 30, "is_today": true, "source": "naver"}, {"title": "코스닥 '막판 상승'...원익IPS · 파두 · 제주반도체 · HLB '껑충'", "url": "http://www.choicenews.co.kr/news/articleView.html?idxno=166940", "desc": "코스닥 업종 가운데 원익IPS, 파두, 제주반도체 등 반도체 소부장(소재·부품·장비)주 주가가 급등했다. 한국거래소에 따르면 반도체 소부장주 중 원익IPS가 직전거래일 대비 10.59% 급등했고 파두도 14.30...", "date": "2026.06.22", "score": 15, "is_today": true, "source": "naver"}, {"title": "[서울데이터랩]코스닥 시총 상위주 혼조…제주반도체 17%대 급등, 알테오...", "url": "https://www.seoul.co.kr/news/economy/securities/2026/06/22/20260622500110?wlog_tag3=naver", "desc": "제주반도체(080220)는 13만 4700원으로 17.85% 급등하며 상위 종목 가운데 가장 높은 상승률을 기록했다. 파두(440110)도 14.69% 오른 11만 6300원, 피에스케이(319660)는 11.21% 상승한 18만 3500원, 원익IPS(240810)는...", "date": "2026.06.22", "score": 15, "is_today": true, "source": "naver"}, {"title": "제주반도체 15% 상승 이어 파두ㆍ피에스케이 등 급등", "url": "http://www.econonews.co.kr/news/articleView.html?idxno=440011", "desc": "제주반도체 주가흐름 (그래픽=네이버페이 증권 캡처) 반도체 장비·소부장 종목이 급등 중이다. 국내 반도체 수출 호조가 주가에 영향을 미치는 것으로 보인다. 제주반도체는 22일 코스닥 시장에서 낮...", "date": "2026.06.22", "score": 15, "is_today": true, "source": "naver"}, {"title": "파두, 반도체 수출 역대 최대에 13%대 강세[특징주]", "url": "https://www.newsway.co.kr/news/view?ud=2026062211152085044", "desc": "같은 시각 제주반도체(13.47%)와 피에스케이(12.00%)는 두 자릿수 상승하고 있다. 심텍(8.37%), 원익IPS(5.90%), HPSP(3.36%)도 오르며 반도체 장비·소부장 종목 전반이 강세를 나타내고 있다. 반도체 대형주도 강세다....", "date": "2026.06.22", "score": 10, "is_today": true, "source": "naver"}, {"title": "삼전닉스·수출액 훈풍에 코스닥 반도체도 '방긋'…파두 15%↑", "url": "https://www.mt.co.kr/stock/2026/06/22/2026062210490360925", "desc": "제주반도체는 1만3300원(11.64%) 오른 12만7600원, 심텍은 8700원(7.00%) 오른 13만3000원이다. 원익IPS는 5%대, HPSP는 3%대 강세에 진입했다. 같은 시각 SK하이닉스는 전 거래일 대비 5만8500원(5.73%) 오른 292만2500원...", "date": "2026.06.22", "score": 10, "is_today": true, "source": "naver"}, {"title": "[미리보는 이데일리 신문]퇴직연금 위험자산 100% 허용 급물살", "url": "https://www.edaily.co.kr/news/newspath.asp?newsid=05359526645484344", "desc": "‘토토’, 반도체 기업으로 △산업 -엔비디아와 전방위 협력…구광모의 ‘원LG 전략’ 본격 가동 -자동차 강국 독일서 무쏘의 길을 열다 -‘제씨가문’ 제주항공·제베원…윈윈 컬래버 화제 -AI발 성과급 훈풍 삼전...", "date": "2026.06.22", "score": 10, "is_today": true, "source": "naver"}], "best_url": "https://www.tokenpost.kr/news/economy/371594"}, {"name": "해성디에스", "code": "195870", "ctrt": 15.69, "vol_eok": 513, "theme": "개별주", "memo": "51,325", "candidates": [{"title": "[애프터마켓 브리핑] SK하이닉스 시총 1위 등극…26년만 '왕좌' 교체", "url": "https://biz.sbs.co.kr/article_hub/20000318043?division=NAVER", "desc": "반도체 소재 부품단에선 해성디에스가 강세 보여주고 있고 반도체 장비 단에선 브이엠도 급등세 보여주고... 지난주 애프터 마켓에서 특징주를 짚어드렸던 조선 기자재주들이 지난 금요일에 시간 거래에서 이 트럼프...", "date": "2026.06.22", "score": 10, "is_today": true, "source": "naver"}, {"title": "코스피, 9110선 사상 최고치 마감...SK하이닉스, 삼성전자 제치고 시총 ...", "url": "https://www.pinpointnews.co.kr/news/articleView.html?idxno=462114", "desc": "아이텍은 20.61%, 제주반도체는 17.24%, 해성디에스는 17.19%, 브이엠은 16.29%, 하나마이크론은 15.92% 상승했다. 기가비스, 파두, 피에스케이홀딩스, DB하이텍, 원익IPS, 테스 등도 동반 상승하며 반도체 밸류체인...", "date": "2026.06.22", "score": 10, "is_today": true, "source": "naver"}, {"title": "[EBN 데이터센터] 22일 상승 종목 30選…비비안·부국철강 가격제한폭까...", "url": "https://www.ebn.co.kr/news/articleView.html?idxno=1713431", "desc": "해성디에스는 8만5900원으로 17.19%, 아진전자부품은 1050원으로 15.51%, 깨끗한나라우는 9800원으로 15.43% 상승했다. 미래산업 4만7450원, 대양금속 2065원, 프리티 301원, DB하이텍 17만4000원, SK스퀘어 197만원...", "date": "2026.06.22", "score": 10, "is_today": true, "source": "naver"}, {"title": "AI 데이터센터 확대 수혜 본격화…반도체 밸류체인 재평가 시작", "url": "https://www.pinpointnews.co.kr/news/articleView.html?idxno=462031", "desc": "파두와 브이엠, 하나마이크론, 기가비스, 피에스케이홀딩스, 해성디에스, 지오엘리먼트 등도 큰 폭의 상승세를 보이며 반도체 밸류체인 전반에 훈풍이 확산되고 있다. SSD 컨트롤러와 테스트 장비, 패키징, 후공정 관련...", "date": "2026.06.22", "score": 10, "is_today": true, "source": "naver"}, {"title": "AI 반도체 열풍의 숨은 주역…하나마이크론, 패키징·테스트 수요 폭발", "url": "https://www.pinpointnews.co.kr/news/articleView.html?idxno=461929", "desc": "해성디에스와 한양디지텍은 반도체 패키징과 메모리 모듈 분야에서 사업 경쟁력을 강화하고 있으며, 하나머티리얼즈와 오킨스전자는 반도체 부품과 테스트 장비 분야에서 성장 가능성이 부각된다. 3S와 한솔케미칼...", "date": "2026.06.22", "score": 10, "is_today": true, "source": "naver"}, {"title": "[특징주] 코스피 6%대 급락에 반도체 장비주 11%↓", "url": "https://www.newspim.com/news/view/20260608000274", "desc": "이밖에 아이에스티이(-11.04%), 예스티(-10.57%), KEC(-10.00%), RF머트리얼즈(-9.92%), 코아시아(-9.43%), 오킨스전자(-9.36%), 퀄리타스반도체(-9.00%), 앤씨앤(-8.67%), 해성디에스(-7.75%), 에이프로(6.47%), 리노공업(-4.46%) 등도 동반...", "date": "2026.06.08", "score": 0, "is_today": false, "source": "naver"}, {"title": "[데이터 뉴스룸] 전자업체 1분기 영업益 900% 육박 상승에 함박웃음…증...", "url": "https://www.greened.kr/news/articleView.html?idxno=342944", "desc": "◆삼성전자, 영업이익 증가율 3000%↑…DH오토웨어·해성디에스도 1000%↑ 조사 대상 업체 중 작년 1분기 대비 올 동기간에 별도 기준 영업이익 증가율이 가장 높은 곳은 '삼성전자'인 것으로 확인됐다. 이...", "date": "2026.06.19", "score": 0, "is_today": false, "source": "naver"}, {"title": "\"난공불락의 기술 장벽\"… 제이아이테크, 대체 불가능한 프리커서 공급...", "url": "https://www.pinpointnews.co.kr/news/articleView.html?idxno=461224", "desc": "해성디에스는 차량용 반도체 기판 및 리드프레임 부문의 견고함에도 불구하고 주가 조정을 겪고 있다. 에프엔에스테크와 피엠티 역시 공정 부품 코팅 솔루션과 프로브 카드 부문의 수주 정체 탓에 약세를 기록 중이다....", "date": "2026.06.18", "score": 0, "is_today": false, "source": "naver"}], "best_url": "https://www.pinpointnews.co.kr/news/articleView.html?idxno=462031"}, {"name": "JW신약", "code": "067290", "ctrt": 16.92, "vol_eok": 1429, "theme": "개별주", "memo": "142,974", "candidates": [{"title": "[특징주] JW신약, 탈모 건보 적용 검토 기대에 12%대 급등", "url": "https://www.tokenpost.kr/news/economy/371561", "desc": "JW신약이 탈모 치료의 건강보험 적용 검토 소식에 강세를 보이고 있다. 한국거래소에 따르면 JW신약은 전일 대비 300원(12.85%) 오른 2635원에 거래되고 있다. 보건복지부가 탈모 치료에 대한 건강보험 적용 검토 방침을...", "date": "2026.06.22", "score": 30, "is_today": true, "source": "naver"}, {"title": "[특징주] JW신약, 탈모 건보 적용 검토…정부 정책 수혜 기대감에 7%대↑", "url": "https://www.etoday.co.kr/news/view/2595799", "desc": "이투데이=서청석 기자 | JW신약 주가가 정부의 탈모 치료 건강보험 적용 검토 소식에 힘입어 장 초반 가파른 상승세를 나타냈다. 22일 한국거래소에 따르면 오전 9시17분 JW신약은 전장보다 7.28% 오른 2505원에 거래되고...", "date": "2026.06.22", "score": 30, "is_today": true, "source": "naver"}, {"title": "[특징주] JW신약, 탈모 급여화 기대감에 급등", "url": "https://www.biotimes.co.kr/news/articleView.html?idxno=32574", "desc": "JW신약이 19일 코스닥 시장에서 급등세를 기록하며 투자자들의 관심을 집중시켰다. JW신약의 주가는 직전 거래일보다 13.08%(270원) 상승한 2,335원에 장을 마감했다. 시장에서는 정부가 하반기 중점 보건의료 정책으로 탈모...", "date": "2026.06.19", "score": 20, "is_today": false, "source": "naver"}, {"title": "[특징주] 삼성전자, 외인 매수 1위로 부상…기관도 SK하이닉스와 동반 ...", "url": "https://www.tokenpost.kr/news/economy/371622", "desc": "키움증권 외국인·기관 매매상위 종목 집계에 따르면 장 초반 외국인은 JW신약과 삼성전자, 미래에셋증권, 보해양조, 씨피시스템 등을 순매수 상위에 올렸다. 반면 지아이에스, 시지메드텍, 오리엔탈정공, LG씨엔에스...", "date": "2026.06.22", "score": 10, "is_today": true, "source": "naver"}, {"title": "[특징주] 삼성전자·SK하이닉스 향한 외인·기관…매매상위 종목은?", "url": "https://www.newstnt.com/news/articleView.html?idxno=707212", "desc": "◆ 외인, JW신약·삼성전자 '매수'...지아이에스·시지메드텍 '매도' 이날 키움증권 장중 외국인 매매상위 종목 집계에 따르면, 장 초반 외국인 투자자는 제약 및 대형 IT 관련 종목을 중심으로 매수세를 보인 반면...", "date": "2026.06.22", "score": 10, "is_today": true, "source": "naver"}, {"title": "정부 '탈모약 급여화' 논의 본격화…처방약부터 샴푸까지 탈모 관련주 ...", "url": "http://www.newsworker.co.kr/news/articleView.html?idxno=432350", "desc": "주요 정책 이슈로 부각되면서, 관련 증상 완화 및 관리 제품군을 보유한 기업들까지 폭넓게 매수세가 이어진 모습이다. 탈모,탈모치료제,건강보험,급여화,JW신약,삼익제약,현대약품,위더스제약,제약주,주식,특징주", "date": "2026.06.22", "score": 10, "is_today": true, "source": "naver"}, {"title": "[특징주] 동국제약, 바이오USA 개막 기대에 강세…제약·바이오주 전반...", "url": "https://www.tokenpost.kr/news/economy/371577", "desc": "같은 업종에서는 조아제약이 상한가를 기록했고, JW신약을 비롯해 씨엔알리서치, 넥스트바이오메디컬, 프로티나, 휴온스, 서울제약, 툴젠, 현대약품 등도 동반 강세를 보였다. 시장에서는 미국 캘리포니아주...", "date": "2026.06.22", "score": 10, "is_today": true, "source": "naver"}, {"title": "[특징주] 바이오USA 기대감에 제약·바이오株 강세…조아제약 30%↑", "url": "https://www.newspim.com/news/view/20260622000212", "desc": "JW신약도 14.35% 오른 2670원에 거래 중이다. 이 밖에 씨엔알리서치(7.63%), 넥스트바이오메디컬(5.71%), 프로티나(4.91%), 동국제약(4.61%), 휴온스(4.40%), 서울제약(4.32%), 툴젠(4.30%), 현대약품(3.80%) 등 바이오 관련 종목들도...", "date": "2026.06.22", "score": 10, "is_today": true, "source": "naver"}], "best_url": "https://www.tokenpost.kr/news/economy/371561"}, {"name": "브이엠", "code": "089970", "ctrt": 17.76, "vol_eok": 1445, "theme": "개별주", "memo": "144,527", "candidates": [{"title": "[특징주] 브이엠, 증권가 \"주가 급등에도 저평가\" 분석.. '강세'", "url": "https://www.g-enews.com/view.php?ud=20260612093652673244093b5d4e_1", "desc": "브이엠의 주가가 강세다. 증권가에서 \"최근 주가가 급등했지만 여전히 저평가\"라는 분석에 매수세가 몰리는 것으로 보인다. 12일 한국거래소에 따르면 브이엠은 오전 9시 36분 기준 전 거래일 대비 5.41% 오른 8만...", "date": "2026.06.12", "score": 20, "is_today": false, "source": "naver"}, {"title": "증권가 \"여전히 낮은 밸류에이션\"…브이엠 11%↑[특징주]", "url": "https://www.edaily.co.kr/news/newspath.asp?newsid=03017606645481064", "desc": "브이엠(089970)의 주가가 장 초반 급등하고 있다. 증권가의 긍정적인 전망에 매수세가 몰리는 것으로 보인다. 12일 엠피닥터에 따르면 브이엠은 오전 9시 16분 기준으로 전 거래일 대비 11.75% 오른 9만 5100원에...", "date": "2026.06.12", "score": 20, "is_today": false, "source": "naver"}, {"title": "[애프터마켓 브리핑] SK하이닉스 시총 1위 등극…26년만 '왕좌' 교체", "url": "https://biz.sbs.co.kr/article_hub/20000318043?division=NAVER", "desc": "반도체 소재 부품단에선 해성디에스가 강세 보여주고 있고 반도체 장비 단에선 브이엠도 급등세 보여주고... 지난주 애프터 마켓에서 특징주를 짚어드렸던 조선 기자재주들이 지난 금요일에 시간 거래에서 이 트럼프...", "date": "2026.06.22", "score": 10, "is_today": true, "source": "naver"}, {"title": "[특징주] 삼성전자, 외인 매수 1위로 부상…기관도 SK하이닉스와 동반 ...", "url": "https://www.tokenpost.kr/news/economy/371622", "desc": "이후에도 메리츠제2호스팩과 삼성전자, SK하이닉스에 대한 매수를 이어갔고 맥쿼리인프라와 브이엠이 새로 순매수 상위권에 들어왔다. 반면 한국전력, 마키나락스, 지아이이노베이션, 삼성중공업, 한온시스템 등은...", "date": "2026.06.22", "score": 10, "is_today": true, "source": "naver"}, {"title": "[특징주] 삼성전자·SK하이닉스 향한 외인·기관…매매상위 종목은?", "url": "https://www.newstnt.com/news/articleView.html?idxno=707212", "desc": "기관은 메리츠제2호스팩과 삼성전자, SK하이닉스에 대한 매수 기조를 유지했으며, 맥쿼리인프라(088980)와 브이엠(293580)이 순매수 상위 5개 종목에 새로 진입했다. 기관 순매도 상위는 한국전력, 마키나락스...", "date": "2026.06.22", "score": 10, "is_today": true, "source": "naver"}, {"title": "[특징주] 반도체 수출 역대 최대에 소부장株 강세", "url": "https://www.newspim.com/news/view/20260622000253", "desc": "이 밖에 기가비스(16.98%), 피에스케이(15.45%), 성도이엔지(15.41%), 브이엠(11.88%), 하나마이크론(11.84%), 두산테스나(7.89%), 테스(7.58%), 유진테크(7.28%), 원익IPS(6.60%), 원익QnC(6.31%), 케이알엠(5.89%), 아이앤씨(3.73%), 테크...", "date": "2026.06.22", "score": 10, "is_today": true, "source": "naver"}, {"title": "꽉 채우거나 지주사 섞거나… 하이닉스ETF '골라담기' 경쟁", "url": "https://www.asiatoday.co.kr/kn/view.php?key=20260623010007690", "desc": "LG이노텍·피에스케이·브이엠 등 하이닉스의 생산 공정과 긴밀히 연결된 소재·부품·장비 업체들이 포트폴리오의 핵심을 이룬다. 2024년 11월 상장 후 수익률은 545%를 기록하고 있다.이 상품은 패시브 ETF와 달리...", "date": "2026.06.22", "score": 10, "is_today": true, "source": "naver"}, {"title": "코스닥 '막판 상승'...원익IPS · 파두 · 제주반도체 · HLB '껑충'", "url": "http://www.choicenews.co.kr/news/articleView.html?idxno=166940", "desc": "또 브이엠(16.29%), 솔브레인(5.19%), 티에스이(6.35%), 코미코(3.90%) 등도 급등했다. HBM(고대역폭메모리)... 스페이스X 관련주에선 미래에셋벤처투자(-5.49%), 에이치브이엠(-8.21%), 스피어(-12.28%) 등이 미끄럼을...", "date": "2026.06.22", "score": 10, "is_today": true, "source": "naver"}], "best_url": "https://www.g-enews.com/view.php?ud=20260612093652673244093b5d4e_1"}, {"name": "하나마이크론", "code": "067310", "ctrt": 15.92, "vol_eok": 3990, "theme": "개별주", "memo": "399,081", "candidates": [{"title": "[특징주] 하나마이크론, 2분기 실적 개선 기대감에 16%↑", "url": "http://www.newsdream.kr/news/articleView.html?idxno=112761", "desc": "하나마이크론이 9일 오후 16%대의 급등을 이어가고 있다. 한국거래소에 따르면 9일 오후 1시 49분 전 거래일(3만7700원)보다 16.98% 오른 4만4100원에 거래되고 있다. 이날 급등은 메모리반도체 웨이퍼 판가 급등에 따른 2분기...", "date": "2026.06.09", "score": 20, "is_today": false, "source": "naver"}, {"title": "[특징주] 원익IPS, 반도체 수출 급증에 장중 강세…소부장 전반 매수세...", "url": "https://www.tokenpost.kr/news/economy/371583", "desc": "이날 국내 증시에서는 베셀, 엘디티, 원익QnC, 테스, 유진테크, 하나마이크론, 두산테스나 등 반도체 소재·부품·장비 관련 종목도 동반 상승 흐름을 보였다. 매수세의 배경으로는 수출 지표 개선이 꼽힌다. 관세청에...", "date": "2026.06.22", "score": 10, "is_today": true, "source": "naver"}, {"title": "[특징주] 반도체 수출 역대 최대에 소부장株 강세", "url": "https://www.newspim.com/news/view/20260622000253", "desc": "이 밖에 기가비스(16.98%), 피에스케이(15.45%), 성도이엔지(15.41%), 브이엠(11.88%), 하나마이크론(11.84%), 두산테스나(7.89%), 테스(7.58%), 유진테크(7.28%), 원익IPS(6.60%), 원익QnC(6.31%), 케이알엠(5.89%), 아이앤씨(3.73%), 테크...", "date": "2026.06.22", "score": 10, "is_today": true, "source": "naver"}, {"title": "반도체의 힘…코스피 사상 첫 9100선 안착", "url": "https://biz.sbs.co.kr/article_hub/20000318070?division=NAVER", "desc": "원익 IPS와 제주반도체, 하나마이크론 등이 10% 넘게 올랐습니다. 반도체 호조에 글로벌 투자은행 골드만삭스는 코스피 전망을 1만 2천 포인트로 높여 잡았는데요. 빚을 내서 투자하는 빚투도 좀처럼 줄지 않고...", "date": "2026.06.22", "score": 10, "is_today": true, "source": "naver"}, {"title": "데이터센터가 빨아들인 메모리...MS, 노트북 가격 600弗 올렸다", "url": "https://www.sedaily.com/article/20058713?ref=naver", "desc": "미국 데이터센터 하드웨어 재판매 업체인 서큘러테크놀로지에 따르면 지난 1년 동안 메모리 빅3 중 하나인 마이크론의 데이터센터용 메모리 칩 1개의 계약 가격은 350달러에서 1300달러로 4배 뛰었다. 인공지능(AI) 개발...", "date": "2026.06.22", "score": 10, "is_today": true, "source": "naver"}, {"title": "SK하이닉스, 코스피 시총 1위로…SK스퀘어도 신고가 돌파 [매경 자이앤트...", "url": "https://www.mk.co.kr/article/12080071", "desc": "이 외에 제주반도체, 기가비스, 하나마이크론 등 반도체 소부장(소재·부품·장비)주들도 강세를 보였다. 다만 이날 국내 증시에선 반도체 관련 종목들을 제외하고 신고가를 찍은 종목 수가 많지 않았다. 매경...", "date": "2026.06.22", "score": 10, "is_today": true, "source": "naver"}, {"title": "코스닥 '막판 상승'...원익IPS · 파두 · 제주반도체 · HLB '껑충'", "url": "http://www.choicenews.co.kr/news/articleView.html?idxno=166940", "desc": "주성엔지니어링(2.49%), 이오테크닉스(3.91%), 피에스케이(9.21%), 심텍(7.80%), HPSP(6.01%), 제주반도체(17.24%), 유진테크(11.75%), ISC(6.56%), 하나마이크론(15.92%), 테스(10.35%), 동진쎄미켐(5.80%) 등도 껑충 뛰었다. 또...", "date": "2026.06.22", "score": 10, "is_today": true, "source": "naver"}, {"title": "코스피, 9110선 종가 최고치 마감···시총 1위 올라선 SK하이닉스", "url": "https://www.seoulfn.com/news/articleView.html?idxno=631661", "desc": "제주반도체(17.24%), 하나마이크론(15.92%), 유진테크(11.75%), 원익IPS(10.58%), 테스(10.35%), 피에스케이(9.21%), 심텍(7.80%), ISC(6.56%), HPSP(6.01%), 동진쎄미켐(5.80%) 등이 급등했다. 파두(14.30%)와 HLB(5.61%)도 강세였다. 반면...", "date": "2026.06.22", "score": 10, "is_today": true, "source": "naver"}], "best_url": "http://www.newsdream.kr/news/articleView.html?idxno=112761"}, {"name": "기가비스", "code": "420770", "ctrt": 15.11, "vol_eok": 518, "theme": "개별주", "memo": "51,820", "candidates": [{"title": "기가비스, AI發 ABF 투자 확대 기대에 12%↑[특징주]", "url": "https://www.edaily.co.kr/news/newspath.asp?newsid=02381286645484344", "desc": "기가비스(420770)가 장 초반 12%대 강세다. 22일 엠피닥터에 따르면 이날 오전 9시8분 현재 기가비스(420770)는 전거래일 대비 12.59% 오른 15만6500원에 거래 중이다. 증권가에서 기가비스를 인공지능(AI) 서버용 고성능...", "date": "2026.06.22", "score": 30, "is_today": true, "source": "naver"}, {"title": "[특징주] 기가비스, 일본 반도체 기판사와 94억 공급계약에 12%대 강세", "url": "https://www.tokenpost.kr/news/economy/366284", "desc": "기가비스가 일본 반도체 기판 제조사와 94억6630만원 규모의 반도체 기판 검사·수리장비 공급계약을 체결했다는 소식에 강세를 보였다. 한국거래소에 따르면 기가비스는 전 거래일보다 12.68% 오른 14만1300원에...", "date": "2026.06.04", "score": 20, "is_today": false, "source": "naver"}, {"title": "[특징주] 기가비스, 일본 반도체 기판 제조사와 94억 규모 계약", "url": "https://www.newstnt.com/news/articleView.html?idxno=705237", "desc": "기가비스(420770)는 일본 반도체 기판 제조회사와 '반도체 기판 검사 및 수리장비' 단일판매·공급계약을... 이는 기가비스의 최근 사업연도 매출액 대비 18.05%에 해당하는 수준이다. 계약 기간은 2026년 6월 2일부터...", "date": "2026.06.04", "score": 20, "is_today": false, "source": "naver"}, {"title": "글로벌 OSAT도 반했다… 기가비스, 광학 검사·수리 장비 시장 독주 채비", "url": "https://www.pinpointnews.co.kr/news/articleView.html?idxno=461931", "desc": "한국거래소에 따르면 이날 오전 9시36분 현재 기가비스는 15.11% 상승한 16만원에 거래중이다. 반도체 기판... 기가비스는 머신비전 기술을 기반으로 기판의 내층과 외층을 검사하는 자동광학검사기(AOI)와 불량을 복원하는...", "date": "2026.06.22", "score": 15, "is_today": true, "source": "naver"}, {"title": "메리츠證 \"기가비스, ABF 기판 투자 확대 수혜 기대…목표주가 12%↑\"", "url": "https://www.ajunews.com/view/20260622084502780", "desc": "아주경제=류소현 기자 sohyun@ajunews.com 메리츠증권은 22일 기가비스에 대해 ABF(아지노모토 빌드업 필름)... 메리츠증권은 기가비스의 2분기 연결 기준 매출액과 영업이익이 각각 177억원, 43억원을 기록할 것으로...", "date": "2026.06.22", "score": 15, "is_today": true, "source": "naver"}, {"title": "기가비스, ABF 투자 슈퍼사이클 올라탄다…수주 확대 '본격화'", "url": "http://www.newsprime.co.kr/news/article.html?no=737455", "desc": "메리츠증권은 22일 기가비스(420770)에 대해 하이엔드 ABF 기판 투자 확대 수혜가 본격화되며 실적 성장세가... 기가비스는 반도체 패키지 기판 검사장비 전문기업으로, ABF 기판 생산 공정에서 불량을 선제적으로...", "date": "2026.06.22", "score": 15, "is_today": true, "source": "naver"}, {"title": "기가비스, AI발 ABF 투자 사이클 수혜 본격화…과거 업사이클 압도-메리...", "url": "https://www.edaily.co.kr/news/newspath.asp?newsid=01974566645484344", "desc": "메리츠증권은 22일 기가비스(420770)에 대해 인공지능(AI) 서버용 고성능 반도체 기판(ABF) 투자 확대의 최대... 기가비스는 반도체 기판 검사·수리 장비 전문기업이다. 회사 장비는 금도금 공정 이전 단계에서 불량을...", "date": "2026.06.22", "score": 15, "is_today": true, "source": "naver"}, {"title": "[특징주] 반도체 수출 역대 최대에 소부장株 강세", "url": "https://www.newspim.com/news/view/20260622000253", "desc": "이 밖에 기가비스(16.98%), 피에스케이(15.45%), 성도이엔지(15.41%), 브이엠(11.88%), 하나마이크론(11.84%), 두산테스나(7.89%), 테스(7.58%), 유진테크(7.28%), 원익IPS(6.60%), 원익QnC(6.31%), 케이알엠(5.89%), 아이앤씨(3.73%), 테크...", "date": "2026.06.22", "score": 10, "is_today": true, "source": "naver"}], "best_url": "https://www.edaily.co.kr/news/newspath.asp?newsid=02381286645484344"}, {"name": "파두", "code": "440110", "ctrt": 14.3, "vol_eok": 2044, "theme": "개별주", "memo": "204,415", "candidates": [{"title": "파두, 반도체 수출 역대 최대에 13%대 강세[특징주]", "url": "https://www.newsway.co.kr/news/view?ud=2026062211152085044", "desc": "파두를 비롯한 반도체 장비·소부장 종목이 국내 반도체 수출 호조와 대형 반도체주 강세에 힘입어 장 초반 일제히 상승하고 있다. 22일 한국거래소에 따르면 오전 11시 5분 기준 파두는 전 거래일 대비...", "date": "2026.06.22", "score": 30, "is_today": true, "source": "naver"}, {"title": "[특징주] 파두, 465억원 SSD 컨트롤러 공급 계약…주가는 약세", "url": "http://www.biztribune.co.kr/news/articleView.html?idxno=354208", "desc": "ㅣ 네이버증권 파두가 지난해 매출의 절반 수준에 달하는 기업용 솔리드스테이트드라이브(SSD) 컨트롤러... 28일 오전 10시 45분 기준 코스닥시장에서 파두는 전 거래일 대비 4.36%(5100원) 하락한 11만1800원에 거래되고...", "date": "2026.05.28", "score": 20, "is_today": false, "source": "naver"}, {"title": "삼전닉스·수출액 훈풍에 코스닥 반도체도 '방긋'…파두 15%↑", "url": "https://www.mt.co.kr/stock/2026/06/22/2026062210490360925", "desc": "이날 오전 10시37분 한국거래소에서 파두는 전 거래일 대비 1만5700원(15.48%) 오른 11만7100원, 피에스케이는 2만200원(12.24%) 오른 18만5200원에 거래됐다. 제주반도체는 1만3300원(11.64%) 오른 12만7600원...", "date": "2026.06.22", "score": 15, "is_today": true, "source": "naver"}, {"title": "코스닥 '막판 상승'...원익IPS · 파두 · 제주반도체 · HLB '껑충'", "url": "http://www.choicenews.co.kr/news/articleView.html?idxno=166940", "desc": "코스닥 업종 가운데 원익IPS, 파두, 제주반도체 등 반도체 소부장(소재·부품·장비)주 주가가 급등했다. 한국거래소에 따르면 반도체 소부장주 중 원익IPS가 직전거래일 대비 10.59% 급등했고 파두도 14.30...", "date": "2026.06.22", "score": 15, "is_today": true, "source": "naver"}, {"title": "'바이오→반도체' 코스닥 무게중심 이동…소부장 질주", "url": "https://www.sentv.co.kr/article/view/sentv202606220071", "desc": "반도체 설계 기업 파두는 500% 넘게 급등했습니다. 반도체 소부장 업종 약진을 이끈 건 AI 투자 확대와 반도체 슈퍼사이클에 대한 기대감. 삼성전자, SK하이닉스 등 코스피 반도체 업종 활황에 대한 기대감이 코스닥...", "date": "2026.06.22", "score": 10, "is_today": true, "source": "naver"}, {"title": "'SK하이닉스 vs 삼성전자' 시총 경쟁...코스피 9100선 첫 마감", "url": "https://weekly.hankooki.com/news/articleView.html?idxno=7170808", "desc": "시가총액 상위주 중에서는 주성엔지니어링·원익IPS·파두 등 반도체 장비주가 강세를 보인 반면 알테오젠·에코프로비엠·에코프로 등은 내렸다. 코스피 구성종목 중 148개가 오르고 742개가 내렸으며 28개는...", "date": "2026.06.22", "score": 10, "is_today": true, "source": "naver"}, {"title": "코스피, 9100선 강보합마감...역대 최고치 경신", "url": "https://www.betanews.net/article/view/beta202606220144", "desc": "코스닥 시총 상위종목 가운데 파두(14.30%), 원익IPS(10.58%) 등이 상승했다. 반면 에코프로비엠(-1.59%), 알테오젠(-0.85%) 등은 내렸다. 이날 국내증시는 미국과 이란 간 종전 양해각서(MOU) 이행을 위한 협상에 진전이...", "date": "2026.06.22", "score": 10, "is_today": true, "source": "naver"}, {"title": "암 치료 설계부터 조선·국방·반도체까지···K-AI, 산업 현장 '속속'", "url": "http://www.hellodd.com/news/articleView.html?idxno=112198", "desc": "반도체 분야에서는 모티프테크놀로지스가 파두와 협력해 반도체 설계 전 과정에 독자 AI 모델 적용을 추진한다. 파두는 국내 대표 팹리스 기업 중 하나다. 양사는 회로 설계와 검증, 배치·배선 최적화, 전력 효율...", "date": "2026.06.22", "score": 10, "is_today": true, "source": "naver"}], "best_url": "https://www.newsway.co.kr/news/view?ud=2026062211152085044"}, {"name": "후성", "code": "093370", "ctrt": 9.8, "vol_eok": 1710, "theme": "개별주", "memo": "171,087", "candidates": [{"title": "[특징주] 외국인 '한온시스템·후성·케이뱅크'…기관 '삼성전자·현대...", "url": "https://www.newstnt.com/news/articleView.html?idxno=706164", "desc": "같은 시각 외국인 순매수 상위는 한온시스템, SK네트웍스, 흥아해운(003280), 후성(093370), 한화생명(088350)... 외국인은 한온시스템과 후성에 대한 매수 기조를 이어간 가운데, LG디스플레이(034220)와 케이뱅크(279570)...", "date": "2026.06.12", "score": 20, "is_today": false, "source": "naver"}, {"title": "[특징주] 이차전지 전해질 전문 후성 주가 이틀 연속 20%대 불기둥", "url": "https://www.g-enews.com/view.php?ud=202606101541309438c5557f8da8_1", "desc": "반도체 가스, 이차전지 전해질과 냉매 등을 제조하는 후성의 주가가 이틀 연속 20%대 급등하고 있다.... 후성은 방산업체 퍼스텍과 드론 생산업체 유콘시스템, 내화물 업체 한국내화(주), 후성정공(주) 등과 함께...", "date": "2026.06.10", "score": 20, "is_today": false, "source": "naver"}, {"title": "코스닥 '막판 상승'...원익IPS · 파두 · 제주반도체 · HLB '껑충'", "url": "http://www.choicenews.co.kr/news/articleView.html?idxno=166940", "desc": "2차전지주 중 후성이 9.80% 급등한 반면 에코프로비엠(-1.59%), 에코프로(-1.29%), 엔켐(-3.86%) 등은 하락했다. 로봇주 중 레인보우로보틱스(-2.88%), 현대무벡스(-4.20%), 에스피지(-1.37%), 원익홀딩스(-0.80%) 등이...", "date": "2026.06.22", "score": 10, "is_today": true, "source": "naver"}, {"title": "[거래소 외국인] LG이노텍·HD현대중공업 집중 매수...SK하이닉스 SK스퀘...", "url": "https://www.pinpointnews.co.kr/news/articleView.html?idxno=462115", "desc": "이어 셀트리온, 대한전선, 현대로템, HD현대일렉트릭, 후성 등도 포함되며 산업재·전력 인프라·바이오까지 확산된 모습이다. 특히 HD현대중공업과 현대로템은 글로벌 방산·조선 수요 확대 기대가 반영된 대표적인 수혜...", "date": "2026.06.22", "score": 10, "is_today": true, "source": "naver"}, {"title": "화학주 약세 속 빛난 종목은?... 베셀·크린앤사이언스 주가 상한가 기...", "url": "https://www.pinpointnews.co.kr/news/articleView.html?idxno=462073", "desc": "후성도 11.81% 상승한 1만8940원에 거래중이다. 2차전지 소재와 반도체용 특수가스 사업에 대한 기대감이... 한솔케미칼, 원익머트리얼즈, 후성, SKC 등 첨단 산업 소재 기업은 향후 AI 반도체와 전기차 시장 확대에 따른 수혜...", "date": "2026.06.22", "score": 10, "is_today": true, "source": "naver"}, {"title": "80세에도 새 뇌세포 생겨났다…50대 뇌 가진 ‘치매 노인’ 비밀", "url": "https://www.joongang.co.kr/article/25438759", "desc": "연구팀은 사후 기증된 인간 해마 조직에서 약 35만5997개의 세포핵을 단일세포 RNA 분석과 후성유전학 분석으로 들여다봤다. 그 결과 인간 해마에서 새 뉴런이 만들어지는 여러 단계의 세포 신호를 확인했다. 80대...", "date": "2026.06.22", "score": 10, "is_today": true, "source": "naver"}, {"title": "[서울데이터랩]코스피 거래상위, 보해양조 급등 속 삼성전자·SK하이닉스...", "url": "https://www.seoul.co.kr/news/economy/securities/2026/06/22/20260622500112?wlog_tag3=naver", "desc": "후성(093370)도 1630원 오른 1만 8570원으로 9.62% 뛰었으며, 성문전자는 6.11%, SK하이닉스(000660)는 5.54%, 현대약품은 4.91%, 삼성전자우(005935)는 3.60%, 삼성전자는 1.13%, 대우건설(047040)은 0.94% 각각...", "date": "2026.06.22", "score": 10, "is_today": true, "source": "naver"}, {"title": "[데이터 뉴스룸] 석화業 50곳, 1분기 영업益 성적은?…에쓰-오일·LG화학...", "url": "https://www.greened.kr/news/articleView.html?idxno=342988", "desc": "여기에는 ▲클리오 182.4%(20억 9800만 원→59억 2500만 원) ▲코오롱인더스트리 123%(179억 6400만 원→400억 6600만 원) ▲후성 103%(41억 600만 원→83억 3400만 원) 순으로 나타났다. 50~100% 수준으로 영업이익이 오른 곳도...", "date": "2026.06.22", "score": 10, "is_today": true, "source": "naver"}], "best_url": "https://www.newstnt.com/news/articleView.html?idxno=706164"}, {"name": "피에스케이", "code": "319660", "ctrt": 10.61, "vol_eok": 3120, "theme": "개별주", "memo": "312,062", "candidates": [{"title": "[특징주] 25% 폭등 피에스케이...눈밝은 증권사들 이미 '장비 수요↑'조...", "url": "https://www.financialpost.co.kr/news/articleView.html?idxno=262016", "desc": "피에스케이(PSK)가 글로벌 반도체 업황 회복과 주요 고객사들의 설비투자(CAPEX) 확대에 힘입어 성장세를... 9일 금융투자업계에 따르면 피에스케이를 향한 주요 증권사들의 눈높이 상향은 지난 5월 중순부터 순차적으로...", "date": "2026.06.09", "score": 20, "is_today": false, "source": "naver"}, {"title": "[특징주] 피에스케이, 반도체 투자 확대 수혜 기대감에 급등", "url": "https://www.ajunews.com/view/20260609141118035", "desc": "아주경제=신동근 기자 sdk6425@ajunews.com 반도체 공정 장비 업체 피에스케이가 반도체 투자 확대 기대감에 힘입어 강세를 보이고 있다. 9일 한국거래소에 따르면 이날 오후 2시 6분 기준 피에스케이는 전 거래일 대비...", "date": "2026.06.09", "score": 20, "is_today": false, "source": "naver"}, {"title": "파두, 반도체 수출 역대 최대에 13%대 강세[특징주]", "url": "https://www.newsway.co.kr/news/view?ud=2026062211152085044", "desc": "같은 시각 제주반도체(13.47%)와 피에스케이(12.00%)는 두 자릿수 상승하고 있다. 심텍(8.37%), 원익IPS(5.90%), HPSP(3.36%)도 오르며 반도체 장비·소부장 종목 전반이 강세를 나타내고 있다. 반도체 대형주도 강세다....", "date": "2026.06.22", "score": 10, "is_today": true, "source": "naver"}, {"title": "삼전닉스·수출액 훈풍에 코스닥 반도체도 '방긋'…파두 15%↑", "url": "https://www.mt.co.kr/stock/2026/06/22/2026062210490360925", "desc": "이날 오전 10시37분 한국거래소에서 파두는 전 거래일 대비 1만5700원(15.48%) 오른 11만7100원, 피에스케이는 2만200원(12.24%) 오른 18만5200원에 거래됐다. 제주반도체는 1만3300원(11.64%) 오른 12만7600원...", "date": "2026.06.22", "score": 10, "is_today": true, "source": "naver"}, {"title": "[특징주] 반도체 수출 역대 최대에 소부장株 강세", "url": "https://www.newspim.com/news/view/20260622000253", "desc": "이 밖에 기가비스(16.98%), 피에스케이(15.45%), 성도이엔지(15.41%), 브이엠(11.88%), 하나마이크론(11.84%), 두산테스나(7.89%), 테스(7.58%), 유진테크(7.28%), 원익IPS(6.60%), 원익QnC(6.31%), 케이알엠(5.89%), 아이앤씨(3.73%), 테크...", "date": "2026.06.22", "score": 10, "is_today": true, "source": "naver"}, {"title": "꽉 채우거나 지주사 섞거나… 하이닉스ETF '골라담기' 경쟁", "url": "https://www.asiatoday.co.kr/kn/view.php?key=20260623010007690", "desc": "LG이노텍·피에스케이·브이엠 등 하이닉스의 생산 공정과 긴밀히 연결된 소재·부품·장비 업체들이 포트폴리오의 핵심을 이룬다. 2024년 11월 상장 후 수익률은 545%를 기록하고 있다.이 상품은 패시브 ETF와 달리...", "date": "2026.06.22", "score": 10, "is_today": true, "source": "naver"}, {"title": "코스피 0.69% 상승 마감…SK하이닉스 시총 1위 등극", "url": "https://www.ezyeconomy.com/news/articleView.html?idxno=236609", "desc": "코스닥 시가총액 상위 종목 가운데 원익IPS(10.00%), 유진테크(10.38%), 피에스케이(9.88%) 등이 강세를 보였다. 반면 알테오젠(-0.99%), 에코프로비엠(-1.95%), 에코프로(-1.29%), 레인보우로보틱스(-2.37%), 리노공업...", "date": "2026.06.22", "score": 10, "is_today": true, "source": "naver"}, {"title": "거래소, 코스닥 30주년 행사 내달 1일 개최…IR·세미나 사흘간 진행", "url": "https://biz.chosun.com/stock/stock_general/2026/06/22/EY4DD7VJDNAD5ACSCLXM6TSH6U/?utm_source=naver&utm_medium=original&utm_campaign=biz", "desc": "기업 IR에는 알테오젠, 에이비엘바이오, HPSP, 피에스케이, 로보티즈, 파마리서치 등이 참여한다. 코넥스 상장사인 이엠티, 노브메타파마, 메디쎄이 등도 투자자들과 만날 예정이다. 거래소는 이번 행사가 코스닥...", "date": "2026.06.22", "score": 10, "is_today": true, "source": "naver"}], "best_url": "https://www.financialpost.co.kr/news/articleView.html?idxno=262016"}];
+
+let state = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+
+function saveState() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+
+function ensureState(name) {
+  if (!state[name]) state[name] = { chosen_idx: 0, decision: null };
+  return state[name];
+}
+
+function decide(name, decision) {
+  const st = ensureState(name);
+  st.decision = (st.decision === decision) ? null : decision;  // 같은 버튼 다시 누르면 해제
+  saveState();
+  render();
+}
+
+function navCandidate(name, delta) {
+  const st = ensureState(name);
+  const stock = DATA.find(s => s.name === name);
+  const max = (stock.candidates || []).length - 1;
+  let idx = (st.chosen_idx || 0) + delta;
+  if (idx < 0) idx = 0;
+  if (idx > max) idx = max;
+  st.chosen_idx = idx;
+  saveState();
+  render();
+}
+
+function _buildPayload() {
+  const results = DATA.map(s => {
+    const st = state[s.name] || {};
+    const idx = st.chosen_idx || 0;
+    const cands = s.candidates || [];
+    const cand = cands[idx] || null;
+    // recent_articles: 대표 1건(chosen) + 나머지 후보들 (URL dedup)
+    const seen = new Set();
+    const recent = [];
+    const tryAdd = (a) => {
+      if (!a || !a.url || seen.has(a.url)) return;
+      seen.add(a.url);
+      recent.push(a);
+    };
+    tryAdd(cand);
+    cands.forEach(tryAdd);
+    return {
+      name: s.name, code: s.code, ctrt: s.ctrt, vol_eok: s.vol_eok, theme: s.theme,
+      decision: st.decision || null,
+      chosen_article: (st.decision === "approved" && cand) ? cand : null,
+      recent_articles: recent.slice(0, 5),
+      candidates_seen: (st.chosen_idx || 0) + 1,
+      total_candidates: cands.length
+    };
+  });
+  return {
+    date: REVIEW_DATE,
+    exported_at: new Date().toISOString(),
+    summary: {
+      total: DATA.length,
+      approved: results.filter(r => r.decision === "approved").length,
+      rejected: results.filter(r => r.decision === "rejected").length,
+      skipped:  results.filter(r => r.decision === "skipped").length,
+      pending:  results.filter(r => !r.decision).length
+    },
+    results
+  };
+}
+
+function _showPushResult(html, color) {
+  const div = document.getElementById("pushResult");
+  div.style.display = "block";
+  div.style.background = color || "#f1f8f3";
+  div.innerHTML = html;
+}
+
+async function pushToNotion() {
+  const payload = _buildPayload();
+  const approved = payload.summary.approved;
+  if (approved === 0) {
+    _showPushResult("⚠️ 승인된 종목이 없습니다. ✅ 승인 버튼을 먼저 누르세요.", "#fff3e0");
+    return;
+  }
+  if (!PUSH_ENDPOINT) {
+    _showPushResult("⚠️ 푸시 서버가 비활성화 — JSON 다운로드로 폴백합니다.", "#fff3e0");
+    _downloadJson(payload);
+    return;
+  }
+  const btn = document.getElementById("btnPush");
+  btn.disabled = true;
+  btn.textContent = "⏳ 푸시 중...";
+  _showPushResult("⏳ 노션에 " + approved + "건 푸시 중...", "#e3f2fd");
+  try {
+    const res = await fetch(PUSH_ENDPOINT + "/push", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify(payload)
+    });
+    const ack = await res.json();
+    if (!res.ok) throw new Error(ack.error || ("HTTP " + res.status));
+    // 서버가 백그라운드로 푸시 진행 → /status 폴링으로 완료 대기
+    let st, elapsed = 0;
+    for (;;) {
+      await new Promise(r => setTimeout(r, 1500));
+      elapsed += 1.5;
+      const sr = await fetch(PUSH_ENDPOINT + "/status");
+      st = await sr.json();
+      if (st.status === "done" || st.status === "error") break;
+      _showPushResult("⏳ 노션에 " + approved + "건 푸시 중... (" + Math.round(elapsed) + "초 경과)", "#e3f2fd");
+    }
+    if (st.status === "error") throw new Error(st.error || "unknown");
+    const data = st.result || {};
+    let msg = "✅ 노션 푸시 완료 — 총 " + data.total + "건 / 신규 " + data.created + ", 업데이트 " + data.updated;
+    let color = "#e8f5e9";
+    if (data.errors && data.errors.length) {
+      msg += "<br>⚠️ 실패 " + data.errors.length + "건: ";
+      msg += data.errors.map(e => e.name + " (" + e.error + ")").join(", ");
+      color = "#fff3e0";
+    }
+    msg += "<br>🖥️ cmd 창은 남은 단계(아웃컴·패턴·동기화)를 마친 뒤 자동으로 닫힙니다.";
+    _showPushResult(msg, color);
+  } catch (e) {
+    _showPushResult("❌ 푸시 실패: " + e.message + "<br>JSON 다운로드로 폴백합니다.", "#ffebee");
+    _downloadJson(payload);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "📤 노션에 푸시";
+  }
+}
+
+function _downloadJson(payload) {
+  const blob = new Blob([JSON.stringify(payload, null, 2)], {type: "application/json"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "reviewed_" + REVIEW_DATE + ".json";
+  document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
+}
+
+function resetAll() {
+  if (!confirm("모든 검수 결과를 초기화합니다.")) return;
+  state = {}; saveState(); render();
+}
+
+function escapeHtml(s) {
+  return String(s == null ? "" : s)
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+}
+
+function decisionLabel(d) {
+  return ({ approved: "✅ 승인", rejected: "❌ 거부", skipped: "⏭️ 스킵" })[d] || "";
+}
+
+function render() {
+  const cards = document.getElementById("cards");
+  cards.innerHTML = "";
+  let done = 0;
+
+  DATA.forEach((s, sIdx) => {
+    const st = state[s.name] || { chosen_idx: 0, decision: null };
+    if (st.decision) done++;
+
+    const card = document.createElement("div");
+    card.className = "stock-card" + (st.decision ? " " + st.decision : "");
+    card.dataset.name = s.name;
+
+    const ctrtClass = s.ctrt >= 0 ? "ctrt-up" : "ctrt-down";
+    const ctrtSign  = s.ctrt >= 0 ? "+" : "";
+
+    let html = "";
+    html += '<div class="stock-header">';
+    html += '<span class="stock-name">' + escapeHtml(s.name) + '</span>';
+    html += '<span class="' + ctrtClass + '">' + ctrtSign + s.ctrt.toFixed(2) + '%</span>';
+    html += '<span class="stock-meta">' + s.vol_eok.toLocaleString() + '억</span>';
+    html += '<span class="theme-tag">' + escapeHtml(s.theme) + '</span>';
+    if (s.memo) html += '<span class="memo">' + escapeHtml(s.memo) + '</span>';
+    if (st.decision) html += '<span class="decision-tag">→ ' + decisionLabel(st.decision) + '</span>';
+    html += '</div>';
+
+    const candidates = s.candidates || [];
+    if (candidates.length === 0) {
+      html += '<div class="empty">관련 기사 없음</div>';
+    } else {
+      const idx = st.chosen_idx || 0;
+      const cand = candidates[idx];
+      html += '<div class="nav-bar">';
+      html += '<button class="btn-nav" data-act="prev" data-name="' + escapeHtml(s.name) + '"' + (idx === 0 ? ' disabled' : '') + '>⬅️ 이전</button>';
+      html += '<span style="font-size:13px;color:#666;">후보 ' + (idx+1) + ' / ' + candidates.length + '</span>';
+      html += '<button class="btn-nav" data-act="next" data-name="' + escapeHtml(s.name) + '"' + (idx >= candidates.length-1 ? ' disabled' : '') + '>다음 ➡️</button>';
+      html += '<span style="margin-left:auto;font-size:12px;color:#999;">점수 ' + cand.score + '</span>';
+      html += '</div>';
+      html += '<div class="article">';
+      html += '<div class="article-meta">';
+      if (cand.date) html += '<span>' + escapeHtml(cand.date) + '</span> ';
+      if (cand.is_today) html += '<span class="badge-today">오늘</span>';
+      else if (cand.date) html += '<span class="badge-old">이전</span>';
+      html += '<span class="badge-source">' + escapeHtml(cand.source || "naver") + '</span>';
+      html += '</div>';
+      html += '<div class="article-title"><a href="' + escapeHtml(cand.url) + '" target="_blank" rel="noopener">' + escapeHtml(cand.title) + '</a></div>';
+      if (cand.desc) html += '<div class="article-desc">' + escapeHtml(cand.desc) + '</div>';
+      html += '</div>';
+    }
+
+    html += '<div class="actions">';
+    html += '<button class="btn-approve" data-act="approved" data-name="' + escapeHtml(s.name) + '">✅ 승인</button>';
+    html += '<button class="btn-reject"  data-act="rejected" data-name="' + escapeHtml(s.name) + '">❌ 거부</button>';
+    html += '<button class="btn-skip"    data-act="skipped"  data-name="' + escapeHtml(s.name) + '">⏭️ 스킵</button>';
+    html += '</div>';
+
+    card.innerHTML = html;
+    cards.appendChild(card);
+  });
+
+  document.getElementById("progressBar").style.width = (done / DATA.length * 100) + "%";
+  document.getElementById("progressText").textContent = done + " / " + DATA.length + " 검토";
+}
+
+document.addEventListener("click", (e) => {
+  const btn = e.target.closest("button[data-act]");
+  if (!btn) return;
+  const name = btn.dataset.name;
+  const act  = btn.dataset.act;
+  if (act === "prev")      navCandidate(name, -1);
+  else if (act === "next") navCandidate(name, 1);
+  else                     decide(name, act);
+});
+
+render();
+</script>
+</body>
+</html>

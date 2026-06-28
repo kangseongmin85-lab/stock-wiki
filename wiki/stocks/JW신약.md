@@ -1,8 +1,8 @@
 ---
 tags: [바이오/의료AI, 탈모]
 sector: 바이오/의료AI
-last_updated: 2026-06-17
-notion_last_edited: 2026-06-17T10:44:00.000Z
+last_updated: 2026-06-22
+notion_last_edited: 2026-06-22T14:44:00.000Z
 theme: ["#탈모"]
 stock_code: 067290
 is_leader: 
@@ -34,7 +34,11 @@ recent_breakout:
 
 > 출처: Notion `추가 중요내용` 섹션 | 등락률은 Notion DB `등락률(%)` 컬럼 기준
 
-_[⏳ 추가 중요내용 없음]_
+- [2026-06-22] [2026.06.17] [[주식] '탈모코인' 제약사 오늘도 불장…오늘은 JW신약 차례](https://www.hitnews.co.kr/news/articleView.html?idxno=76943) / 등락률: +16.92%% / [등급 미분류]
+- [2026-06-22] [2026.06.17] [[주식마감] 무상증자 기대감에 가온전선 상한가... 효성화학·JW신약 등...](https://www.ggilbo.com/news/articleView.html?idxno=1164291) / 등락률: +16.92%% / [등급 미분류]
+- [2026-06-22] [2026.06.17] [유가증권시장 제약지수 1만 5000선 복귀, JW신약 상한가](http://www.newsmp.com/news/articleView.html?idxno=254790) / 등락률: +16.92%% / [등급 미분류]
+- [2026-06-22] [2026.06.17] [[주가] 6월 17일 주요 제약·바이오·기기 5% 변동 현황 - JW신약 상한가...](https://www.medipana.com/news/articleView.html?idxno=413084) / 등락률: +16.92%% / [등급 미분류]
+- [2026-06-22] [2026.06.17] [가온전선·효성화학·JW신약 상한가…전선·화학·제약주 강세 부각](https://www.cbci.co.kr/news/articleView.html?idxno=582647) / 등락률: +16.92%% / [등급 미분류]
 
 ---
 
@@ -42,16 +46,18 @@ _[⏳ 추가 중요내용 없음]_
 
 > 출처: Notion `지난기사 아카이브 + 링크` 100% 전수 복사 (요약·누락 금지)
 
-_[⏳ 아카이브 없음]_
+- [[주식] '탈모코인' 제약사 오늘도 불장…오늘은 JW신약 차례](https://www.hitnews.co.kr/news/articleView.html?idxno=76943)
+- [[주식마감] 무상증자 기대감에 가온전선 상한가... 효성화학·JW신약 등...](https://www.ggilbo.com/news/articleView.html?idxno=1164291)
+- [유가증권시장 제약지수 1만 5000선 복귀, JW신약 상한가](http://www.newsmp.com/news/articleView.html?idxno=254790)
+- [[주가] 6월 17일 주요 제약·바이오·기기 5% 변동 현황 - JW신약 상한가...](https://www.medipana.com/news/articleView.html?idxno=413084)
+- [가온전선·효성화학·JW신약 상한가…전선·화학·제약주 강세 부각](https://www.cbci.co.kr/news/articleView.html?idxno=582647)
 
 ---
 
 ## 기업 기본 정보
 
 - **홈페이지**: [http://www.jw-shinyak.co.kr/](http://www.jw-shinyak.co.kr/)
-- **사업 구조**: 동사는 1975년 설립되고 2003년 코스닥 상장, 2009년 구 중외신약 흡수 후 2016년 JW신약으로 사명 변경함.
-항진균제, 비뇨기과용제 등 전문의약품을 제조·판매하며 피부과, 비뇨기과, 소아과, 내과 시장에서 사업을 하고 있음.
-대식세포 유전자 조작 기술을 이용한 CAR-NK 치료제 개발로 차세대 항암 시장 진출과 탈모 및 코스메슈티컬 시장 확장을...
+- **사업 구조**: 동사는 1975년 설립되고 2003년 코스닥 상장, 2009년 구 중외신약 흡수 후 2016년 JW신약으로 사명 변경함. 항진균제, 비뇨기과용제 등 전문의약품을 제조·판매하며 피부과, 비뇨기과, 소아과, 내과 시장에서 사업을 하고 있음. 대식세포 유전자 조작 기술을 이용한 CAR-NK 치료제 개발로 차세대 항암 시장 진출과 탈모 및 코스메슈티컬 시장 확장을...
 - **유통가능주식 비율**: 68.98%
 
 ---
@@ -82,8 +88,8 @@ _직접 추가 또는 LLM이 분석 시 기록_
 
 | 날짜 | 등락률 | 재료 요약 |
 |------|--------|-----------|
-| 2026-06-17 | +29.9% | 재료 미기재 |
+| 2026-06-22 | +16.9% | [[주식] '탈모코인' 제약사 오늘도 불장…오늘은 JW신약 차례](https://www.hitnews.co.kr/news/articleView. |
 
 ## 마지막 업데이트
 
-2026-06-17 | Notion ingest (ingest_all.py 자동 생성)
+2026-06-22 | Notion ingest (ingest_all.py 자동 생성)
