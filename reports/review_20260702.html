@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>기사 검수 - 20260702</title>
+<style>
+* { box-sizing: border-box; }
+body { font-family: -apple-system, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; max-width: 1100px; margin: 0 auto; padding: 20px; background: #f5f5f7; color: #222; }
+.topbar { position: sticky; top: 10px; background: white; padding: 14px 18px; border-radius: 12px; display: flex; align-items: center; gap: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 16px; z-index: 10; }
+.topbar h2 { margin: 0; font-size: 17px; }
+.progress { flex: 1; height: 8px; background: #eee; border-radius: 4px; overflow: hidden; }
+.progress-bar { height: 100%; background: #4CAF50; transition: width 0.2s; }
+.stock-card { background: white; padding: 18px; border-radius: 10px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); border-left: 4px solid transparent; }
+.stock-card.approved { border-left-color: #4CAF50; background: #f1f8f3; }
+.stock-card.rejected { border-left-color: #f44336; background: #fdecea; }
+.stock-card.skipped  { border-left-color: #999; background: #f5f5f5; }
+.stock-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
+.stock-name { font-size: 17px; font-weight: 700; }
+.stock-meta { color: #666; font-size: 13px; }
+.ctrt-up   { color: #d32f2f; font-weight: 600; }
+.ctrt-down { color: #1976d2; font-weight: 600; }
+.theme-tag { background: #e3f2fd; color: #1976d2; padding: 2px 8px; border-radius: 4px; font-size: 12px; }
+.memo { color: #888; font-size: 12px; margin-left: 4px; }
+.article { background: #fafafa; padding: 12px; border-radius: 8px; margin: 8px 0; }
+.article-meta { color: #666; font-size: 12px; margin-bottom: 4px; }
+.article-title { font-weight: 600; margin: 4px 0; line-height: 1.4; }
+.article-title a { color: #1565c0; text-decoration: none; }
+.article-title a:hover { text-decoration: underline; }
+.article-desc { color: #444; font-size: 13px; line-height: 1.5; }
+.nav-bar { display: flex; align-items: center; gap: 8px; margin: 8px 0 4px; }
+.actions { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+button { padding: 8px 14px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 13px; }
+button:disabled { opacity: 0.4; cursor: default; }
+.btn-approve { background: #4CAF50; color: white; }
+.btn-reject  { background: #f44336; color: white; }
+.btn-skip    { background: #9e9e9e; color: white; }
+.btn-nav     { background: #e0e0e0; color: #333; padding: 6px 10px; }
+.btn-export  { background: #1976d2; color: white; }
+.btn-reset   { background: white; color: #888; border: 1px solid #ddd; }
+.badge-today { background: #4CAF50; color: white; font-size: 11px; padding: 2px 6px; border-radius: 3px; margin-right: 4px; }
+.badge-old   { background: #ff9800; color: white; font-size: 11px; padding: 2px 6px; border-radius: 3px; margin-right: 4px; }
+.badge-source { background: #7e57c2; color: white; font-size: 11px; padding: 2px 6px; border-radius: 3px; }
+.empty { color: #aaa; font-style: italic; padding: 18px; text-align: center; background: #fafafa; border-radius: 8px; }
+.decision-tag { margin-left: auto; font-size: 13px; font-weight: 600; }
+</style>
+</head>
+<body>
+<div class="topbar">
+  <h2>기사 검수 - 20260702</h2>
+  <div class="progress"><div class="progress-bar" id="progressBar"></div></div>
+  <span id="progressText" style="font-size:13px;color:#666;"></span>
+  <button class="btn-export" onclick="pushToNotion()" id="btnPush">📤 노션에 푸시</button>
+  <button class="btn-reset" onclick="resetAll()">초기화</button>
+</div>
+
+<div id="pushResult" style="margin:12px 0;padding:10px;border-radius:6px;display:none;font-size:14px;"></div>
+
+<div id="cards"></div>
+
+<script>
+const REVIEW_DATE     = "20260702";
+const STORAGE_KEY     = "review_" + REVIEW_DATE;
+const PUSH_ENDPOINT   = "http://127.0.0.1:8765";  // 비어있으면 푸시 비활성, 다운로드만
+const DATA            = [{"name": "SOL SK하이닉스선물단일종목인버스2X", "code": "0197X0", "ctrt": 34.67, "vol_eok": 21167, "theme": "개별주", "memo": "2,116,746", "candidates": [{"title": "[주식마감] 정부 '메가 프로젝트' 수혜 기대감에 진흥기업 상한가... 일...", "url": "https://www.ggilbo.com/news/articleView.html?idxno=1167231", "desc": "사진= 연합뉴스 한편 이날 코스피 시장 거래 상위종목 30위는 KODEX 200선물인버스2X, KODEX 인버스, 삼성 인버스 2X WTI원유 선물 ETN, SOL SK하이닉스선물단일종목인버스2X, KODEX SK하이닉스단일종목레버리지, TIGER...", "date": "2026.07.02", "score": 10, "is_today": true, "source": "naver"}, {"title": "변동장에 커지는 하락 베팅…인버스 ETF에 몰리는 개미", "url": "https://www.sedaily.com/article/20063193?ref=naver", "desc": "2일 한국거래소에 따르면 6월 한 달 ETF 거래량 상위 50개 종목 가운데 KODEX 200선물인버스2X, KODEX 인버스, SOL SK하이닉스선물단일종목인버스2X, TIGER 200선물인버스2X 등 인버스 ETF 4개가 거래량 상위 5위 안에...", "date": "2026.07.02", "score": 10, "is_today": true, "source": "naver"}, {"title": "[ETF 시황] 메타發 반도체 조정에 인버스 ETF만 강세", "url": "https://www.newspim.com/news/view/20260702001019", "desc": "코스콤 ETF CHECK에 따르면 이날 ETF 시장에서 SOL SK하이닉스선물단일종목인버스2X는 전 거래일 대비 34.67% 상승하며 전체 ETF 가운데 가장 높은 일간 수익률을 기록했다. 이어 KIWOOM 200선물인버스2X(19.12%), PLUS...", "date": "2026.07.02", "score": 10, "is_today": true, "source": "naver"}, {"title": "[상반기 증시 결산] ETF 수익률 1위는 '타이거'…거래는 코덱스가 선두", "url": "https://www.ajunews.com/view/20260702150306717", "desc": "반대로 하락에 베팅한 인버스 상품은 큰 손실을 기록했다. SOL SK하이닉스선물단일종목인버스2X는 63.58% 하락했고, PLUS 삼성전자선물단일종목인버스2X도 41.18% 떨어졌다.", "date": "2026.07.02", "score": 10, "is_today": true, "source": "naver"}, {"title": "[ETF 리그테이블] 반도체 ETF, 수익률 상위권 장악…우주테크는 추락", "url": "https://www.smarttoday.co.kr/ko-kr/articles/109126", "desc": "SOL SK하이닉스선물단일종목인버스2X가 마이너스 51.12%를 기록하며 6월 ETF 수익률 최하위에 머물렀다. 반도체 대표주의 강세 속에서 SK하이닉스 하락에 베팅하는 2배 인버스 구조가 손실을 키웠다. PLUS...", "date": "2026.07.02", "score": 10, "is_today": true, "source": "naver"}, {"title": "\"삼전닉스 믿었는데\" 레버리지 '비명'...인버스 개미들만 웃는다", "url": "https://www.mt.co.kr/stock/2026/06/08/2026060809421421263", "desc": "PLUS 삼성전자선물단일종목인버스2X(11.55%), TIGER 인버스(6.27%), SOL SK하이닉스선물단일종목인버스2X(5.30%), KODEX 인버스(5.22%) 등이 강세다. 이날 코스피는 지수가 8% 넘게 폭락하면서 서킷브레이커가 발동됐다....", "date": "2026.06.08", "score": 0, "is_today": false, "source": "naver"}, {"title": "브로드컴 쇼크에 반도체 투톱 급락…단일종목 레버리지도 약세[특징주]", "url": "https://www.newsway.co.kr/news/view?ud=2026060511132614448", "desc": "반면 주가 하락에 베팅하는 인버스 2배(곱버스) 상품인 SOL SK하이닉스선물단일종목인버스2X(11.11%)와 PLUS 삼성전자선물단일종목인버스2X(8.13%)는 강세를 보이고 있다. 레버리지 상품의 변동성 확대는 기초자산인...", "date": "2026.06.05", "score": 0, "is_today": false, "source": "naver"}, {"title": "‘보고도 못 믿겠다’ 레버리지 ETF에 무려 ‘84조’…KODEX200 제치고 압...", "url": "https://biz.heraldcorp.com/article/10794622?ref=naver", "desc": "하락에 베팅하는 SOL SK하이닉스선물단일종목인버스2X도 23조2000억원이 거래되며 7위를 기록했다. 단일종목 레버리지 ETF가 ETF 시장 거래대금을 사실상 장악한 셈이다. 이번 거래 급증의 배경에는 AI 반도체 투자...", "date": "2026.07.01", "score": 0, "is_today": false, "source": "naver"}], "best_url": "https://www.ggilbo.com/news/articleView.html?idxno=1167231"}, {"name": "비엘팜텍", "code": "065170", "ctrt": 29.96, "vol_eok": 267, "theme": "개별주", "memo": "26,734", "candidates": [{"title": "[특징주] 비엘팜텍, 분자접착제 항암제 주목…상한가 급등", "url": "https://www.moneystorm.kr/news/articleView.html?idxno=4812", "desc": "2일 주식시장이 전체적으로 급락하는 가운데 비엘팜텍이 급등하며 상한가(3,535원)에 진입한 가장 결정적인... 비엘팜텍은 최근 개최된 세계 최대 바이오 행사인 '바이오 USA'에서 글로벌 제약사 및 대형 투자사들과 잇달아...", "date": "2026.07.02", "score": 30, "is_today": true, "source": "naver"}, {"title": "[특징주] 비엘팜텍, BIO USA 성과 기대감에 상한가 마감", "url": "https://www.biotimes.co.kr/news/articleView.html?idxno=32735", "desc": "비엘팜텍(065170)이 글로벌 기술사업화 기대감에 힘입어 25일 코스닥 시장에서 상한가를 기록했다. 이날 비엘팜텍은 29.86%(630원) 상승한 2,740원에 거래를 마감했다. 시장에서는 미국 샌디에이고에서 열리고 있는 세계...", "date": "2026.06.25", "score": 20, "is_today": false, "source": "naver"}, {"title": "[특징주] 비엘팜텍, 바이오USA서 기술이전 기대감에 상한가", "url": "https://www.biotimes.co.kr/news/articleView.html?idxno=32548", "desc": "비엘팜텍(065170)이 18일 코스닥 시장에서 가격제한폭(29.92%, 535원)까지 오르며 상한가인 2,320원으로 거래를... 이날 투자자들의 관심은 단순한 행사 참가가 아니라 비엘팜텍이 보유한 차세대 표적단백질분해(TPD)...", "date": "2026.06.18", "score": 20, "is_today": false, "source": "naver"}, {"title": "비엘팜텍 \"BIO USA 2026서 분자접착제 항암제 글로벌 협력 성과 가시화\"", "url": "https://view.asiae.co.kr/article/2026070208580588496", "desc": "비엘팜텍이 세계 최대 바이오 행사인 '바이오 인터내셔널 컨벤션 2026(BIO USA 2026)'에 참가해 글로벌 제약사와... 비엘팜텍은 행사 기간 동안 다국적 제약사와 글로벌 투자 기업 등과 파트너링 미팅을 진행하고, 자사의...", "date": "2026.07.02", "score": 15, "is_today": true, "source": "naver"}, {"title": "[2일 특징주] 美 메타 쇼크에 반도체株 '약세'…SK하이닉스 14%↓", "url": "https://www.newsworks.co.kr/news/articleView.html?idxno=845927", "desc": "코스닥에서는 ▲마키나락스 ▲삼기에너지솔루션즈 ▲비엘팜텍 ▲삼기 ▲광진실업 ▲신원종합개발 ▲프롬바이오 ▲썸에이지 등이 상한가를 찍었다. 마키나락스는 상반기 수주액이 200억원을 넘을 것으로...", "date": "2026.07.02", "score": 10, "is_today": true, "source": "naver"}, {"title": "[주식마감] 정부 '메가 프로젝트' 수혜 기대감에 진흥기업 상한가... 일...", "url": "https://www.ggilbo.com/news/articleView.html?idxno=1167231", "desc": "2일 진흥기업, 일성건설, 진흥기업우B, 진흥기업2우B, 마키나락스, 삼기에너지솔루션즈, 비엘팜텍, 삼기... 코스닥 시장에선 마키나락스, 삼기에너지솔루션즈, 비엘팜텍, 삼기, 광진실업, 신원종합개발, 프롬바이오...", "date": "2026.07.02", "score": 10, "is_today": true, "source": "naver"}, {"title": "AI쏠림에…'더블배거' 종목은 32% 줄었다", "url": "https://www.mk.co.kr/article/12089096", "desc": "올해 상승률 1~5위 주성엔지니어링(반도체장비·721%), 비엘팜텍(바이오·545%), 대한광통신(광통신·461%), 기가비스(반도체장비·455%), PSK(반도체장비·396%) 중에서 AI와 무관한 종목은 비엘팜텍뿐이다. 올해 코스피...", "date": "2026.07.02", "score": 10, "is_today": true, "source": "naver"}, {"title": "2일 코스피 7.89% 급락에도 12종목 상한가", "url": "https://www.junggi.co.kr/news/articleView.html?idxno=37006", "desc": "마키나락스·삼기에너지솔루션즈·비엘팜텍 등 12개 종목은 상한가에 안착했다. AI 거품 경고음에... 95%↑·1944원), 비엘팜텍(29.96%↑·3535원), 삼기(29.97%↑·1804원), 광진실업(30.00%↑·6500원), 신원종합개발(29.94...", "date": "2026.07.02", "score": 10, "is_today": true, "source": "naver"}], "best_url": "https://www.moneystorm.kr/news/articleView.html?idxno=4812"}, {"name": "삼기에너지솔루션즈", "code": "419050", "ctrt": 29.95, "vol_eok": 469, "theme": "개별주", "memo": "46,993", "candidates": [{"title": "[서울데이터랩]코스닥 거래상위 종목 엇갈린 흐름…삼기에너지솔루션즈...", "url": "https://www.seoul.co.kr/news/economy/securities/2026/07/02/20260702500105?wlog_tag3=naver", "desc": "거래량 1위는 삼기에너지솔루션즈(419050)로 2012만 707주가 거래됐다. 주가는 1847원으로 전일 대비 23.46% 급등했다. KBI메탈(024840)은 1921만 993주 거래에 5080원으로 5.28% 상승했고, 매드업(0039P0)은 1356만...", "date": "2026.07.02", "score": 15, "is_today": true, "source": "naver"}, {"title": "[2일 특징주] 美 메타 쇼크에 반도체株 '약세'…SK하이닉스 14%↓", "url": "https://www.newsworks.co.kr/news/articleView.html?idxno=845927", "desc": "코스닥에서는 ▲마키나락스 ▲삼기에너지솔루션즈 ▲비엘팜텍 ▲삼기 ▲광진실업 ▲신원종합개발 ▲프롬바이오 ▲썸에이지 등이 상한가를 찍었다. 마키나락스는 상반기 수주액이 200억원을 넘을 것으로...", "date": "2026.07.02", "score": 10, "is_today": true, "source": "naver"}, {"title": "[특징주] 외국인, 삼성전자·삼성중공업 팔고…기관, BNK금융지주·KB금...", "url": "https://www.newstnt.com/news/articleView.html?idxno=708654", "desc": "외국인 순매도 종목은 삼성전자가 1위를 유지한 가운데, 장 초반 매수세를 보였던 대원전선이 2위로 전환되었으며 삼기에너지솔루션즈(123840), 삼성중공업, KBI메탈 순으로 매도세가 이어졌다. 기관 투자자의...", "date": "2026.07.02", "score": 10, "is_today": true, "source": "naver"}, {"title": "[주식마감] 정부 '메가 프로젝트' 수혜 기대감에 진흥기업 상한가... 일...", "url": "https://www.ggilbo.com/news/articleView.html?idxno=1167231", "desc": "2일 진흥기업, 일성건설, 진흥기업우B, 진흥기업2우B, 마키나락스, 삼기에너지솔루션즈, 비엘팜텍, 삼기, 광진실업, 신원종합개발, 프롬바이오, 썸에이지가 상한가에 이름을 올리고 장을 마감하면서 투자자들의...", "date": "2026.07.02", "score": 10, "is_today": true, "source": "naver"}, {"title": "2일 코스피 7.89% 급락에도 12종목 상한가", "url": "https://www.junggi.co.kr/news/articleView.html?idxno=37006", "desc": "이 같은 급락장 속에서도 코스피 진흥기업·일성건설과 코스닥 마키나락스·삼기에너지솔루션즈·비엘팜텍 등 12개 종목은 상한가에 안착했다. AI 거품 경고음에 '삼전닉스' 휘청...코스피 15거래일만에 7000대...", "date": "2026.07.02", "score": 10, "is_today": true, "source": "naver"}, {"title": "[산업 레이더] 솔루스첨단소재·앤로보틱스·삼기, 배터리·로봇 신사업...", "url": "http://www.thevaluenews.co.kr/news/view.php?idx=199817", "desc": "자회사 삼기에너지솔루션즈의 배터리 열관리 및 보호 기술을 적용해 기술 차별화에 나설 방침이다. 삼기 관계자는 “자동차 산업에서 축적한 정밀 다이캐스팅 기술을 로봇 분야로 확장하고 있다”며 “휴머노이드 로봇...", "date": "2026.07.02", "score": 10, "is_today": true, "source": "naver"}, {"title": "코스닥 '털썩'...주성엔지니어링 등 반도체 장비주 '와르르'", "url": "http://www.choicenews.co.kr/news/articleView.html?idxno=167529", "desc": "마키나락스, 삼기에너지솔루션즈, 비엘팜텍, 삼기 등 8종목이 상한가를 기록했다. 코스닥 지수는 전날보다 62.63포인트(6.74%) 급락한 866.72로 마감했다. 개인이 5353억원을 순매수한 반면 외국인과 기관은...", "date": "2026.07.02", "score": 10, "is_today": true, "source": "naver"}, {"title": "[마감시황] AI 공급과잉 우려 '삼전닉스' 급락…코스피 7600선 마감", "url": "https://www.joongangenews.com/news/articleView.html?idxno=530122", "desc": "양대 시장에서 △진흥기업 △일성건설 △진흥기업우B △진흥기업2우B △마키나락스 △삼기에너지솔루션즈 △비엘팜텍 △삼기 △광진실업 △신원종합개발 △프롬바이오 △썸에이지 등이 상한가를...", "date": "2026.07.02", "score": 10, "is_today": true, "source": "naver"}], "best_url": "https://www.seoul.co.kr/news/economy/securities/2026/07/02/20260702500105?wlog_tag3=naver"}, {"name": "마키나락스", "code": "477850", "ctrt": 29.8, "vol_eok": 842, "theme": "개별주", "memo": "84,245", "candidates": [{"title": "마키나락스, AI 국가전략 수혜 기대에 20%대 급등[특징주]", "url": "https://www.newsway.co.kr/news/view?ud=2026070213320558873", "desc": "마키나락스가 정부의 인공지능(AI) 국가전략 추진 기대감에 장중 20% 넘게 급등하고 있다. 정부 AI 정책의 대표 수혜주로 거론되는 데다 올해 수주 확대에 따른 실적 개선 기대가 더해지면서 상승세를 탄 모습이다....", "date": "2026.07.02", "score": 30, "is_today": true, "source": "naver"}, {"title": "[특징주] 마키나락스, 정부 AI 메가프로젝트 수혜 기대에 강세", "url": "https://www.tokenpost.kr/news/economy/374418", "desc": "마키나락스가 정부의 인공지능(AI) 국가전략 추진 기대감에 강세다. 정부가 AI를 국가 핵심 성장동력으로 육성하는 전략을 본격화하는 가운데, 마키나락스가 관련 정책 행사에 '피지컬 AI·로봇' 대표 기업으로 참석한...", "date": "2026.07.02", "score": 30, "is_today": true, "source": "naver"}, {"title": "[특징주] 마키나락스, 정부 AI 메가프로젝트 '피지컬 AI 대표기업' 참석...", "url": "https://www.financialpost.co.kr/news/articleView.html?idxno=264801", "desc": "마키나락스가 장 초반 강세를 기록하고 있다. 정부가 AI(인공지능)를 국가 핵심 성장동력으로 육성하기 위한 전략을 본격 추진하는 가운데 마키나락스가 정부 AI 메가프로젝트 행사에 '피지컬 AI·로봇' 분야 대표...", "date": "2026.07.02", "score": 30, "is_today": true, "source": "naver"}, {"title": "해외 수주 2배 늘어난 마키나락스, 이틀 연속 강세…6%↑[특징주]", "url": "https://www.edaily.co.kr/news/newspath.asp?newsid=03011046645485656", "desc": "마키나락스(477850)의 주가가 이틀 연속 급등하고 있다. 상반기 해외 수주액이 대폭 증가했다는 소식에 매수세가 연이어 몰리는 것으로 보인다. 26일 엠피닥터에 따르면 마키나락스는 오전 9시 9분 기준으로 전 거래일...", "date": "2026.06.26", "score": 20, "is_today": false, "source": "naver"}, {"title": "[특징주] 마키나락스, 상반기 해외 수주 30억원 소식에 17%↑(종합)", "url": "https://www.yna.co.kr/view/AKR20260625061451008?input=1195m", "desc": "피지컬AI 기업 마키나락스가 올 상반기 해외 수주액 30억원을 달성했다는 발표에 25일 17% 가까이 급등했다. 이날 코스닥 시장에서 마키나락스는 16.94% 오른 1만6천430원에 장을 마쳤다. 개장 직후 상승률은 한때 27.05%까지...", "date": "2026.06.25", "score": 20, "is_today": false, "source": "naver"}, {"title": "마키나락스, 해외 수주 2배 성장 소식에 16%대 강세[특징주]", "url": "https://www.newsway.co.kr/news/view?ud=2026062515120438915", "desc": "마키나락스가 상반기 해외 수주가 두 배 증가했다는 소식에 장중 강세를 보이고 있다. 25일 한국거래소에 따르면 오후 2시 51분 기준 마키나락스는 전 거래일 대비 2380원(16.94%) 오른 1만6430원에 거래되고 있다. 장중에는...", "date": "2026.06.25", "score": 20, "is_today": false, "source": "naver"}, {"title": "[특징주] 마키나락스, 해외 수주 2배 성장 소식에 15%대 강세", "url": "https://www.ajunews.com/view/20260625141933784", "desc": "아주경제=류소현 기자 sohyun@ajunews.com 마키나락스가 해외 사업 성장세를 확인했다는 소식에 15% 넘게 오르고 있다. 25일 한국거래소에 따르면 오후 2시11분 기준 마키나락스는 전 거래일 대비 2340원(16.65%) 오른...", "date": "2026.06.25", "score": 20, "is_today": false, "source": "naver"}, {"title": "[특징주] 마키나락스, 상반기 해외 수주 30억원 소식에 장 초반↑", "url": "https://www.yna.co.kr/view/AKR20260625061400008?input=1195m", "desc": "코스닥 상장사인 피지컬AI 기업 마키나락스가 올 상반기 해외 수주액 30억원을 달성했다는 발표에 25일 장 초반 강세다. 이날 마키나락스는 오전 10시 10분 기준 13.74% 오른 1만5천980원이다. 개장 직후 상승률은 한때 27.05...", "date": "2026.06.25", "score": 20, "is_today": false, "source": "naver"}], "best_url": "https://www.newsway.co.kr/news/view?ud=2026070213320558873"}, {"name": "칩스앤미디어", "code": "094360", "ctrt": 25.49, "vol_eok": 893, "theme": "개별주", "memo": "89,369", "candidates": [{"title": "[특징주] 칩스앤미디어, 독점 장벽 허물었다… 美 빅테크와 차세대 영상...", "url": "https://www.widedaily.com/news/articleView.html?idxno=296812", "desc": "멀티미디어 설계자산(IP) 전문기업 칩스앤미디어가 북미 소재의 글로벌 빅테크 기업과 차세대 멀티미디어 코덱(APV) 하드웨어 IP 라이선스 계약을 체결했다는 소식에 장 초반 급등세를 보이고 있다. 2일 코스닥...", "date": "2026.07.02", "score": 30, "is_today": true, "source": "naver"}, {"title": "칩스앤미디어, 美빅테크와 영상 코덱 IP 라이선스 계약…12%↑[특징주]", "url": "https://www.edaily.co.kr/news/newspath.asp?newsid=03129126645510584", "desc": "멀티미디어 영상 지식재산권(IP) 기술 전문기업 칩스앤미디어(094360)가 장초 12% 급등 중이다. 2일 엠피닥터에 따르면 칩스앤미디어는 이날 오전 9시 12분 기준 전 거래일 대비 12.99% 오른 1만3740원에 거래되고...", "date": "2026.07.02", "score": 30, "is_today": true, "source": "naver"}, {"title": "칩스앤미디어, 美 빅테크와 APV IP 계약…글로벌 첫 상용화 성과", "url": "http://www.srtimes.kr/news/articleView.html?idxno=206614", "desc": "차세대 플래그십 기기 세계 최초 탑재 예정…8K 120fps·12비트 영상 처리 지원 칩스앤미디어가 차세대 멀티미디어 코덱(APV) 하드웨어 IP 상용화에 성공하며 글로벌 영상 표준 시장 공략에 속도를 내고 있다....", "date": "2026.07.02", "score": 15, "is_today": true, "source": "naver"}, {"title": "칩스앤미디어, 구글 스마트폰에 APV IP 공급", "url": "https://www.thelec.kr/news/articleView.html?idxno=58994", "desc": "칩스앤미디어가 구글에 처음으로 어드밴스드 프로페셔널 비디오(APV:Advanced Professional Video) 설계 자산(IP)을 공급한다. 해당 IP는 3~4년 이후 출시될 것으로 기대되는 구글 기기에 적용된다. 칩스앤미디어는 2일...", "date": "2026.07.02", "score": 15, "is_today": true, "source": "naver"}, {"title": "'애플 독점' 고화질 영상 시장 흔든다…칩스앤미디어, 美 빅테크와 맞손", "url": "https://www.hankyung.com/article/202607022064i", "desc": "반도체 설계자산(IP) 전문기업 칩스앤미디어가 글로벌 빅테크 기업과 차세대 영상 압축 기술(APV)용 하드웨어 IP 라이선스 계약을 체결했다. 애플이 사실상 독점해온 전문가용 고화질 영상 기술 시장에 변화가 생길지...", "date": "2026.07.02", "score": 15, "is_today": true, "source": "naver"}, {"title": "칩스앤미디어, 애플 독점 깨고 미 빅테크 G사와 APV IP 계약…‘글로벌...", "url": "https://www.etoday.co.kr/news/view/2599640", "desc": "전문기업 칩스앤미디어가 글로벌 차세대 멀티미디어 코덱(Advanced Professional Video, APV) IP 상용화에 성공하며 차세대 영상 표준 시장의 핵심 기업으로 도약했다. 칩스앤미디어는 북미 빅테크 기업 G사와 자사의...", "date": "2026.07.02", "score": 15, "is_today": true, "source": "naver"}, {"title": "칩스앤미디어, 北美 빅테크 G사와 APV 라이선스 체결", "url": "https://www.the-stock.kr/news/articleView.html?idxno=32868", "desc": "글로벌 멀티미디어 반도체 설계자산(IP) 전문기업 칩스앤미디어가 북미 소재의 글로벌 빅테크 기업 G사와 차세대 영상 코덱 APV(Advanced Professional Video) 하드웨어 IP인 'WAVE-P' 라이선스 계약을 체결했다고 밝혔다. 이번...", "date": "2026.07.02", "score": 15, "is_today": true, "source": "naver"}, {"title": "칩스앤미디어, 美 빅테크 기업과 APV IP 라이선스 계약", "url": "https://www.widedaily.com/news/articleView.html?idxno=296868", "desc": "멀티미디어 IP(설계자산) 전문기업 칩스앤미디어는 북미 소재의 글로벌 빅테크 기업 G사와 APV(차세대 멀티미디어 코덱) 하드웨어 IP인 'WAVE-P'의 라이선스 계약을 체결했다고 2일 밝혔다. 이번 계약으로 WAVE-P는 향후...", "date": "2026.07.02", "score": 15, "is_today": true, "source": "naver"}], "best_url": "https://www.widedaily.com/news/articleView.html?idxno=296812"}, {"name": "선도전기", "code": "007610", "ctrt": 23.29, "vol_eok": 805, "theme": "개별주", "memo": "80,586", "candidates": [{"title": "[주식마감] 정부 '메가 프로젝트' 수혜 기대감에 진흥기업 상한가... 일...", "url": "https://www.ggilbo.com/news/articleView.html?idxno=1167231", "desc": "ETN, 선도전기, ACE K반도체TOP2+, TIGER 반도체TOP10이다. 코스닥 시장 거래 상위종목 30위는 삼기에너지솔루션즈, KBI메탈, 매드업, 덕신이피씨, 유진기업, 화신정공, 동양파일, 스트라드비젼, 우원개발, 희림, 성호전자...", "date": "2026.07.02", "score": 10, "is_today": true, "source": "naver"}, {"title": "[마감시황] 코스피 7,648.09 마감…반도체 대형주 급락에 7.89% 하락", "url": "https://www.seoul.co.kr/news/economy/securities/2026/07/02/20260702500176?wlog_tag3=naver", "desc": "상승률 상위에는 진흥기업 29.92%, 진흥기업우B 29.87%, 진흥기업2우B 29.83%, 일성건설 29.76%, 선도전기 23.29%가 이름을 올렸다. 반면 콘텐트리중앙은 30.00% 하락해 하한가로 마감했고, 금호전기 29.23...", "date": "2026.07.02", "score": 10, "is_today": true, "source": "naver"}, {"title": "[EBN 데이터센터] 2일 상승 종목 30選…중소형주로 매수세 집중", "url": "https://www.ebn.co.kr/news/articleView.html?idxno=1714911", "desc": "◆ 코스피, 건설주와 실적 기대 종목 동반 강세 이날 코스피에서는 상한가 4종목 외에도 선도전기가 6300원으로 23.29% 급등하며 두각을 나타냈다. 영원무역은 11.99%, 대구백화점은 11.88% 상승했다. 한세실업은 9.37...", "date": "2026.07.02", "score": 10, "is_today": true, "source": "naver"}, {"title": "[EBN 데이터센터] 코스피, 외국인·기관 '팔자'에 8% 가까이 와르르", "url": "https://www.ebn.co.kr/news/articleView.html?idxno=1714901", "desc": "코스피 시장에서는 진흥기업, 진흥기업우B, 진흥기업2우B, 일성건설 등이 상한가권에 올랐고 선도전기, 영원무역, 대구백화점, 한세실업, 우진아이엔에스, 계룡건설 등도 두 자릿수 또는 큰 폭 상승률을 보였다....", "date": "2026.07.02", "score": 10, "is_today": true, "source": "naver"}, {"title": "철도 관련주, 정책 모멘텀은 살아있다…투자자는 무엇을 볼까", "url": "https://www.pinpointnews.co.kr/news/articleView.html?idxno=465077", "desc": "가장 강한 흐름은 선도전기가 보이고 있다. 한국거래소에 따르면 이날 오후 3시19분 현재 선도전기는 19.96% 올라 6130원에 거래중이다. 철도 전력설비와 전력 인프라 확대 기대가 반영되며 투자심리가 크게 개선되고 있다....", "date": "2026.07.02", "score": 10, "is_today": true, "source": "naver"}, {"title": "[서울데이터랩]코스피 거래상위 종목 혼조…삼호개발·진흥기업 급등, ...", "url": "https://www.seoul.co.kr/news/economy/securities/2026/07/02/20260702500106?wlog_tag3=naver", "desc": "선도전기(007610)도 21.53% 상승한 6210원으로 강세를 보였고, 진흥기업(002780)은 29.92% 오른 1142원으로 상한가를 기록했다. 남광토건(001260) 역시 19.34% 오른 1만 2340원으로 급등세를 나타냈다. 개별...", "date": "2026.07.02", "score": 10, "is_today": true, "source": "naver"}, {"title": "[EBN 데이터센터] 코스피, 美 반도체 삭풍에 매도 사이드카 발동…5% 이...", "url": "https://www.ebn.co.kr/news/articleView.html?idxno=1714792", "desc": "삼호개발 13.81%, 선도전기 11.94%, 우진아이엔에스 7.79%도 강세다. 건설 및 인프라 관련 종목군으로 매수세가 집중되는 흐름이 확인된다. 반면 코스피 하락률 상위 종목에는 콘텐트리중앙이 30.00% 하한가를...", "date": "2026.07.02", "score": 10, "is_today": true, "source": "naver"}, {"title": "[1일 특징주] 매드업, 코스닥 상장 첫날 26%↑", "url": "https://www.newsworks.co.kr/news/articleView.html?idxno=845773", "desc": "한편 이날 코스피에서는 ▲대원전선 ▲금호건설 ▲삼호개발 ▲남광토건 ▲선도전기 ▲일성건설 ▲보해양조 ▲대원전선우 ▲금호건설우 ▲진흥기업우B ▲진흥기업2우B 등이 상한가를 기록했다. 코스닥에서는...", "date": "2026.07.01", "score": 0, "is_today": false, "source": "naver"}], "best_url": "https://www.ggilbo.com/news/articleView.html?idxno=1167231"}, {"name": "우원개발", "code": "046940", "ctrt": 15.83, "vol_eok": 344, "theme": "개별주", "memo": "34,493", "candidates": [{"title": "[특징주] 우원개발, \"800조 호남 반도체 클러스터 투자 본격화\" 건설株 ...", "url": "https://www.widedaily.com/news/articleView.html?idxno=296896", "desc": "우원개발(046940)의 주가가 급등하며 시장의 주목을 받았다. 2일 한국거래소에 따르면 우원개발의 주가는 전일 대비 15.83% 상승한 3805원에 거래 마감했다. 이는 이재명 정부가 발표한 '대한민국 대도약 3대 메가 프로젝트...", "date": "2026.07.02", "score": 30, "is_today": true, "source": "naver"}, {"title": "우원개발, 대규모 인프라 투자 수혜 예고… 지하화 사업 강자 입증", "url": "https://www.pinpointnews.co.kr/news/articleView.html?idxno=465012", "desc": "한국거래소에 따르면 이날 오후 1시46분 현재 우원개발은 23.14% 올라 4,045원에 거래중이다. GTX를 비롯한 터널과 지하 인프라 공사 수혜 기대가 부각되면서 강한 매수세가 이어지고 있다. 특수건설 역시 14.61% 올라 5...", "date": "2026.07.02", "score": 15, "is_today": true, "source": "naver"}, {"title": "[특징주] 신원종합개발, \"삼성·SK 800조 호남 반도체 클러스터 구축\"에...", "url": "https://www.widedaily.com/news/articleView.html?idxno=296895", "desc": "일성건설 29.76%, 동신건설 17.05%, 우원개발 16.89%, 대원 16.55%, 계룡건설 9.03%, 동원개발 6.36% 등도 오름세를 보이고 있다. 신원종합개발은 1983년 설립된 종합건설업체로, 1994년 코스닥시장에 상장한 이후 민간 아파트와...", "date": "2026.07.02", "score": 10, "is_today": true, "source": "naver"}, {"title": "[특징주] 건설주, 반도체 메가프로젝트 기대감 지속…동신건설·신원종...", "url": "https://www.ajunews.com/view/20260702133737461", "desc": "계룡건설도 26.05% 급등했고 우원개발(24.81%), 상지건설(20.61%), 동원개발(17.98%), 삼호개발(12.51%), 아이에스동서(9.89%) 등도 큰 폭의 상승세를 나타냈다. 이 밖에도 남광토건, SGC E&C, KCC건설, 서한, 서희건설 등 건설주...", "date": "2026.07.02", "score": 10, "is_today": true, "source": "naver"}, {"title": "반도체 메가 프로젝트 수혜 기대감에…지역 건설주 상한가", "url": "https://www.mt.co.kr/stock/2026/07/02/2026070209390459987", "desc": "77%) 오른 1만860원, 우원개발이 230원(7.31%) 오른 3525원에 거래되고 있다. 정부는 지난달 29일 대규모 AI(인공지능)·반도체 투자 계획을 발표하면서 지역 균형 발전을 위해 투자 지역을 서남권 등...", "date": "2026.07.02", "score": 10, "is_today": true, "source": "naver"}, {"title": "[주식마감] 정부 '메가 프로젝트' 수혜 기대감에 진흥기업 상한가... 일...", "url": "https://www.ggilbo.com/news/articleView.html?idxno=1167231", "desc": "코스닥 시장 거래 상위종목 30위는 삼기에너지솔루션즈, KBI메탈, 매드업, 덕신이피씨, 유진기업, 화신정공, 동양파일, 스트라드비젼, 우원개발, 희림, 성호전자, 한성크린텍, 비엘팜텍, 동원개발, 대한광통신, HPSP...", "date": "2026.07.02", "score": 10, "is_today": true, "source": "naver"}, {"title": "[EBN 데이터센터] 2일 상승 종목 30選…중소형주로 매수세 집중", "url": "https://www.ebn.co.kr/news/articleView.html?idxno=1714911", "desc": "우원개발(15.83%), 리더스코스메틱(15.62%), 씨싸이트(15.45%)도 높은 상승률을 기록했다. ◆ 양시장 모두 중소형주 중심 단기 탄력 부각 이날 양시장 상승률 상위권은 대형주보다 중소형 개별주가 주도했다....", "date": "2026.07.02", "score": 10, "is_today": true, "source": "naver"}, {"title": "철도 관련주, 정책 모멘텀은 살아있다…투자자는 무엇을 볼까", "url": "https://www.pinpointnews.co.kr/news/articleView.html?idxno=465077", "desc": "우원개발 역시 철도 및 인프라 공사 수혜 기대와 함께 강세를 이어가고 있으며 특수건설도 지하철·철도 토목사업 확대 기대가 유입되면서 상승 흐름을 나타내고 있다. 대형 철도 대표주인 현대로템도 정책 수혜 기대를...", "date": "2026.07.02", "score": 10, "is_today": true, "source": "naver"}], "best_url": "https://www.widedaily.com/news/articleView.html?idxno=296896"}, {"name": "영원무역", "code": "111770", "ctrt": 11.32, "vol_eok": 224, "theme": "개별주", "memo": "22,499", "candidates": [{"title": "영원무역, ESG 경영 확대…“2030년까지 탄소 40%절감, 방글라데시 메디...", "url": "https://www.kmib.co.kr/article/view.asp?arcid=0030055461&code=61141111&cp=nv", "desc": "영원무역그룹이 ‘2025 지속가능경영보고서’를 통해 환경·사회·지배구조(ESG) 분야 주요 활동과 성과를 공개했다. 영원무역은 2030년까지 글로벌 사업장의 탄소 배출을 40% 절감한다는 친환경 목표를 수립했다....", "date": "2026.07.02", "score": 15, "is_today": true, "source": "naver"}, {"title": "영원무역 '행동주의 표방 사모펀드'에서 공개서한 받아, '내부거래'와 '...", "url": "https://www.businesspost.co.kr/BP?command=article_view&num=441419", "desc": "성래은 영원무역그룹 부회장이 총수일가의 이익을 우선한다는 지적에 다시 직면했다. 영원무역 주식 일부를 보유한 국내 행동주의 사모펀드 쿼드자산운용은 영원무역그룹의 지배구조와 경영진 보상체계 등을 문제...", "date": "2026.07.02", "score": 15, "is_today": true, "source": "naver"}, {"title": "영원무역, 2025 지속가능경영보고서 발간…방글라데시 의료·교육 투자...", "url": "https://www.sedaily.com/article/20063123?ref=naver", "desc": "영원무역그룹이 환경·사회·지배구조(ESG) 분야의 주요 성과와 중장기 추진 계획을 담은 ‘2025 지속가능경영보고서’를 발간했다고 2일 밝혔다. 보고서는 글로벌 공시 기준인 GRI(글로벌 보고 이니셔티브) 스탠다드...", "date": "2026.07.02", "score": 15, "is_today": true, "source": "naver"}, {"title": "영원무역, 친환경·상생 담은 ‘2025 지속가능경영보고서’ 공개", "url": "https://www.kmib.co.kr/article/view.asp?arcid=0030055013&code=61141411&cp=nv", "desc": "영원무역그룹이 ‘2025 지속가능경영보고서’를 통해 탄소 감축과 지역 상생 중심의 핵심 ESG 성과를 공개했다. 우선 2030년까지 글로벌 탄소 배출을 40% 감축한다는 목표 아래, 올해 전 세계 주요 생산기지에 71MWp...", "date": "2026.07.02", "score": 15, "is_today": true, "source": "naver"}, {"title": "[THE COMPASS] 영원무역, ‘최대주주 위한 내부거래’ 지적…기업가치 제...", "url": "http://www.fntimes.com/html/view.php?ud=202607021124537880a837df6494_18", "desc": "쿼드자산운용이 영원무역의 불필요한 내부거래에 대해 일갈했다. 전체 주주가 아닌 성래은 영원무역그룹 부회장 등 특정 주주를 위한 경영이 기업가치 디스카운트 요인으로 작용한다는 지적이다. 투하자본수익률...", "date": "2026.07.02", "score": 15, "is_today": true, "source": "naver"}, {"title": "영원무역홀딩스, 친환경 생산·지역사회 투자 성과 공개", "url": "https://www.inthenews.co.kr/news/article.html?no=88827", "desc": "‘2025 지속가능경영보고서’ 발간 성래은 부회장 “지속가능한 미래 함께 만드는 기업 되기 위해 최선” 인더뉴스 김용운 기자ㅣ영원무역그룹이 환경·사회·지배구조(ESG) 분야 주요 활동과 성과를 담은 ‘2025...", "date": "2026.07.02", "score": 15, "is_today": true, "source": "naver"}, {"title": "\"미래세대 위한 책임 실천\"…영원무역, ESG 경영 확대한다", "url": "http://www.wowtv.co.kr/NewsCenter/News/Read?articleId=A202607020278&t=NN", "desc": "영원무역그룹이 환경·사회·지배구조(ESG) 분야 주요 활동과 성과를 담은 '2025 지속가능경영보고서'를 발간했다고 2일 밝혔다. 이번 보고서는 글로벌 보고 이니셔티브 스탠다드 2021, 기후 관련 재무정보 공개 태스크포스...", "date": "2026.07.02", "score": 15, "is_today": true, "source": "naver"}, {"title": "영원무역, '2025 지속가능경영보고서' 발간... 미래 위한 책임 실천", "url": "https://www.fashionbiz.co.kr/article/227563", "desc": "영원무역그룹(대표 성기학)이 환경·사회·지배구조(ESG) 분야 주요 활동과 성과를 담은 '2025 지속가능경영보고서'를 발간했다. 이번 보고서는 글로벌 보고 이니셔티브(GRI) 스탠다드 2021, 기후 관련 재무정보 공개...", "date": "2026.07.02", "score": 15, "is_today": true, "source": "naver"}], "best_url": "https://www.kmib.co.kr/article/view.asp?arcid=0030055461&code=61141111&cp=nv"}];
+
+let state = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+
+function saveState() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+
+function ensureState(name) {
+  if (!state[name]) state[name] = { chosen_idx: 0, decision: null };
+  return state[name];
+}
+
+function decide(name, decision) {
+  const st = ensureState(name);
+  st.decision = (st.decision === decision) ? null : decision;  // 같은 버튼 다시 누르면 해제
+  saveState();
+  render();
+}
+
+function navCandidate(name, delta) {
+  const st = ensureState(name);
+  const stock = DATA.find(s => s.name === name);
+  const max = (stock.candidates || []).length - 1;
+  let idx = (st.chosen_idx || 0) + delta;
+  if (idx < 0) idx = 0;
+  if (idx > max) idx = max;
+  st.chosen_idx = idx;
+  saveState();
+  render();
+}
+
+function _buildPayload() {
+  const results = DATA.map(s => {
+    const st = state[s.name] || {};
+    const idx = st.chosen_idx || 0;
+    const cands = s.candidates || [];
+    const cand = cands[idx] || null;
+    // recent_articles: 대표 1건(chosen) + 나머지 후보들 (URL dedup)
+    const seen = new Set();
+    const recent = [];
+    const tryAdd = (a) => {
+      if (!a || !a.url || seen.has(a.url)) return;
+      seen.add(a.url);
+      recent.push(a);
+    };
+    tryAdd(cand);
+    cands.forEach(tryAdd);
+    return {
+      name: s.name, code: s.code, ctrt: s.ctrt, vol_eok: s.vol_eok, theme: s.theme,
+      decision: st.decision || null,
+      chosen_article: (st.decision === "approved" && cand) ? cand : null,
+      recent_articles: recent.slice(0, 5),
+      candidates_seen: (st.chosen_idx || 0) + 1,
+      total_candidates: cands.length
+    };
+  });
+  return {
+    date: REVIEW_DATE,
+    exported_at: new Date().toISOString(),
+    summary: {
+      total: DATA.length,
+      approved: results.filter(r => r.decision === "approved").length,
+      rejected: results.filter(r => r.decision === "rejected").length,
+      skipped:  results.filter(r => r.decision === "skipped").length,
+      pending:  results.filter(r => !r.decision).length
+    },
+    results
+  };
+}
+
+function _showPushResult(html, color) {
+  const div = document.getElementById("pushResult");
+  div.style.display = "block";
+  div.style.background = color || "#f1f8f3";
+  div.innerHTML = html;
+}
+
+async function pushToNotion() {
+  const payload = _buildPayload();
+  const approved = payload.summary.approved;
+  if (approved === 0) {
+    _showPushResult("⚠️ 승인된 종목이 없습니다. ✅ 승인 버튼을 먼저 누르세요.", "#fff3e0");
+    return;
+  }
+  if (!PUSH_ENDPOINT) {
+    _showPushResult("⚠️ 푸시 서버가 비활성화 — JSON 다운로드로 폴백합니다.", "#fff3e0");
+    _downloadJson(payload);
+    return;
+  }
+  const btn = document.getElementById("btnPush");
+  btn.disabled = true;
+  btn.textContent = "⏳ 푸시 중...";
+  _showPushResult("⏳ 노션에 " + approved + "건 푸시 중...", "#e3f2fd");
+  try {
+    const res = await fetch(PUSH_ENDPOINT + "/push", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify(payload)
+    });
+    const ack = await res.json();
+    if (!res.ok) throw new Error(ack.error || ("HTTP " + res.status));
+    // 서버가 백그라운드로 푸시 진행 → /status 폴링으로 완료 대기
+    let st, elapsed = 0;
+    for (;;) {
+      await new Promise(r => setTimeout(r, 1500));
+      elapsed += 1.5;
+      const sr = await fetch(PUSH_ENDPOINT + "/status");
+      st = await sr.json();
+      if (st.status === "done" || st.status === "error") break;
+      _showPushResult("⏳ 노션에 " + approved + "건 푸시 중... (" + Math.round(elapsed) + "초 경과)", "#e3f2fd");
+    }
+    if (st.status === "error") throw new Error(st.error || "unknown");
+    const data = st.result || {};
+    let msg = "✅ 노션 푸시 완료 — 총 " + data.total + "건 / 신규 " + data.created + ", 업데이트 " + data.updated;
+    let color = "#e8f5e9";
+    if (data.errors && data.errors.length) {
+      msg += "<br>⚠️ 실패 " + data.errors.length + "건: ";
+      msg += data.errors.map(e => e.name + " (" + e.error + ")").join(", ");
+      color = "#fff3e0";
+    }
+    msg += "<br>🖥️ cmd 창은 남은 단계(아웃컴·패턴·동기화)를 마친 뒤 자동으로 닫힙니다.";
+    _showPushResult(msg, color);
+  } catch (e) {
+    _showPushResult("❌ 푸시 실패: " + e.message + "<br>JSON 다운로드로 폴백합니다.", "#ffebee");
+    _downloadJson(payload);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "📤 노션에 푸시";
+  }
+}
+
+function _downloadJson(payload) {
+  const blob = new Blob([JSON.stringify(payload, null, 2)], {type: "application/json"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "reviewed_" + REVIEW_DATE + ".json";
+  document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
+}
+
+function resetAll() {
+  if (!confirm("모든 검수 결과를 초기화합니다.")) return;
+  state = {}; saveState(); render();
+}
+
+function escapeHtml(s) {
+  return String(s == null ? "" : s)
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+}
+
+function decisionLabel(d) {
+  return ({ approved: "✅ 승인", rejected: "❌ 거부", skipped: "⏭️ 스킵" })[d] || "";
+}
+
+function render() {
+  const cards = document.getElementById("cards");
+  cards.innerHTML = "";
+  let done = 0;
+
+  DATA.forEach((s, sIdx) => {
+    const st = state[s.name] || { chosen_idx: 0, decision: null };
+    if (st.decision) done++;
+
+    const card = document.createElement("div");
+    card.className = "stock-card" + (st.decision ? " " + st.decision : "");
+    card.dataset.name = s.name;
+
+    const ctrtClass = s.ctrt >= 0 ? "ctrt-up" : "ctrt-down";
+    const ctrtSign  = s.ctrt >= 0 ? "+" : "";
+
+    let html = "";
+    html += '<div class="stock-header">';
+    html += '<span class="stock-name">' + escapeHtml(s.name) + '</span>';
+    html += '<span class="' + ctrtClass + '">' + ctrtSign + s.ctrt.toFixed(2) + '%</span>';
+    html += '<span class="stock-meta">' + s.vol_eok.toLocaleString() + '억</span>';
+    html += '<span class="theme-tag">' + escapeHtml(s.theme) + '</span>';
+    if (s.memo) html += '<span class="memo">' + escapeHtml(s.memo) + '</span>';
+    if (st.decision) html += '<span class="decision-tag">→ ' + decisionLabel(st.decision) + '</span>';
+    html += '</div>';
+
+    const candidates = s.candidates || [];
+    if (candidates.length === 0) {
+      html += '<div class="empty">관련 기사 없음</div>';
+    } else {
+      const idx = st.chosen_idx || 0;
+      const cand = candidates[idx];
+      html += '<div class="nav-bar">';
+      html += '<button class="btn-nav" data-act="prev" data-name="' + escapeHtml(s.name) + '"' + (idx === 0 ? ' disabled' : '') + '>⬅️ 이전</button>';
+      html += '<span style="font-size:13px;color:#666;">후보 ' + (idx+1) + ' / ' + candidates.length + '</span>';
+      html += '<button class="btn-nav" data-act="next" data-name="' + escapeHtml(s.name) + '"' + (idx >= candidates.length-1 ? ' disabled' : '') + '>다음 ➡️</button>';
+      html += '<span style="margin-left:auto;font-size:12px;color:#999;">점수 ' + cand.score + '</span>';
+      html += '</div>';
+      html += '<div class="article">';
+      html += '<div class="article-meta">';
+      if (cand.date) html += '<span>' + escapeHtml(cand.date) + '</span> ';
+      if (cand.is_today) html += '<span class="badge-today">오늘</span>';
+      else if (cand.date) html += '<span class="badge-old">이전</span>';
+      html += '<span class="badge-source">' + escapeHtml(cand.source || "naver") + '</span>';
+      html += '</div>';
+      html += '<div class="article-title"><a href="' + escapeHtml(cand.url) + '" target="_blank" rel="noopener">' + escapeHtml(cand.title) + '</a></div>';
+      if (cand.desc) html += '<div class="article-desc">' + escapeHtml(cand.desc) + '</div>';
+      html += '</div>';
+    }
+
+    html += '<div class="actions">';
+    html += '<button class="btn-approve" data-act="approved" data-name="' + escapeHtml(s.name) + '">✅ 승인</button>';
+    html += '<button class="btn-reject"  data-act="rejected" data-name="' + escapeHtml(s.name) + '">❌ 거부</button>';
+    html += '<button class="btn-skip"    data-act="skipped"  data-name="' + escapeHtml(s.name) + '">⏭️ 스킵</button>';
+    html += '</div>';
+
+    card.innerHTML = html;
+    cards.appendChild(card);
+  });
+
+  document.getElementById("progressBar").style.width = (done / DATA.length * 100) + "%";
+  document.getElementById("progressText").textContent = done + " / " + DATA.length + " 검토";
+}
+
+document.addEventListener("click", (e) => {
+  const btn = e.target.closest("button[data-act]");
+  if (!btn) return;
+  const name = btn.dataset.name;
+  const act  = btn.dataset.act;
+  if (act === "prev")      navCandidate(name, -1);
+  else if (act === "next") navCandidate(name, 1);
+  else                     decide(name, act);
+});
+
+render();
+</script>
+</body>
+</html>

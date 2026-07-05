@@ -1,13 +1,12 @@
 ---
 tags: [에너지, 빅테크, 이차전지, LFP배터리, ESS, 테슬라]
 sector: 에너지
-last_updated: 2026-05-04
-rate_updated: 2026-05-04
-close_price: 472000
-change_rate: +2.50%
-notion_last_edited: 2026-04-21T14:10:00.000Z
+last_updated: 2026-06-29
+notion_last_edited: 2026-06-29T14:40:00.000Z
 theme: ["#LFP배터리(리튬인산철)", "#ESS(전력저장장치)", "#테슬라"]
 stock_code: 373220
+is_leader: 
+recent_breakout: 
 ---
 
 # LG에너지솔루션
@@ -45,15 +44,15 @@ _[⏳ 추가 중요내용 없음]_
 
 - ["트럼프 무역확장법 232조로 배터리·화학제품 관세 추가 검토"](https://n.news.naver.com/mnews/article/003/0013784250?sid=104)
 - [[단독] 美 의회, 중국산 ESS 전면 차단 움직임…K-배터리 '반사이익' 기대감](https://www.theguru.co.kr/news/article.html?no=98340)
-- [(26.01.27)여긴 '중국산'이 최고였는데…충격 결과에 한국 '대박' 터진다](https://n.news.naver.com/mnews/article/015/0005242987?sid=101) / 2026-01-27 / 등락률: -1.8%
-- [(25.09.03)LG엔솔, 벤츠에 배터리 공급계약…15조원 규모 추정(종합)](https://n.news.naver.com/mnews/article/001/0015601972?sid=101) / 2025-09-03 / 등락률: -0.4%
+- [(26.01.27)여긴 '중국산'이 최고였는데…충격 결과에 한국 '대박' 터진다](https://n.news.naver.com/mnews/article/015/0005242987?sid=101)
+- [(25.09.03)LG엔솔, 벤츠에 배터리 공급계약…15조원 규모 추정(종합)](https://n.news.naver.com/mnews/article/001/0015601972?sid=101)
 - [“12분 완충·800km 주행” 전기차 난리났다…‘리튬메탈전지’ 상용화 청신호](https://biz.heraldcorp.com/article/10568123?ref=naver)
 - [[특징주] LG엔솔·KAIST, 리튬메탈전지 급속 충전 기술 개발에 리튬株 강세](https://www.newspim.com/news/view/20250904000226)
 - [다시 미국출장 갑니다…‘ESS 확충’ 속도내는 K배터리](https://n.news.naver.com/mnews/article/025/0003475518?sid=101)
 - ['K배터리 위기' 기술력·ESS로 돌파…"전기차 시장 성장할 것"](https://n.news.naver.com/mnews/article/008/0005264439?rc=N&ntype=RANKING&sid=001)
 - [삼성SDI "ESS '기저 전원' 될 것…없으면 AI 반도체도 못돌려"](https://n.news.naver.com/mnews/article/008/0005264360?sid=101)
 - [AI發 ESS 투자, 새 호황 불씨 되나…LG엔솔 '라인 전환 확대' 꺼낼까](https://n.news.naver.com/mnews/article/138/0002207122?sid=105)
-- [2차전지, 2년 침체 벗어나 본격 반등 진입...다시 세우는 투자전략](https://www.globalepic.co.kr/view.php?ud=2025102408503865125ebfd494dd_29) / 2025-10-24 / 등락률: +9.9%
+- [2차전지, 2년 침체 벗어나 본격 반등 진입...다시 세우는 투자전략](https://www.globalepic.co.kr/view.php?ud=2025102408503865125ebfd494dd_29)
 - [韓 배터리 3사, 폐배터리 재활용으로 AI전력 해법 ‘ESS' 구축 속도](https://www.hankyung.com/article/202510287006a)
 - [LG엔솔, ESS가 살렸다…전기차 '빙하기' 속 실적 방어](https://n.news.naver.com/mnews/article/003/0013563672?sid=101)
 - [(25.11.05)[단독] LG에너지솔루션, 오라클에 ESS 배터리 공급한다](https://www.etoday.co.kr/news/view/2522409)
@@ -77,36 +76,9 @@ _[⏳ 추가 중요내용 없음]_
 
 ## 재무 현황
 
-> 출처: DART OpenAPI + FDR(주가) | 기준: 2026-05-04 | 종목코드: 373220
-> 회계연도: 2025년 (연결 기준) | 주가: 460500원 (2026-04-30)
+[⏳ fetch_finance.py 실행 필요]
 
-### 밸류에이션
-
-| 항목 | 수치 |
-|------|------|
-| 시가총액 | [⏳ 계산 불가] |
-| PER | [⏳] |
-| PBR | [⏳] |
-| EPS | - |
-| BPS | - |
-
-### 2025년 연간 실적 (DART 연결)
-
-| 항목 | 수치 |
-|------|------|
-| 매출액 | 23.7조 |
-| 영업이익 | 1.3조 |
-| 순이익 | 808억 |
-| 부채비율 | 129.0% |
-
-### 분기 실적 (DART 연결)
-
-| 분기 | 매출 | 영업이익 | 순이익 | 부채비율 |
-|------|------|----------|--------|----------|
-| 2025.Q1 | 6.3조 | 3,747억 | 2,266억 | 99.2% |
-| 2025.Q2 | 5.6조 | 4,922억 | 906억 | 122.6% |
-| 2025.Q3 | 5.7조 | 6,013억 | 5,361억 | 125.3% |
-| 2025.Q4 | 6.1조 | -1,220억 | -7,725억 | 129.0% |
+---
 
 ## 차트·거래량 메모
 
@@ -120,6 +92,16 @@ _직접 추가 또는 LLM이 분석 시 기록_
 
 ---
 
+---
+
+## 등락률 누적 로그
+
+<!-- ingest 자동 기록 -->
+
+| 날짜 | 등락률 | 재료 요약 |
+|------|--------|-----------|
+| 2026-06-29 | +20.8% | ["트럼프 무역확장법 232조로 배터리·화학제품 관세 추가 검토"](https://n.news.naver.com/mnews/article/003 |
+
 ## 마지막 업데이트
 
-2026-05-04 | Notion ingest (ingest_all.py 자동 생성)
+2026-06-29 | Notion ingest (ingest_all.py 자동 생성)
