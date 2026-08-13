@@ -49,7 +49,7 @@
             "state": {
               "type": "search",
               "state": {
-                "query": "젠슨황_밸류체인",
+                "query": "",
                 "matchingCase": false,
                 "explainSearch": false,
                 "collapseAll": false,
@@ -180,8 +180,9 @@
       "bases:새 베이스 생성하기": false
     }
   },
-  "active": "7968584c8307332c",
+  "active": "125124471021d6ae",
   "lastOpenFiles": [
+    "stocks/신성이엔지.md",
     "themes/젠슨황_밸류체인.md",
     "stocks/손오공.md",
     "analysis/AIDC_밸류체인_2026-06-09.md",
